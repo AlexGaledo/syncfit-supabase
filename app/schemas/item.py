@@ -1,0 +1,254 @@
+"""
+Item & Workout schemas for request/response validation
+"""
+from pydantic import BaseModel, ConfigDict
+from typing import Optional
+from datetime import datetime
+from uuid import UUID
+
+
+# ============================================================================
+# BADGES SCHEMAS
+# ============================================================================
+
+class BadgeBase(BaseModel):
+    """Base badge schema"""
+    title: str
+    description: Optional[str] = None
+    icon_url: Optional[str] = None
+
+
+class BadgeCreate(BadgeBase):
+    """Schema for creating a badge"""
+    pass
+
+
+class BadgeUpdate(BaseModel):
+    """Schema for updating a badge"""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    icon_url: Optional[str] = None
+
+
+class BadgeResponse(BadgeBase):
+    """Schema for badge response"""
+    id: UUID
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# USER BADGES SCHEMAS
+# ============================================================================
+
+class UserBadgeCreate(BaseModel):
+    """Schema for awarding a badge to a user"""
+    user_id: UUID
+    badge_id: UUID
+
+
+class UserBadgeResponse(BaseModel):
+    """Schema for user badge response"""
+    id: UUID
+    user_id: UUID
+    badge_id: UUID
+    awarded_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# WORKOUT PLANS SCHEMAS
+# ============================================================================
+
+class WorkoutPlanBase(BaseModel):
+    """Base workout plan schema"""
+    title: str
+    description: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    difficulty: Optional[str] = None  # beginner/intermediate/advanced
+    ai_generated: bool = False
+
+
+class WorkoutPlanCreate(WorkoutPlanBase):
+    """Schema for creating a workout plan"""
+    created_by: Optional[UUID] = None
+
+
+class WorkoutPlanUpdate(BaseModel):
+    """Schema for updating a workout plan"""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    difficulty: Optional[str] = None
+    ai_generated: Optional[bool] = None
+
+
+class WorkoutPlanResponse(WorkoutPlanBase):
+    """Schema for workout plan response"""
+    id: int
+    created_by: Optional[UUID] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# WORKOUTS SCHEMAS
+# ============================================================================
+
+class WorkoutBase(BaseModel):
+    """Base workout schema"""
+    title: str
+    description: Optional[str] = None
+    estimated_duration_minutes: Optional[int] = None
+
+
+class WorkoutCreate(WorkoutBase):
+    """Schema for creating a workout"""
+    pass
+
+
+class WorkoutUpdate(BaseModel):
+    """Schema for updating a workout"""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    estimated_duration_minutes: Optional[int] = None
+
+
+class WorkoutResponse(WorkoutBase):
+    """Schema for workout response"""
+    id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# EXERCISES SCHEMAS
+# ============================================================================
+
+class ExerciseBase(BaseModel):
+    """Base exercise schema"""
+    name: str
+    description: Optional[str] = None
+    muscle_group: Optional[str] = None
+    equipment: Optional[str] = None
+
+
+class ExerciseCreate(ExerciseBase):
+    """Schema for creating an exercise"""
+    pass
+
+
+class ExerciseUpdate(BaseModel):
+    """Schema for updating an exercise"""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    muscle_group: Optional[str] = None
+    equipment: Optional[str] = None
+
+
+class ExerciseResponse(ExerciseBase):
+    """Schema for exercise response"""
+    id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# WORKOUT PLAN WORKOUTS SCHEMAS
+# ============================================================================
+
+class WorkoutPlanWorkoutBase(BaseModel):
+    """Base schema for linking a workout to a plan"""
+    plan_id: int
+    workout_id: int
+    order_index: int
+
+
+class WorkoutPlanWorkoutCreate(WorkoutPlanWorkoutBase):
+    """Schema for adding a workout to a plan"""
+    pass
+
+
+class WorkoutPlanWorkoutResponse(WorkoutPlanWorkoutBase):
+    """Schema for workout plan workout response"""
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# WORKOUT EXERCISES SCHEMAS
+# ============================================================================
+
+class WorkoutExerciseBase(BaseModel):
+    """Base schema for linking an exercise to a workout"""
+    workout_id: int
+    exercise_id: int
+    sets: Optional[int] = None
+    reps: Optional[int] = None
+    rest_seconds: Optional[int] = None
+    order_index: Optional[int] = None
+
+
+class WorkoutExerciseCreate(WorkoutExerciseBase):
+    """Schema for adding an exercise to a workout"""
+    pass
+
+
+class WorkoutExerciseUpdate(BaseModel):
+    """Schema for updating a workout exercise"""
+    sets: Optional[int] = None
+    reps: Optional[int] = None
+    rest_seconds: Optional[int] = None
+    order_index: Optional[int] = None
+
+
+class WorkoutExerciseResponse(WorkoutExerciseBase):
+    """Schema for workout exercise response"""
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# TAGS SCHEMAS
+# ============================================================================
+
+class TagBase(BaseModel):
+    """Base tag schema"""
+    name: str
+
+
+class TagCreate(TagBase):
+    """Schema for creating a tag"""
+    pass
+
+
+class TagResponse(TagBase):
+    """Schema for tag response"""
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# WORKOUT PLAN TAGS SCHEMAS
+# ============================================================================
+
+class WorkoutPlanTagCreate(BaseModel):
+    """Schema for adding a tag to a workout plan"""
+    plan_id: int
+    tag_id: int
+
+
+class WorkoutPlanTagResponse(WorkoutPlanTagCreate):
+    """Schema for workout plan tag response"""
+
+    model_config = ConfigDict(from_attributes=True)

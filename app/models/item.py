@@ -1,0 +1,204 @@
+"""
+Item models including Badges and Workout Schema
+"""
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Boolean, BigInteger
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
+import uuid
+
+from app.database import Base
+
+
+class Badges(Base):
+    """
+    User Badges model
+    """
+    __tablename__ = "badges"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    title = Column(String(255), nullable=False, index=True)
+    description = Column(Text, nullable=True)
+    icon_url = Column(String(512), nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    user_badges = relationship("User_Badges", back_populates="badge")
+
+    def __repr__(self):
+        return f"<Badges {self.title}>"
+    
+
+class User_Badges(Base):
+    """
+    Association table for User and Badges
+    """
+    __tablename__ = "user_badges"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)  # type: ignore
+    badge_id = Column(UUID(as_uuid=True), ForeignKey("badges.id"), nullable=False)  # type: ignore
+
+    # Timestamps
+    awarded_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    user = relationship("User", back_populates="badges")
+    badge = relationship("Badges", back_populates="user_badges")
+
+    def __repr__(self):
+        return f"<User_Badges user_id={self.user_id} badge_id={self.badge_id}>"
+
+
+# ============================================================================
+# WORKOUT SCHEMA MODELS
+# ============================================================================
+
+class Workout_Plans(Base):
+    """
+    Workout Plans model - Templates for workout programs
+    """
+    __tablename__ = "workout_plans"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    title = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
+    duration_minutes = Column(Integer, nullable=True)
+    difficulty = Column(String, nullable=True)  # beginner/intermediate/advanced
+    ai_generated = Column(Boolean, default=False, nullable=False)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # type: ignore
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    workout_plan_workouts = relationship("Workout_Plan_Workouts", back_populates="plan", cascade="all, delete-orphan")
+    workout_plan_tags = relationship("Workout_Plan_Tags", back_populates="plan", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Workout_Plans {self.title}>"
+
+
+class Workouts(Base):
+    """
+    Workouts model - Individual workout sessions
+    """
+    __tablename__ = "workouts"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    title = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
+    estimated_duration_minutes = Column(Integer, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # Relationships
+    workout_plan_workouts = relationship("Workout_Plan_Workouts", back_populates="workout")
+    workout_exercises = relationship("Workout_Exercises", back_populates="workout", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Workouts {self.title}>"
+
+
+class Exercises(Base):
+    """
+    Exercises model - Exercise library
+    """
+    __tablename__ = "exercises"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    name = Column(Text, unique=True, nullable=False)
+    description = Column(Text, nullable=True)
+    muscle_group = Column(Text, nullable=True)
+    equipment = Column(Text, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # Relationships
+    workout_exercises = relationship("Workout_Exercises", back_populates="exercise")
+
+    def __repr__(self):
+        return f"<Exercises {self.name}>"
+
+
+class Workout_Plan_Workouts(Base):
+    """
+    Association table linking workout plans to workouts
+    """
+    __tablename__ = "workout_plan_workouts"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    plan_id = Column(BigInteger, ForeignKey("workout_plans.id", ondelete="CASCADE"), nullable=False)
+    workout_id = Column(BigInteger, ForeignKey("workouts.id", ondelete="CASCADE"), nullable=False)
+    order_index = Column(Integer, nullable=False)
+
+    # Relationships
+    plan = relationship("Workout_Plans", back_populates="workout_plan_workouts")
+    workout = relationship("Workouts", back_populates="workout_plan_workouts")
+
+    def __repr__(self):
+        return f"<Workout_Plan_Workouts plan_id={self.plan_id} workout_id={self.workout_id}>"
+
+
+class Workout_Exercises(Base):
+    """
+    Association table linking workouts to exercises with sets/reps details
+    """
+    __tablename__ = "workout_exercises"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    workout_id = Column(BigInteger, ForeignKey("workouts.id", ondelete="CASCADE"), nullable=False)
+    exercise_id = Column(BigInteger, ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
+    sets = Column(Integer, nullable=True)
+    reps = Column(Integer, nullable=True)
+    rest_seconds = Column(Integer, nullable=True)
+    order_index = Column(Integer, nullable=True)
+
+    # Relationships
+    workout = relationship("Workouts", back_populates="workout_exercises")
+    exercise = relationship("Exercises", back_populates="workout_exercises")
+
+    def __repr__(self):
+        return f"<Workout_Exercises workout_id={self.workout_id} exercise_id={self.exercise_id}>"
+
+
+class Tags(Base):
+    """
+    Tags model - Tags for categorizing workout plans
+    """
+    __tablename__ = "tags"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    name = Column(Text, unique=True, nullable=False)
+
+    # Relationships
+    workout_plan_tags = relationship("Workout_Plan_Tags", back_populates="tag", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Tags {self.name}>"
+
+
+class Workout_Plan_Tags(Base):
+    """
+    Association table linking workout plans to tags
+    """
+    __tablename__ = "workout_plan_tags"
+
+    plan_id = Column(BigInteger, ForeignKey("workout_plans.id", ondelete="CASCADE"), primary_key=True)
+    tag_id = Column(BigInteger, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
+
+    # Relationships
+    plan = relationship("Workout_Plans", back_populates="workout_plan_tags")
+    tag = relationship("Tags", back_populates="workout_plan_tags")
+
+    def __repr__(self):
+        return f"<Workout_Plan_Tags plan_id={self.plan_id} tag_id={self.tag_id}>"
+    
+
+
+    
+

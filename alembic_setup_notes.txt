@@ -1,0 +1,18 @@
+"""
+Alembic configuration file template
+Run: alembic init alembic
+Then modify alembic/env.py to import your models and configure the database URL
+"""
+
+# After running 'alembic init alembic', modify alembic/env.py:
+# 
+# from app.database import Base
+# from app.models import user, item  # Import all models
+# 
+# target_metadata = Base.metadata
+# 
+# # In run_migrations_offline() and run_migrations_online():
+# # url = config.get_main_option("sqlalchemy.url")
+# # Change to:
+# from app.config import settings
+# url = settings.DATABASE_URL
