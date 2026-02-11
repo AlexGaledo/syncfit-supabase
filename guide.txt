@@ -1,0 +1,161 @@
+
+================================================================================
+Overall Backend Flow
+================================================================================
+
+- Setup postgres schema
+- Setup Backend Routes
+- Pytest Scripts
+- Setup Gateway (auth/ratelimit/jwt)
+- Create Docker image
+
+================================================================================
+DATABASE SCHEMA
+================================================================================
+
+--- USER SCHEMA ---
+
+USERS
+- id UUID PK
+- email STRING UNIQUE NOT NULL
+- full_name STRING
+- role ENUM(admin, user) DEFAULT user NOT NULL
+- type ENUM(trainer, trainee) DEFAULT trainee NOT NULL
+- gender ENUM(male, female, others) DEFAULT others NOT NULL
+- birthdate DATETIME
+- email_verified BOOLEAN DEFAULT FALSE NOT NULL
+- supabase_user_id UUID UNIQUE NOT NULL
+- created_at TIMESTAMP DEFAULT NOW() NOT NULL
+- updated_at TIMESTAMP
+
+USER_PROFILES
+- id UUID PK
+- user_id UUID FK → users.id UNIQUE NOT NULL
+- address STRING
+- phone_number STRING
+- bio STRING
+- calorie_goal_daily INTEGER
+- sleep_quality STRING
+- weight INTEGER
+- height INTEGER
+
+USER_SUPPLEMENTS
+- id UUID PK
+- user_id UUID FK → user_profiles.id NOT NULL
+- supplement_name STRING NOT NULL
+
+USER_LIMITATIONS
+- id UUID PK
+- user_id UUID FK → user_profiles.id NOT NULL
+- limitation_description STRING NOT NULL
+
+WEIGHT_LOSS_PROGRESS
+- id UUID PK
+- user_id UUID FK → users.id NOT NULL
+- date TIMESTAMP DEFAULT NOW() NOT NULL
+- weight INTEGER NOT NULL
+- base_weight INTEGER
+
+EVENT_LOGS
+- id UUID PK
+- user_id UUID FK → users.id NOT NULL
+- event_type STRING NOT NULL
+- event_timestamp TIMESTAMP DEFAULT NOW() NOT NULL
+- event_details JSON
+
+--- BADGES SCHEMA ---
+
+BADGES
+- id UUID PK
+- title STRING(255) NOT NULL
+- description TEXT
+- icon_url STRING(512)
+- created_at TIMESTAMP DEFAULT NOW() NOT NULL
+- updated_at TIMESTAMP
+
+USER_BADGES
+- id UUID PK
+- user_id UUID FK → users.id NOT NULL
+- badge_id UUID FK → badges.id NOT NULL
+- awarded_at TIMESTAMP DEFAULT NOW() NOT NULL
+
+--- WORKOUTS SCHEMA ---
+
+WORKOUT_PLANS
+- id BIGSERIAL PK
+- title TEXT NOT NULL
+- description TEXT
+- duration_minutes INTEGER
+- difficulty STRING (beginner/intermediate/advanced)
+- ai_generated BOOLEAN DEFAULT FALSE NOT NULL
+- created_by UUID FK → users.id
+- created_at TIMESTAMP DEFAULT NOW() NOT NULL
+- updated_at TIMESTAMP
+
+WORKOUTS
+- id BIGSERIAL PK
+- title TEXT NOT NULL
+- description TEXT
+- estimated_duration_minutes INTEGER
+- created_at TIMESTAMP DEFAULT NOW() NOT NULL
+
+EXERCISES
+- id BIGSERIAL PK
+- name TEXT UNIQUE NOT NULL
+- description TEXT
+- muscle_group TEXT
+- equipment TEXT
+- created_at TIMESTAMP DEFAULT NOW() NOT NULL
+
+WORKOUT_PLAN_WORKOUTS
+- id BIGSERIAL PK
+- plan_id BIGINT FK → workout_plans.id ON DELETE CASCADE NOT NULL
+- workout_id BIGINT FK → workouts.id ON DELETE CASCADE NOT NULL
+- order_index INTEGER NOT NULL
+
+WORKOUT_EXERCISES
+- id BIGSERIAL PK
+- workout_id BIGINT FK → workouts.id ON DELETE CASCADE NOT NULL
+- exercise_id BIGINT FK → exercises.id ON DELETE CASCADE NOT NULL
+- sets INTEGER
+- reps INTEGER
+- rest_seconds INTEGER
+- order_index INTEGER
+
+TAGS
+- id BIGSERIAL PK
+- name TEXT UNIQUE NOT NULL
+
+WORKOUT_PLAN_TAGS
+- plan_id BIGINT FK → workout_plans.id ON DELETE CASCADE PK
+- tag_id BIGINT FK → tags.id ON DELETE CASCADE PK
+
+--- SOCIALS SCHEMA ---
+
+CONNECTIONS
+- id UUID PK
+- requester_id UUID FK → users.id NOT NULL
+- addressee_id UUID FK → users.id NOT NULL
+- status ENUM(pending, accepted, declined, blocked) DEFAULT pending NOT NULL
+- created_at TIMESTAMP DEFAULT NOW() NOT NULL
+- updated_at TIMESTAMP
+
+CONVERSATIONS
+- id UUID PK
+- type ENUM(direct, group) DEFAULT direct NOT NULL
+- created_at TIMESTAMP DEFAULT NOW() NOT NULL
+- last_message_at TIMESTAMP
+
+CONVERSATION_PARTICIPANTS
+- conversation_id UUID FK → conversations.id ON DELETE CASCADE PK
+- user_id UUID FK → users.id PK
+- role ENUM(member, admin) DEFAULT member NOT NULL
+- joined_at TIMESTAMP DEFAULT NOW() NOT NULL
+
+MESSAGES
+- id UUID PK
+- conversation_id UUID FK → conversations.id ON DELETE CASCADE NOT NULL
+- sender_id UUID FK → users.id NOT NULL
+- content TEXT NOT NULL
+- type ENUM(text, image, file) DEFAULT text NOT NULL
+- created_at TIMESTAMP DEFAULT NOW() NOT NULL
