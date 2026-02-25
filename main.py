@@ -8,7 +8,8 @@ from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import init_db
 from app.middleware.cors import setup_cors
-from app.api import health, auth, users, items
+from app.api import health, auth, users
+
 
 
 @asynccontextmanager
@@ -61,7 +62,7 @@ async def root():
 app.include_router(health.router, prefix=settings.API_V1_PREFIX, tags=["Health"])
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(users.router, prefix=settings.API_V1_PREFIX)
-app.include_router(items.router, prefix=settings.API_V1_PREFIX)
+# app.include_router(items.router, prefix=settings.API_V1_PREFIX)
 
 
 if __name__ == "__main__":

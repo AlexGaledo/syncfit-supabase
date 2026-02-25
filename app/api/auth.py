@@ -6,12 +6,12 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.schemas.user import UserResponse, UserProfile
+from app.schemas.user import UserResponse, UserProfileBase
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.get("/me", response_model=UserProfile)
+@router.get("/me", response_model=UserProfileBase)
 async def get_current_user_info(
     current_user: dict = Depends(get_current_user)
 ):

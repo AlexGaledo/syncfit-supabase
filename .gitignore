@@ -10,3 +10,4 @@ wheels/
 .venv
 .env
 readme2.txt
+app/testing
