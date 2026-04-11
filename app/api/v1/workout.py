@@ -15,7 +15,7 @@ workout_router = APIRouter(prefix="/workout", tags=["Workout"])
 def create_exercises(
     exercises: List[ExerciseCreate],
     db: Session = Depends(get_db),
-    # current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Create one or more new exercises.
