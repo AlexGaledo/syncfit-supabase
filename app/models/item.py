@@ -72,11 +72,13 @@ class Workout_Plans(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    video_url = Column(Text, nullable=True)  # Optional video URL for the workout plan
 
     # Relationships
     workout_plan_workouts = relationship("Workout_Plan_Workouts", back_populates="plan", cascade="all, delete-orphan")
     workout_plan_tags = relationship("Workout_Plan_Tags", back_populates="plan", cascade="all, delete-orphan")
 
+    
     def __repr__(self):
         return f"<Workout_Plans {self.title}>"
 
