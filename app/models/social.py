@@ -80,6 +80,7 @@ class Conversations(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     last_message_at = Column(DateTime(timezone=True), nullable=True)
+    last_message_id = Column(UUID(as_uuid=True), ForeignKey("messages.id"), nullable=True)  # type: ignore
 
     # Relationships
     participants = relationship("Conversation_Participants", back_populates="conversation", cascade="all, delete-orphan")
