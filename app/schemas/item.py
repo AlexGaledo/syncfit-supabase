@@ -69,7 +69,9 @@ class WorkoutPlanBase(BaseModel):
     description: Optional[str] = None
     duration_minutes: Optional[int] = None
     difficulty: Optional[str] = None  # beginner/intermediate/advanced
+    days_per_week: Optional[int] = None
     ai_generated: bool = False
+    is_trainer_provided: bool = False
 
 
 class WorkoutPlanCreate(WorkoutPlanBase):
@@ -83,7 +85,9 @@ class WorkoutPlanUpdate(BaseModel):
     description: Optional[str] = None
     duration_minutes: Optional[int] = None
     difficulty: Optional[str] = None
+    days_per_week: Optional[int] = None
     ai_generated: Optional[bool] = None
+    is_trainer_provided: Optional[bool] = None
 
 
 class WorkoutPlanResponse(WorkoutPlanBase):
@@ -92,6 +96,7 @@ class WorkoutPlanResponse(WorkoutPlanBase):
     created_by: Optional[UUID] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+    video_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -135,8 +140,10 @@ class ExerciseBase(BaseModel):
     """Base exercise schema"""
     name: str
     description: Optional[str] = None
-    muscle_group: Optional[str] = None
-    equipment: Optional[str] = None
+    instruction: Optional[str] = None
+    is_equipment_needed: bool = False
+    video_url: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class ExerciseCreate(ExerciseBase):
@@ -148,8 +155,10 @@ class ExerciseUpdate(BaseModel):
     """Schema for updating an exercise"""
     name: Optional[str] = None
     description: Optional[str] = None
-    muscle_group: Optional[str] = None
-    equipment: Optional[str] = None
+    instruction: Optional[str] = None
+    is_equipment_needed: Optional[bool] = None
+    video_url: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class ExerciseResponse(ExerciseBase):
@@ -161,22 +170,22 @@ class ExerciseResponse(ExerciseBase):
 
 
 # ============================================================================
-# WORKOUT PLAN WORKOUTS SCHEMAS
+# WORKOUTS_WORKOUT_PLANS SCHEMAS
 # ============================================================================
 
-class WorkoutPlanWorkoutBase(BaseModel):
+class WorkoutsWorkoutPlansBase(BaseModel):
     """Base schema for linking a workout to a plan"""
     plan_id: int
     workout_id: int
     order_index: int
 
 
-class WorkoutPlanWorkoutCreate(WorkoutPlanWorkoutBase):
+class WorkoutsWorkoutPlansCreate(WorkoutsWorkoutPlansBase):
     """Schema for adding a workout to a plan"""
     pass
 
 
-class WorkoutPlanWorkoutResponse(WorkoutPlanWorkoutBase):
+class WorkoutsWorkoutPlansResponse(WorkoutsWorkoutPlansBase):
     """Schema for workout plan workout response"""
     id: int
 
@@ -184,33 +193,39 @@ class WorkoutPlanWorkoutResponse(WorkoutPlanWorkoutBase):
 
 
 # ============================================================================
-# WORKOUT EXERCISES SCHEMAS
+# EXERCISES_WORKOUTS SCHEMAS
 # ============================================================================
 
-class WorkoutExerciseBase(BaseModel):
+class ExercisesWorkoutsBase(BaseModel):
     """Base schema for linking an exercise to a workout"""
     workout_id: int
     exercise_id: int
     sets: Optional[int] = None
     reps: Optional[int] = None
-    rest_seconds: Optional[int] = None
+    is_by_reps: bool = True
+    is_by_duration: bool = False
+    duration_seconds: Optional[int] = 0
+    rest_duration_seconds: Optional[int] = 30
     order_index: Optional[int] = None
 
 
-class WorkoutExerciseCreate(WorkoutExerciseBase):
+class ExercisesWorkoutsCreate(ExercisesWorkoutsBase):
     """Schema for adding an exercise to a workout"""
     pass
 
 
-class WorkoutExerciseUpdate(BaseModel):
+class ExercisesWorkoutsUpdate(BaseModel):
     """Schema for updating a workout exercise"""
     sets: Optional[int] = None
     reps: Optional[int] = None
-    rest_seconds: Optional[int] = None
+    is_by_reps: Optional[bool] = None
+    is_by_duration: Optional[bool] = None
+    duration_seconds: Optional[int] = None
+    rest_duration_seconds: Optional[int] = None
     order_index: Optional[int] = None
 
 
-class WorkoutExerciseResponse(WorkoutExerciseBase):
+class ExercisesWorkoutsResponse(ExercisesWorkoutsBase):
     """Schema for workout exercise response"""
     id: int
 
@@ -218,37 +233,69 @@ class WorkoutExerciseResponse(WorkoutExerciseBase):
 
 
 # ============================================================================
-# TAGS SCHEMAS
+# PLAN_TAGS SCHEMAS
 # ============================================================================
 
-class TagBase(BaseModel):
-    """Base tag schema"""
+class PlanTagBase(BaseModel):
+    """Base plan tag schema"""
     name: str
 
 
-class TagCreate(TagBase):
-    """Schema for creating a tag"""
+class PlanTagCreate(PlanTagBase):
+    """Schema for creating a plan tag"""
     pass
 
 
-class TagResponse(TagBase):
-    """Schema for tag response"""
+class PlanTagResponse(PlanTagBase):
+    """Schema for plan tag response"""
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+# ============================================================================
+# EXER_TAGS SCHEMAS
+# ============================================================================
+
+class ExerTagBase(BaseModel):
+    """Base exer tag schema"""
+    name: str
+
+class ExerTagCreate(ExerTagBase):
+    """Schema for creating an exer tag"""
+    pass
+
+class ExerTagResponse(ExerTagBase):
+    """Schema for exer tag response"""
     id: int
 
     model_config = ConfigDict(from_attributes=True)
 
 
 # ============================================================================
-# WORKOUT PLAN TAGS SCHEMAS
+# WORKOUT_PLANS_PLAN_TAGS SCHEMAS
 # ============================================================================
 
-class WorkoutPlanTagCreate(BaseModel):
+class WorkoutPlansPlanTagsCreate(BaseModel):
     """Schema for adding a tag to a workout plan"""
     plan_id: int
     tag_id: int
 
 
-class WorkoutPlanTagResponse(WorkoutPlanTagCreate):
+class WorkoutPlansPlanTagsResponse(WorkoutPlansPlanTagsCreate):
     """Schema for workout plan tag response"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+# ============================================================================
+# EXERCISES_EXER_TAGS SCHEMAS
+# ============================================================================
+
+class ExercisesExerTagsCreate(BaseModel):
+    """Schema for adding a tag to an exercise"""
+    exercise_id: int
+    tag_id: int
+
+class ExercisesExerTagsResponse(ExercisesExerTagsCreate):
+    """Schema for exercise tag response"""
 
     model_config = ConfigDict(from_attributes=True)

@@ -38,7 +38,7 @@ def get_all_exercises(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    # current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Retrieve all exercises.

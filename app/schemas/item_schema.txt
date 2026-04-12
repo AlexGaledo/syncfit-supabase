@@ -1,0 +1,94 @@
+SQL Tables:
+
+Main Workout Tables:
+
+1. Exercises
+	- These are the individual exercises, e.g. push-ups, pull-ups, etc.
+
+Attributes/Columns:
+id
+name
+description
+instruction
+is_equipment_needed - boolean. Whether gym equipment is required for this exercise.
+video_url
+image_url
+
+2. Workouts
+	- These represent the set of "exercises" or the workout session in 1 day. 
+
+Attributes/Columns:
+id 
+title
+description
+estimated_duration_minutes - int.
+created_at - date.
+
+
+3. Workout_Plans
+	- These represent the overall workout plan, the workout split, the set of "workouts". 
+
+Attributes/Columns:
+id 
+title
+difficulty
+is_ai_generated
+is_trainer_provided
+created_by
+created_at
+days_per_week
+
+4. Exer_Tags
+	- These are the tags of each exercise, what category that exercise is in (push, pull, leg, upper body, lower body, etc.). This will be useful when querying and filtering Exercises based on tag/category.
+
+Attributes/Columns:
+id
+name
+
+5. Plan_Tags
+	- These are the tags of workout plans, the focus of the workout plan (Muscle Building, Strength Training, General Fitness, Endurance/Cardio, Weight Loss) as well as the type of split (Full Body Split, PPL Split, Upper Lower Split, Body Part Split). This will be useful when querying and filtering Workout Plans based on tag/category.
+
+Attributes/Columns:
+id
+name
+
+
+Junction/Association Tables:
+
+1. Exercises_Workouts
+	- Many-to-many relationship. These are the exercises in a workout session. 
+
+Attributes/Columns:
+id
+exercise_id
+workout_id
+order_index - int. the position of exercise in the workout.
+sets - int. number of sets.
+is_by_reps - boolean.
+is_by_duration - boolean.
+reps - int. number of reps in 1 set (0, by default if is_by_duration)
+duration_seconds - int. duration of exercise in seconds. (0, by default if is_by_duration)
+rest_duration_seconds - int. duration of rest in seconds after the exercise. (30 by default)
+
+2. Workouts__Workout_Plans
+
+Attributes/Columns:
+id
+workout_id
+plan_id
+order_index - the position of workout session in the plan. For example, in a Push/Pull/Leg Workout Plan, if this Workout is the Push Workout, its order_index is 1, 2 if Pull Workout, and 3 if Leg Workout.
+
+3. Exercises_Exer_Tags
+
+Attributes/Columns:
+id
+exercise_id
+tag_id
+
+4. Exercises_Exer_Tags
+
+Attributes/Columns:
+id
+plan_id
+tag_id
+
