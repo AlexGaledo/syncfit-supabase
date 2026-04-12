@@ -66,7 +66,9 @@ class Workout_Plans(Base):
     description = Column(Text, nullable=True)
     duration_minutes = Column(Integer, nullable=True)
     difficulty = Column(String, nullable=True)  # beginner/intermediate/advanced
+    days_per_week = Column(Integer, nullable=True)
     ai_generated = Column(Boolean, default=False, nullable=False)
+    is_trainer_provided = Column(Boolean, default=False, nullable=False)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # type: ignore
     
     # Timestamps
@@ -75,8 +77,8 @@ class Workout_Plans(Base):
     video_url = Column(Text, nullable=True)  # Optional video URL for the workout plan
 
     # Relationships
-    workout_plan_workouts = relationship("Workout_Plan_Workouts", back_populates="plan", cascade="all, delete-orphan")
-    workout_plan_tags = relationship("Workout_Plan_Tags", back_populates="plan", cascade="all, delete-orphan")
+    workout_plan_workouts = relationship("Workouts_Workout_Plans", back_populates="plan", cascade="all, delete-orphan")
+    workout_plan_tags = relationship("Workout_Plans_Plan_Tags", back_populates="plan", cascade="all, delete-orphan")
 
     
     def __repr__(self):
@@ -98,8 +100,8 @@ class Workouts(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships
-    workout_plan_workouts = relationship("Workout_Plan_Workouts", back_populates="workout")
-    workout_exercises = relationship("Workout_Exercises", back_populates="workout", cascade="all, delete-orphan")
+    workout_plan_workouts = relationship("Workouts_Workout_Plans", back_populates="workout")
+    workout_exercises = relationship("Exercises_Workouts", back_populates="workout", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Workouts {self.title}>"
@@ -114,24 +116,27 @@ class Exercises(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     name = Column(Text, unique=True, nullable=False)
     description = Column(Text, nullable=True)
-    muscle_group = Column(Text, nullable=True)
-    equipment = Column(Text, nullable=True)
+    instruction = Column(Text, nullable=True)
+    is_equipment_needed = Column(Boolean, default=False, nullable=False)
+    video_url = Column(Text, nullable=True)
+    image_url = Column(Text, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships
-    workout_exercises = relationship("Workout_Exercises", back_populates="exercise")
+    workout_exercises = relationship("Exercises_Workouts", back_populates="exercise")
+    exercise_exer_tags = relationship("Exercises_Exer_Tags", back_populates="exercise", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Exercises {self.name}>"
 
 
-class Workout_Plan_Workouts(Base):
+class Workouts_Workout_Plans(Base):
     """
     Association table linking workout plans to workouts
     """
-    __tablename__ = "workout_plan_workouts"
+    __tablename__ = "workouts_workout_plans"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     plan_id = Column(BigInteger, ForeignKey("workout_plans.id", ondelete="CASCADE"), nullable=False)
@@ -143,21 +148,24 @@ class Workout_Plan_Workouts(Base):
     workout = relationship("Workouts", back_populates="workout_plan_workouts")
 
     def __repr__(self):
-        return f"<Workout_Plan_Workouts plan_id={self.plan_id} workout_id={self.workout_id}>"
+        return f"<Workouts_Workout_Plans plan_id={self.plan_id} workout_id={self.workout_id}>"
 
 
-class Workout_Exercises(Base):
+class Exercises_Workouts(Base):
     """
     Association table linking workouts to exercises with sets/reps details
     """
-    __tablename__ = "workout_exercises"
+    __tablename__ = "exercises_workouts"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     workout_id = Column(BigInteger, ForeignKey("workouts.id", ondelete="CASCADE"), nullable=False)
     exercise_id = Column(BigInteger, ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
     sets = Column(Integer, nullable=True)
-    reps = Column(Integer, nullable=True)
-    rest_seconds = Column(Integer, nullable=True)
+    reps = Column(Integer, nullable=True, default=0)
+    is_by_reps = Column(Boolean, default=True)
+    is_by_duration = Column(Boolean, default=False)
+    duration_seconds = Column(Integer, nullable=True, default=0)
+    rest_duration_seconds = Column(Integer, nullable=True, default=30)
     order_index = Column(Integer, nullable=True)
 
     # Relationships
@@ -165,42 +173,75 @@ class Workout_Exercises(Base):
     exercise = relationship("Exercises", back_populates="workout_exercises")
 
     def __repr__(self):
-        return f"<Workout_Exercises workout_id={self.workout_id} exercise_id={self.exercise_id}>"
+        return f"<Exercises_Workouts workout_id={self.workout_id} exercise_id={self.exercise_id}>"
 
 
-class Tags(Base):
+class Plan_Tags(Base):
     """
     Tags model - Tags for categorizing workout plans
     """
-    __tablename__ = "tags"
+    __tablename__ = "plan_tags"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     name = Column(Text, unique=True, nullable=False)
 
     # Relationships
-    workout_plan_tags = relationship("Workout_Plan_Tags", back_populates="tag", cascade="all, delete-orphan")
+    workout_plan_tags = relationship("Workout_Plans_Plan_Tags", back_populates="tag", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<Tags {self.name}>"
+        return f"<Plan_Tags {self.name}>"
 
 
-class Workout_Plan_Tags(Base):
+class Workout_Plans_Plan_Tags(Base):
     """
     Association table linking workout plans to tags
     """
-    __tablename__ = "workout_plan_tags"
+    __tablename__ = "workout_plans_plan_tags"
 
     plan_id = Column(BigInteger, ForeignKey("workout_plans.id", ondelete="CASCADE"), primary_key=True)
-    tag_id = Column(BigInteger, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
+    tag_id = Column(BigInteger, ForeignKey("plan_tags.id", ondelete="CASCADE"), primary_key=True)
 
     # Relationships
     plan = relationship("Workout_Plans", back_populates="workout_plan_tags")
-    tag = relationship("Tags", back_populates="workout_plan_tags")
+    tag = relationship("Plan_Tags", back_populates="workout_plan_tags")
 
     def __repr__(self):
-        return f"<Workout_Plan_Tags plan_id={self.plan_id} tag_id={self.tag_id}>"
-    
+        return f"<Workout_Plans_Plan_Tags plan_id={self.plan_id} tag_id={self.tag_id}>"
 
 
-    
+class Exer_Tags(Base):
+    """
+    Tags model - Tags for categorizing exercises
+    """
+    __tablename__ = "exer_tags"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    name = Column(Text, unique=True, nullable=False)
+
+    # Relationships
+    exercise_exer_tags = relationship("Exercises_Exer_Tags", back_populates="tag", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Exer_Tags {self.name}>"
+
+
+class Exercises_Exer_Tags(Base):
+    """
+    Association table linking exercises to tags
+    """
+    __tablename__ = "exercises_exer_tags"
+
+    exercise_id = Column(BigInteger, ForeignKey("exercises.id", ondelete="CASCADE"), primary_key=True)
+    tag_id = Column(BigInteger, ForeignKey("exer_tags.id", ondelete="CASCADE"), primary_key=True)
+
+    # Relationships
+    exercise = relationship("Exercises", back_populates="exercise_exer_tags")
+    tag = relationship("Exer_Tags", back_populates="exercise_exer_tags")
+
+    def __repr__(self):
+        return f"<Exercises_Exer_Tags exercise_id={self.exercise_id} tag_id={self.tag_id}>"
+
+
+
+
 
