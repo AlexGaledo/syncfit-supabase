@@ -27,13 +27,19 @@ def create_exercises(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Create one or more new exercises.
+    Create one or more new exercises. If an exercise with the same name already exists, reuse it instead of creating a duplicate.
     """
     created_exercises = []
     for exercise_data in exercises:
-        db_exercise = Exercises(**exercise_data.model_dump())
-        db.add(db_exercise)
-        created_exercises.append(db_exercise)
+        # Check if the exercise already exists by name
+        existing_exercise = db.query(Exercises).filter(Exercises.name == exercise_data.name).first()
+        if existing_exercise:
+            created_exercises.append(existing_exercise)
+        else:
+            # Create a new exercise if it doesn't exist
+            db_exercise = Exercises(**exercise_data.model_dump())
+            db.add(db_exercise)
+            created_exercises.append(db_exercise)
     
     db.commit()
     for exercise in created_exercises:
@@ -175,15 +181,21 @@ def seed_full_workout_plan(
                 # Flush to assign ID to the new workout
                 db.flush()
 
-            # Link workout to plan
-            link_exists = db.query(Workouts_Workout_Plans).filter_by(plan_id=db_plan.id, workout_id=db_workout.id).first()
-            if not link_exists:
-                db_link = Workouts_Workout_Plans(
-                    plan_id=db_plan.id,
+            # Link workout to plan for each specified day
+            for day in workout_data.days_of_week:
+                link_exists = db.query(Workouts_Workout_Plans).filter_by(
+                    plan_id=db_plan.id, 
                     workout_id=db_workout.id,
-                    order_index=workout_data.order_index
-                )
-                db.add(db_link)
+                    day_of_week=day
+                ).first()
+                if not link_exists:
+                    db_link = Workouts_Workout_Plans(
+                        plan_id=db_plan.id,
+                        workout_id=db_workout.id,
+                        order_index=workout_data.order_index,
+                        day_of_week=day
+                    )
+                    db.add(db_link)
 
             # Link exercises to workout
             for ex_workout_data in workout_data.exercises:

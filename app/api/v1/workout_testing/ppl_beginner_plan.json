@@ -12,41 +12,66 @@
         "description": "Focuses on upper body pushing muscles: chest, shoulders, and triceps.",
         "estimated_duration_minutes": 60,
         "order_index": 1,
+        "day_of_week": 1,
         "exercises": [
           {
             "exercise_name": "Barbell Bench Press",
             "sets": 3,
             "reps": 8,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 1
           },
           {
             "exercise_name": "Overhead Dumbbell Press",
             "sets": 3,
             "reps": 10,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 2
           },
           {
             "exercise_name": "Incline Dumbbell Fly",
             "sets": 3,
             "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 3
           },
           {
             "exercise_name": "Lateral Raise",
             "sets": 3,
             "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 4
           },
           {
             "exercise_name": "Tricep Rope Pushdown",
             "sets": 3,
             "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 5
           },
           {
             "exercise_name": "Diamond Push-Up",
             "sets": 3,
             "reps": 10,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 6
           }
         ]
@@ -56,41 +81,66 @@
         "description": "Focuses on upper body pulling muscles: back and biceps.",
         "estimated_duration_minutes": 60,
         "order_index": 2,
+        "day_of_week": 3,
         "exercises": [
           {
             "exercise_name": "Lat Pulldown",
             "sets": 3,
             "reps": 10,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 1
           },
           {
             "exercise_name": "Seated Cable Row",
             "sets": 3,
             "reps": 10,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 2
           },
           {
             "exercise_name": "Face Pull",
             "sets": 3,
             "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 3
           },
           {
             "exercise_name": "Barbell Bicep Curl",
             "sets": 3,
             "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 4
           },
           {
             "exercise_name": "Hammer Curl",
             "sets": 3,
             "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 5
           },
           {
             "exercise_name": "Superman",
             "sets": 3,
             "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 6
           }
         ]
@@ -100,43 +150,66 @@
         "description": "Focuses on lower body muscles: quads, hamstrings, glutes, and calves.",
         "estimated_duration_minutes": 60,
         "order_index": 3,
+        "day_of_week": 5,
         "exercises": [
           {
             "exercise_name": "Barbell Squat",
             "sets": 3,
             "reps": 8,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 1
           },
           {
             "exercise_name": "Romanian Deadlift",
             "sets": 3,
             "reps": 10,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 2
           },
           {
             "exercise_name": "Leg Press",
             "sets": 3,
             "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 3
           },
           {
             "exercise_name": "Walking Lunges",
             "sets": 3,
             "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 4
           },
           {
             "exercise_name": "Standing Calf Raise",
             "sets": 3,
             "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 5
           },
           {
             "exercise_name": "Plank",
             "sets": 3,
-            "is_by_reps": false,
-            "is_by_duration": true,
-            "duration_seconds": 60,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
             "order_index": 6
           }
         ]

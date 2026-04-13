@@ -180,6 +180,7 @@ class WorkoutsWorkoutPlansBase(BaseModel):
     plan_id: int
     workout_id: int
     order_index: int
+    day_of_week: int
 
 
 class WorkoutsWorkoutPlansCreate(WorkoutsWorkoutPlansBase):
@@ -322,6 +323,7 @@ class SeederWorkout(BaseModel):
     estimated_duration_minutes: Optional[int] = None
     exercises: List[SeederExerciseWorkout]
     order_index: int
+    days_of_week: List[str] = []  # Default to an empty list
 
 class SeederWorkoutPlan(BaseModel):
     title: str

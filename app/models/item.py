@@ -142,6 +142,7 @@ class Workouts_Workout_Plans(Base):
     plan_id = Column(BigInteger, ForeignKey("workout_plans.id", ondelete="CASCADE"), nullable=False)
     workout_id = Column(BigInteger, ForeignKey("workouts.id", ondelete="CASCADE"), nullable=False)
     order_index = Column(Integer, nullable=False)
+    day_of_week = Column(Integer, nullable=False)  # 1=Monday, 2=Tuesday, etc.
 
     # Relationships
     plan = relationship("Workout_Plans", back_populates="workout_plan_workouts")
