@@ -63,8 +63,8 @@ app.include_router(health.router, prefix=settings.API_V1_PREFIX, tags=["Health"]
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(users.router, prefix=settings.API_V1_PREFIX)
 app.include_router(meal_plan.router, prefix=settings.API_V1_PREFIX)
-app.include_router(socials.router, prefix=settings.API_V1_PREFIX)
-app.include_router(workout.router, prefix=settings.API_V1_PREFIX)
+app.include_router(socials.socials_router, prefix=settings.API_V1_PREFIX)
+app.include_router(workout.workout_router, prefix=settings.API_V1_PREFIX)
 
 
 if __name__ == "__main__":

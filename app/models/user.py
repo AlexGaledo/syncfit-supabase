@@ -56,6 +56,7 @@ class User(Base):
     badges = relationship("User_Badges", back_populates="user")
     weight_progress = relationship("Weight_Loss_Progress", backref="user", cascade="all, delete-orphan")
     event_logs = relationship("Event_Logs", backref="user", cascade="all, delete-orphan")
+    meal_plans = relationship("Meal_Plans", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User {self.email}>"
@@ -141,6 +142,6 @@ class Event_Logs(Base):
 
     def __repr__(self):
         return f"<Event_Logs {self.user_id} - {self.event_type} - {self.event_timestamp}>"
-    
+
 
 

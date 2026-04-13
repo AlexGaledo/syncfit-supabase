@@ -15,6 +15,7 @@ from app.schemas.item import (
     ExercisesWorkoutsCreate, ExercisesWorkoutsResponse,
     WorkoutsWorkoutPlansCreate, WorkoutsWorkoutPlansResponse,
     SeederFullWorkoutPlan,
+    FullWorkoutPlanDetailResponse, FullWorkoutDetail, FullExerciseDetail
 )
 
 workout_router = APIRouter(prefix="/workout", tags=["Workout"])
@@ -157,6 +158,7 @@ def seed_full_workout_plan(
             db_plan = Workout_Plans(
                 title=plan_info.title,
                 description=plan_info.description,
+                duration_minutes=plan_info.duration_minutes,
                 difficulty=plan_info.difficulty,
                 days_per_week=plan_info.days_per_week,
                 ai_generated=plan_info.ai_generated,
@@ -181,21 +183,20 @@ def seed_full_workout_plan(
                 # Flush to assign ID to the new workout
                 db.flush()
 
-            # Link workout to plan for each specified day
-            for day in workout_data.days_of_week:
-                link_exists = db.query(Workouts_Workout_Plans).filter_by(
-                    plan_id=db_plan.id, 
+            # Link workout to plan for the specified day
+            link_exists = db.query(Workouts_Workout_Plans).filter_by(
+                plan_id=db_plan.id, 
+                workout_id=db_workout.id,
+                day_of_week=workout_data.day_of_week
+            ).first()
+            if not link_exists:
+                db_link = Workouts_Workout_Plans(
+                    plan_id=db_plan.id,
                     workout_id=db_workout.id,
-                    day_of_week=day
-                ).first()
-                if not link_exists:
-                    db_link = Workouts_Workout_Plans(
-                        plan_id=db_plan.id,
-                        workout_id=db_workout.id,
-                        order_index=workout_data.order_index,
-                        day_of_week=day
-                    )
-                    db.add(db_link)
+                    order_index=workout_data.order_index,
+                    day_of_week=workout_data.day_of_week
+                )
+                db.add(db_link)
 
             # Link exercises to workout
             for ex_workout_data in workout_data.exercises:
@@ -232,6 +233,74 @@ def seed_full_workout_plan(
     # The success message is sufficient.
     return {"message": f"Workout plan '{plan_info.title}' seeded successfully."}
 
+
+@workout_router.get("/workout-plans/{plan_id}/full", response_model=FullWorkoutPlanDetailResponse)
+def get_full_workout_plan(
+    plan_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Retrieve all details of a workout plan, including its associated workouts and their exercises.
+    """
+    plan = db.query(Workout_Plans).filter(Workout_Plans.id == plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=404, detail="Workout plan not found")
+
+    workouts_links = db.query(Workouts_Workout_Plans).filter(Workouts_Workout_Plans.plan_id == plan_id).all()
+    
+    full_workouts = []
+    for link in workouts_links:
+        workout_obj = link.workout
+        
+        exercises_links = db.query(Exercises_Workouts).filter(Exercises_Workouts.workout_id == workout_obj.id).all()
+        full_exercises = []
+        for ex_link in exercises_links:
+            ex_obj = ex_link.exercise
+            full_exercises.append(
+                FullExerciseDetail(
+                    exercise_id=ex_obj.id,
+                    name=ex_obj.name,
+                    description=ex_obj.description,
+                    instruction=ex_obj.instruction,
+                    is_equipment_needed=ex_obj.is_equipment_needed,
+                    video_url=ex_obj.video_url,
+                    image_url=ex_obj.image_url,
+                    sets=ex_link.sets, # type: ignore
+                    reps=ex_link.reps, # type: ignore
+                    is_by_reps=ex_link.is_by_reps, # type: ignore
+                    is_by_duration=ex_link.is_by_duration, # type: ignore
+                    duration_seconds=ex_link.duration_seconds, # type: ignore
+                    rest_duration_seconds=ex_link.rest_duration_seconds, # type: ignore
+                    order_index=ex_link.order_index # type: ignore
+                )
+            )
+            
+        full_workouts.append(
+            FullWorkoutDetail(
+                workout_id=workout_obj.id,
+                title=workout_obj.title,
+                description=workout_obj.description,
+                estimated_duration_minutes=workout_obj.estimated_duration_minutes,
+                day_of_week=link.day_of_week, # type: ignore
+                order_index=link.order_index, # type: ignore
+                exercises=sorted(full_exercises, key=lambda x: x.order_index or 0)
+            )
+        )
+
+    return FullWorkoutPlanDetailResponse(
+        plan_id=plan.id, # type: ignore
+        title=plan.title, # type: ignore
+        description=plan.description, # type: ignore
+        duration_minutes=plan.duration_minutes, # type: ignore
+        difficulty=plan.difficulty, # type: ignore
+        days_per_week=plan.days_per_week, # type: ignore
+        ai_generated=plan.ai_generated, # type: ignore
+        is_trainer_provided=plan.is_trainer_provided, # type: ignore
+        created_by=plan.created_by, # type: ignore
+        assigned_to=plan.assigned_to, # type: ignore
+        workouts=sorted(full_workouts, key=lambda x: x.order_index)
+    )
 
 @workout_router.get("/test-current-user")
 def test_current_user(current_db_user: User = Depends(get_current_db_user)):

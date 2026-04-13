@@ -323,7 +323,7 @@ class SeederWorkout(BaseModel):
     estimated_duration_minutes: Optional[int] = None
     exercises: List[SeederExerciseWorkout]
     order_index: int
-    days_of_week: List[str] = []  # Default to an empty list
+    day_of_week: int 
 
 class SeederWorkoutPlan(BaseModel):
     title: str
@@ -334,8 +334,53 @@ class SeederWorkoutPlan(BaseModel):
     is_trainer_provided: bool = False
     created_by: Optional[UUID] = None
     assigned_to: Optional[UUID] = None
+    duration_minutes: Optional[int] = None
     workouts: List[SeederWorkout]
 
 class SeederFullWorkoutPlan(BaseModel):
     plan: SeederWorkoutPlan
     exercises: List[ExerciseCreate]
+
+# ============================================================================
+# FULL DETAIL RESPONSES
+# ============================================================================
+
+class FullExerciseDetail(BaseModel):
+    exercise_id: int
+    name: str
+    description: Optional[str] = None
+    instruction: Optional[str] = None
+    is_equipment_needed: bool
+    video_url: Optional[str] = None
+    image_url: Optional[str] = None
+    sets: Optional[int] = None
+    reps: Optional[int] = None
+    is_by_reps: bool
+    is_by_duration: bool
+    duration_seconds: Optional[int] = None
+    rest_duration_seconds: Optional[int] = None
+    order_index: Optional[int] = None
+
+class FullWorkoutDetail(BaseModel):
+    workout_id: int
+    title: str
+    description: Optional[str] = None
+    estimated_duration_minutes: Optional[int] = None
+    day_of_week: int
+    order_index: int
+    exercises: List[FullExerciseDetail] = []
+
+class FullWorkoutPlanDetailResponse(BaseModel):
+    plan_id: int
+    title: str
+    description: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    difficulty: Optional[str] = None
+    days_per_week: Optional[int] = None
+    ai_generated: bool
+    is_trainer_provided: bool
+    assigned_to: Optional[UUID] = None
+    created_by: Optional[UUID] = None
+    workouts: List[FullWorkoutDetail] = []
+    
+    model_config = ConfigDict(from_attributes=True)

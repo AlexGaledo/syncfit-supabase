@@ -84,7 +84,13 @@ class Conversations(Base):
 
     # Relationships
     participants = relationship("Conversation_Participants", back_populates="conversation", cascade="all, delete-orphan")
-    messages = relationship("Messages", back_populates="conversation", cascade="all, delete-orphan")
+    messages = relationship(
+        "Messages", 
+        back_populates="conversation", 
+        cascade="all, delete-orphan",
+        foreign_keys="[Messages.conversation_id]"
+    )
+    last_message = relationship("Messages", foreign_keys=[last_message_id])
 
     def __repr__(self):
         return f"<Conversation {self.id} ({self.type})>"
@@ -125,7 +131,7 @@ class Messages(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships
-    conversation = relationship("Conversations", back_populates="messages")
+    conversation = relationship("Conversations", back_populates="messages",foreign_keys=[conversation_id])
     sender = relationship("User", backref="sent_messages")
 
     def __repr__(self):

@@ -2,10 +2,11 @@
   "plan": {
     "title": "Push/Pull/Legs (PPL) Beginner",
     "description": "A classic 3-day split for beginners focusing on fundamental compound movements.",
+    "duration_minutes": 180,
     "difficulty": "Beginner",
     "days_per_week": 3,
     "ai_generated": false,
-    "is_trainer_provided": true,
+    "is_trainer_provided": false,
     "workouts": [
       {
         "title": "Push Day",
@@ -221,109 +222,145 @@
       "name": "Barbell Bench Press",
       "description": "The standard compound movement for developing chest mass and upper body pushing power.",
       "instruction": "1. Lie on the bench with eyes under the bar. 2. Grip the bar slightly wider than shoulders. 3. Lower the bar to mid-chest. 4. Press back up until arms are locked.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Overhead Dumbbell Press",
       "description": "A vertical press focusing on the anterior and lateral deltoids.",
       "instruction": "1. Sit or stand with dumbbells at shoulder height. 2. Press the weights upward until arms are straight. 3. Lower slowly back to the start.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Incline Dumbbell Fly",
       "description": "An isolation movement to target the upper pectoral fibers.",
       "instruction": "1. Lie on an incline bench (30-45 degrees). 2. Hold dumbbells above chest. 3. Open arms in a wide arc until a stretch is felt. 4. Squeeze back to center.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Lateral Raise",
       "description": "Isolated movement for the side deltoids to build shoulder width.",
       "instruction": "1. Stand with dumbbells at sides. 2. Raise arms out to the sides until parallel with the floor. 3. Lower with control.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Tricep Rope Pushdown",
       "description": "Cable exercise focusing on the lateral and long heads of the triceps.",
       "instruction": "1. Grip the rope attachment. 2. Keep elbows pinned to ribs. 3. Push hands down until arms are straight. 4. Return slowly.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Diamond Push-Up",
       "description": "A bodyweight push-up variation that emphasizes the triceps and inner chest.",
       "instruction": "1. Form a diamond shape with hands under chest. 2. Lower body until chest nearly touches hands. 3. Push back to start.",
-      "is_equipment_needed": false
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Lat Pulldown",
       "description": "A vertical pulling exercise for developing back width (Lats).",
       "instruction": "1. Grip bar wider than shoulders. 2. Pull bar down to upper chest while arching back slightly. 3. Slowly return bar to top.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Seated Cable Row",
       "description": "A horizontal pull focusing on the rhomboids and middle back.",
       "instruction": "1. Sit with feet on pads, knees slightly bent. 2. Pull handle toward abdomen. 3. Squeeze shoulder blades together. 4. Extend arms back.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Face Pull",
       "description": "Targets the rear delts and improves shoulder health/posture.",
       "instruction": "1. Set cable to eye level with rope. 2. Pull toward forehead, pulling rope ends apart. 3. Squeeze back of shoulders and return.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Barbell Bicep Curl",
       "description": "Classic isolation movement for bicep mass.",
       "instruction": "1. Stand with barbell in hands, palms up. 2. Curl bar toward chest without swinging torso. 3. Lower slowly to start.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Hammer Curl",
       "description": "Targets the brachialis and forearms for thicker looking arms.",
       "instruction": "1. Hold dumbbells with neutral grip (palms facing each other). 2. Curl toward shoulders. 3. Lower with control.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Superman",
       "description": "A bodyweight exercise for the lower back and spinal erectors.",
       "instruction": "1. Lie face down on floor. 2. Lift arms, chest, and legs simultaneously. 3. Hold for 2 seconds and lower.",
-      "is_equipment_needed": false
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Barbell Squat",
       "description": "The king of lower body exercises for quads and glutes.",
       "instruction": "1. Place bar on upper back. 2. Squat down until thighs are parallel to floor. 3. Drive through heels to stand up.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Romanian Deadlift",
       "description": "A hinge movement focusing on hamstrings and glutes.",
       "instruction": "1. Hold barbell at hip height. 2. Push hips back while lowering bar down legs. 3. Feel stretch in hamstrings and return to start.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Leg Press",
       "description": "Machine-based movement for high volume leg growth.",
       "instruction": "1. Sit in machine with feet shoulder-width apart. 2. Lower platform toward chest. 3. Press back up without locking knees.",
-      "is_equipment_needed": true
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Walking Lunges",
       "description": "Unilateral exercise for balance and leg development.",
       "instruction": "1. Step forward and lower back knee toward ground. 2. Push up and step forward with the other leg.",
-      "is_equipment_needed": false
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Standing Calf Raise",
-      "description": "Isolation for the gastrocnemius (calves).",
-      "instruction": "1. Stand on edge of a step. 2. Lower heels as far as possible. 3. Rise up onto toes and squeeze.",
-      "is_equipment_needed": false
+      "description": "Isolated movement for the calves.",
+      "instruction": "1. Stand on a raised surface with heels hanging off. 2. Push through the balls of your feet to raise your body. 3. Lower slowly.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     },
     {
       "name": "Plank",
-      "description": "Core stability movement to support heavy lifting.",
-      "instruction": "1. Support body on forearms and toes. 2. Maintain a straight line from head to heels. 3. Hold position.",
-      "is_equipment_needed": false
+      "description": "A core isometric exercise that strengthens the abdominals and stabilizers.",
+      "instruction": "1. Start in a push-up position. 2. Keep your body in a straight line from head to heels. 3. Hold the position, keeping abs tight.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/pSHjTRCQxIw",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
     }
   ]
 }
