@@ -22,6 +22,13 @@ from app.schemas.item import (
     TagBase, TagCreate, TagResponse,
     WorkoutPlanTagCreate, WorkoutPlanTagResponse,
 )
+from app.schemas.meal_plan import (
+    MealCategory, MealType,
+    MealBase, MealCreate, MealUpdate, MealResponse,
+    MealPlanBase, MealPlanCreate, MealPlanUpdate, MealPlanResponse, MealPlanDetailResponse,
+    MealPlanItemBase, MealPlanItemCreate, MealPlanItemUpdate, MealPlanItemResponse,
+    NutritionSummary,
+)
 from app.schemas.social import (
     ConnectionStatus, ConversationType, ConversationRole, MessageType,
     ConnectionBase, ConnectionCreate, ConnectionUpdate, ConnectionResponse,
