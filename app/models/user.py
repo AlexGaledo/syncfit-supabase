@@ -43,7 +43,7 @@ class User(Base):
     gender = Column(Enum(UserGender), default=UserGender.others, nullable=False)  # type: ignore
     birthdate = Column(DateTime, nullable=True)
     email_verified = Column(Boolean, default=False, nullable=False)
-     
+
     # Supabase user ID (from auth.users)
     supabase_user_id = Column(UUID(as_uuid=True), unique=True, index=True, nullable=False)  # type: ignore
     is_active = Column(Boolean, default=True, nullable=False)
