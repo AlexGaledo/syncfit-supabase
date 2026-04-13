@@ -69,12 +69,12 @@ class Workout_Plans(Base):
     days_per_week = Column(Integer, nullable=True)
     ai_generated = Column(Boolean, default=False, nullable=False)
     is_trainer_provided = Column(Boolean, default=False, nullable=False)
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # type: ignore
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # This can be the id of the trainer, if created for a trainee, or the id of trainee if he created it for himself. It can be null if created by AI or imported from external source.
+    assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True) # This is the id of the trainee to whom this workout plan is assigned. It can be null if it's a template or created by AI without specific user assignment.
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    video_url = Column(Text, nullable=True)  # Optional video URL for the workout plan
 
     # Relationships
     workout_plan_workouts = relationship("Workouts_Workout_Plans", back_populates="plan", cascade="all, delete-orphan")

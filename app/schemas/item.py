@@ -1,8 +1,8 @@
 """
 Item & Workout schemas for request/response validation
 """
-from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 
@@ -72,6 +72,7 @@ class WorkoutPlanBase(BaseModel):
     days_per_week: Optional[int] = None
     ai_generated: bool = False
     is_trainer_provided: bool = False
+    assigned_to: Optional[UUID] = None
 
 
 class WorkoutPlanCreate(WorkoutPlanBase):
@@ -88,6 +89,7 @@ class WorkoutPlanUpdate(BaseModel):
     days_per_week: Optional[int] = None
     ai_generated: Optional[bool] = None
     is_trainer_provided: Optional[bool] = None
+    assigned_to: Optional[UUID] = None
 
 
 class WorkoutPlanResponse(WorkoutPlanBase):
@@ -299,3 +301,39 @@ class ExercisesExerTagsResponse(ExercisesExerTagsCreate):
     """Schema for exercise tag response"""
 
     model_config = ConfigDict(from_attributes=True)
+
+# ============================================================================
+# SEEDER SCHEMAS
+# ============================================================================
+
+class SeederExerciseWorkout(BaseModel):
+    exercise_name: str
+    sets: Optional[int] = None
+    reps: Optional[int] = None
+    is_by_reps: bool = True
+    is_by_duration: bool = False
+    duration_seconds: Optional[int] = 0
+    rest_duration_seconds: Optional[int] = 30
+    order_index: int
+
+class SeederWorkout(BaseModel):
+    title: str
+    description: Optional[str] = None
+    estimated_duration_minutes: Optional[int] = None
+    exercises: List[SeederExerciseWorkout]
+    order_index: int
+
+class SeederWorkoutPlan(BaseModel):
+    title: str
+    description: Optional[str] = None
+    difficulty: Optional[str] = None
+    days_per_week: Optional[int] = None
+    ai_generated: bool = False
+    is_trainer_provided: bool = False
+    created_by: Optional[UUID] = None
+    assigned_to: Optional[UUID] = None
+    workouts: List[SeederWorkout]
+
+class SeederFullWorkoutPlan(BaseModel):
+    plan: SeederWorkoutPlan
+    exercises: List[ExerciseCreate]

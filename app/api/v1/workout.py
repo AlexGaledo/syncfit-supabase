@@ -5,8 +5,17 @@ from typing import List
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.models.item import Exercises
-from app.schemas.item import ExerciseCreate, ExerciseResponse
+from app.models.user import User
+from app.dependencies import get_current_db_user
+from app.models.item import Exercises, Workouts, Workout_Plans, Exercises_Workouts, Workouts_Workout_Plans
+from app.schemas.item import (
+    ExerciseCreate, ExerciseResponse,
+    WorkoutCreate, WorkoutResponse,
+    WorkoutPlanCreate, WorkoutPlanResponse,
+    ExercisesWorkoutsCreate, ExercisesWorkoutsResponse,
+    WorkoutsWorkoutPlansCreate, WorkoutsWorkoutPlansResponse,
+    SeederFullWorkoutPlan,
+)
 
 workout_router = APIRouter(prefix="/workout", tags=["Workout"])
 
@@ -47,4 +56,174 @@ def get_all_exercises(
     return exercises
 
 
+@workout_router.post("/workouts", response_model=WorkoutResponse, status_code=status.HTTP_201_CREATED)
+def create_workout(
+    workout: WorkoutCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create a new workout session.
+    """
+    db_workout = Workouts(**workout.model_dump())
+    db.add(db_workout)
+    db.commit()
+    db.refresh(db_workout)
+    return db_workout
 
+
+@workout_router.post("/workout-plans", response_model=WorkoutPlanResponse, status_code=status.HTTP_201_CREATED)
+def create_workout_plan(
+    workout_plan: WorkoutPlanCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create a new workout plan.
+    """
+    db_workout_plan = Workout_Plans(**workout_plan.model_dump())
+    db.add(db_workout_plan)
+    db.commit()
+    db.refresh(db_workout_plan)
+    return db_workout_plan
+
+
+@workout_router.post("/exercises-workouts", response_model=ExercisesWorkoutsResponse, status_code=status.HTTP_201_CREATED)
+def create_exercise_workout_link(
+    link: ExercisesWorkoutsCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Link an exercise to a workout.
+    """
+    db_link = Exercises_Workouts(**link.model_dump())
+    db.add(db_link)
+    db.commit()
+    db.refresh(db_link)
+    return db_link
+
+
+@workout_router.post("/workouts-workout-plans", response_model=WorkoutsWorkoutPlansResponse, status_code=status.HTTP_201_CREATED)
+def create_workout_workout_plan_link(
+    link: WorkoutsWorkoutPlansCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Link a workout to a workout plan.
+    """
+    db_link = Workouts_Workout_Plans(**link.model_dump())
+    db.add(db_link)
+    db.commit()
+    db.refresh(db_link)
+    return db_link
+
+
+@workout_router.post("/seed-full-workout-plan", status_code=status.HTTP_201_CREATED)
+def seed_full_workout_plan(
+    plan_data: SeederFullWorkoutPlan,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user)
+):
+    """
+    Seeds a complete workout plan, including exercises, workouts, and their associations.
+    This is a generic seeder that accepts a JSON payload with the full plan structure.
+    All operations are performed in a single transaction.
+    """
+    try:
+        # 1. Create all exercises
+        created_exercises = {}
+        for exercise_data in plan_data.exercises:
+            db_exercise = db.query(Exercises).filter(Exercises.name == exercise_data.name).first()
+            if not db_exercise:
+                db_exercise = Exercises(**exercise_data.model_dump())
+                db.add(db_exercise)
+            created_exercises[exercise_data.name] = db_exercise
+
+        # Flush to assign IDs to new exercises so they can be referenced
+        db.flush()
+
+        # 2. Create the workout plan
+        plan_info = plan_data.plan
+        db_plan = db.query(Workout_Plans).filter(Workout_Plans.title == plan_info.title).first()
+        if not db_plan:
+            db_plan = Workout_Plans(
+                title=plan_info.title,
+                description=plan_info.description,
+                difficulty=plan_info.difficulty,
+                days_per_week=plan_info.days_per_week,
+                ai_generated=plan_info.ai_generated,
+                is_trainer_provided=plan_info.is_trainer_provided,
+                created_by=current_db_user.id,
+                assigned_to=None
+            )
+            db.add(db_plan)
+            # Flush to assign ID to the new plan
+            db.flush()
+
+        # 3. Create workouts and link everything together
+        for workout_data in plan_info.workouts:
+            db_workout = db.query(Workouts).filter(Workouts.title == workout_data.title).first()
+            if not db_workout:
+                db_workout = Workouts(
+                    title=workout_data.title,
+                    description=workout_data.description,
+                    estimated_duration_minutes=workout_data.estimated_duration_minutes
+                )
+                db.add(db_workout)
+                # Flush to assign ID to the new workout
+                db.flush()
+
+            # Link workout to plan
+            link_exists = db.query(Workouts_Workout_Plans).filter_by(plan_id=db_plan.id, workout_id=db_workout.id).first()
+            if not link_exists:
+                db_link = Workouts_Workout_Plans(
+                    plan_id=db_plan.id,
+                    workout_id=db_workout.id,
+                    order_index=workout_data.order_index
+                )
+                db.add(db_link)
+
+            # Link exercises to workout
+            for ex_workout_data in workout_data.exercises:
+                exercise_obj = created_exercises.get(ex_workout_data.exercise_name)
+                if not exercise_obj:
+                    # This will cause a rollback, which is what we want if data is inconsistent
+                    raise HTTPException(status_code=404, detail=f"Exercise '{ex_workout_data.exercise_name}' not found in provided list.")
+
+                link_exists = db.query(Exercises_Workouts).filter_by(workout_id=db_workout.id, exercise_id=exercise_obj.id).first()
+                if not link_exists:
+                    link_data = {
+                        "workout_id": db_workout.id,
+                        "exercise_id": exercise_obj.id,
+                        "order_index": ex_workout_data.order_index,
+                        "sets": ex_workout_data.sets,
+                        "reps": ex_workout_data.reps,
+                        "is_by_reps": ex_workout_data.is_by_reps,
+                        "is_by_duration": ex_workout_data.is_by_duration,
+                        "duration_seconds": ex_workout_data.duration_seconds,
+                        "rest_duration_seconds": ex_workout_data.rest_duration_seconds,
+                    }
+                    db_link = Exercises_Workouts(**link_data)
+                    db.add(db_link)
+        
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {str(e)}")
+
+    # Refresh objects after commit to get final state from DB
+    db.refresh(db_plan)
+    # We don't need to refresh all objects unless we return them.
+    # The success message is sufficient.
+    return {"message": f"Workout plan '{plan_info.title}' seeded successfully."}
+
+
+@workout_router.get("/test-current-user")
+def test_current_user(current_db_user: User = Depends(get_current_db_user)):
+    """
+    Returns the current user's database object for debugging.
+    """
+    return current_db_user
