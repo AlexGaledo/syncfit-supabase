@@ -1,15 +1,15 @@
 """
 User routes
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
-from app.schemas.user import UserResponse, UserCreate, UserUpdate
+from app.schemas.user import UserResponse, UserCreate, UserCreateRequest, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -48,23 +48,28 @@ async def get_user(
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(
-    user_data: UserCreate,
+    user_data: Optional[UserCreateRequest] = Body(default=None),
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Create a new user
+    Create a new user record linked to the authenticated Supabase account.
+    email and supabase_user_id are taken from the verified JWT token.
     """
-    # Check if user already exists
-    existing_user = db.query(User).filter(User.email == user_data.email).first()
+    supabase_user_id = current_user["sub"]
+    email = current_user["email"]
+
+    # Idempotent — return existing record if already registered
+    existing_user = db.query(User).filter(User.supabase_user_id == supabase_user_id).first()
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this email already exists"
-        )
-    
-    # Create new user
-    db_user = User(**user_data.model_dump())
+        return existing_user
+
+    extra = user_data.model_dump() if user_data else {}
+    db_user = User(
+        supabase_user_id=supabase_user_id,
+        email=email,
+        **extra,
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

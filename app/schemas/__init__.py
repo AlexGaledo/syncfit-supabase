@@ -17,10 +17,12 @@ from app.schemas.item import (
     WorkoutPlanBase, WorkoutPlanCreate, WorkoutPlanUpdate, WorkoutPlanResponse,
     WorkoutBase, WorkoutCreate, WorkoutUpdate, WorkoutResponse,
     ExerciseBase, ExerciseCreate, ExerciseUpdate, ExerciseResponse,
-    WorkoutPlanWorkoutBase, WorkoutPlanWorkoutCreate, WorkoutPlanWorkoutResponse,
-    WorkoutExerciseBase, WorkoutExerciseCreate, WorkoutExerciseUpdate, WorkoutExerciseResponse,
-    TagBase, TagCreate, TagResponse,
-    WorkoutPlanTagCreate, WorkoutPlanTagResponse,
+    WorkoutsWorkoutPlansBase, WorkoutsWorkoutPlansCreate, WorkoutsWorkoutPlansResponse,
+    ExercisesWorkoutsBase, ExercisesWorkoutsCreate, ExercisesWorkoutsUpdate, ExercisesWorkoutsResponse,
+    PlanTagBase, PlanTagCreate, PlanTagResponse,
+    ExerTagBase, ExerTagCreate, ExerTagResponse,
+    WorkoutPlansPlanTagsCreate, WorkoutPlansPlanTagsResponse,
+    ExercisesExerTagsCreate, ExercisesExerTagsResponse,
 )
 from app.schemas.meal_plan import (
     MealCategory, MealType,

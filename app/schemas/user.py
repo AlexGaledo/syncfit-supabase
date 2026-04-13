@@ -46,6 +46,19 @@ class UserCreate(UserBase):
     supabase_user_id: UUID
 
 
+class UserCreateRequest(BaseModel):
+    """
+    Body accepted by POST /users/.
+    email and supabase_user_id are sourced from the verified JWT token,
+    so callers only need to supply optional profile fields.
+    """
+    full_name: Optional[str] = None
+    role: UserRole = UserRole.user
+    type: UserType = UserType.trainee
+    gender: UserGender = UserGender.others
+    birthdate: Optional[datetime] = None
+
+
 class UserUpdate(BaseModel):
     """Schema for updating a user"""
     full_name: Optional[str] = None
