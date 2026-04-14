@@ -146,6 +146,7 @@ class ExerciseBase(BaseModel):
     is_equipment_needed: bool = False
     video_url: Optional[str] = None
     image_url: Optional[str] = None
+    tags: Optional[List[str]] = None
 
 
 class ExerciseCreate(ExerciseBase):
@@ -336,6 +337,7 @@ class SeederWorkoutPlan(BaseModel):
     assigned_to: Optional[UUID] = None
     duration_minutes: Optional[int] = None
     workouts: List[SeederWorkout]
+    tags: Optional[List[str]] = None
 
 class SeederFullWorkoutPlan(BaseModel):
     plan: SeederWorkoutPlan
@@ -353,6 +355,7 @@ class FullExerciseDetail(BaseModel):
     is_equipment_needed: bool
     video_url: Optional[str] = None
     image_url: Optional[str] = None
+    tags: List[str] = []
     sets: Optional[int] = None
     reps: Optional[int] = None
     is_by_reps: bool
@@ -381,6 +384,7 @@ class FullWorkoutPlanDetailResponse(BaseModel):
     is_trainer_provided: bool
     assigned_to: Optional[UUID] = None
     created_by: Optional[UUID] = None
+    tags: List[str] = []
     workouts: List[FullWorkoutDetail] = []
     
     model_config = ConfigDict(from_attributes=True)

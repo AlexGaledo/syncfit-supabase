@@ -7,6 +7,9 @@
     "days_per_week": 3,
     "ai_generated": false,
     "is_trainer_provided": false,
+    "tags": [
+      "Push/Pull/Leg Split"
+    ],
     "workouts": [
       {
         "title": "Push Day",
@@ -224,7 +227,13 @@
       "instruction": "1. Lie on the bench with eyes under the bar. 2. Grip the bar slightly wider than shoulders. 3. Lower the bar to mid-chest. 4. Press back up until arms are locked.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Chest",
+        "Push Pattern",
+        "Anterior Deltoids",
+        "Triceps"
+      ]
     },
     {
       "name": "Overhead Dumbbell Press",
@@ -232,7 +241,13 @@
       "instruction": "1. Sit or stand with dumbbells at shoulder height. 2. Press the weights upward until arms are straight. 3. Lower slowly back to the start.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Shoulders",
+        "Push Pattern",
+        "Anterior Deltoids",
+        "Triceps"
+      ]
     },
     {
       "name": "Incline Dumbbell Fly",
@@ -240,7 +255,12 @@
       "instruction": "1. Lie on an incline bench (30-45 degrees). 2. Hold dumbbells above chest. 3. Open arms in a wide arc until a stretch is felt. 4. Squeeze back to center.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Chest",
+        "Push Pattern",
+        "Anterior Deltoids"
+      ]
     },
     {
       "name": "Lateral Raise",
@@ -248,7 +268,11 @@
       "instruction": "1. Stand with dumbbells at sides. 2. Raise arms out to the sides until parallel with the floor. 3. Lower with control.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Shoulders",
+        "Lateral Deltoids"
+      ]
     },
     {
       "name": "Tricep Rope Pushdown",
@@ -256,7 +280,11 @@
       "instruction": "1. Grip the rope attachment. 2. Keep elbows pinned to ribs. 3. Push hands down until arms are straight. 4. Return slowly.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Triceps",
+        "Push Pattern"
+      ]
     },
     {
       "name": "Diamond Push-Up",
@@ -264,7 +292,12 @@
       "instruction": "1. Form a diamond shape with hands under chest. 2. Lower body until chest nearly touches hands. 3. Push back to start.",
       "is_equipment_needed": false,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Chest",
+        "Triceps",
+        "Push Pattern"
+      ]
     },
     {
       "name": "Lat Pulldown",
@@ -272,7 +305,13 @@
       "instruction": "1. Grip bar wider than shoulders. 2. Pull bar down to upper chest while arching back slightly. 3. Slowly return bar to top.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Back",
+        "Lats",
+        "Pull Pattern",
+        "Biceps"
+      ]
     },
     {
       "name": "Seated Cable Row",
@@ -280,7 +319,14 @@
       "instruction": "1. Sit with feet on pads, knees slightly bent. 2. Pull handle toward abdomen. 3. Squeeze shoulder blades together. 4. Extend arms back.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Back",
+        "Lats",
+        "Pull Pattern",
+        "Biceps",
+        "Rear Deltoids"
+      ]
     },
     {
       "name": "Face Pull",
@@ -288,7 +334,13 @@
       "instruction": "1. Set cable to eye level with rope. 2. Pull toward forehead, pulling rope ends apart. 3. Squeeze back of shoulders and return.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Shoulders",
+        "Rear Deltoids",
+        "Traps",
+        "Pull Pattern"
+      ]
     },
     {
       "name": "Barbell Bicep Curl",
@@ -296,7 +348,11 @@
       "instruction": "1. Stand with barbell in hands, palms up. 2. Curl bar toward chest without swinging torso. 3. Lower slowly to start.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Biceps",
+        "Pull Pattern"
+      ]
     },
     {
       "name": "Hammer Curl",
@@ -304,7 +360,12 @@
       "instruction": "1. Hold dumbbells with neutral grip (palms facing each other). 2. Curl toward shoulders. 3. Lower with control.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Biceps",
+        "Forearms",
+        "Pull Pattern"
+      ]
     },
     {
       "name": "Superman",
@@ -312,7 +373,12 @@
       "instruction": "1. Lie face down on floor. 2. Lift arms, chest, and legs simultaneously. 3. Hold for 2 seconds and lower.",
       "is_equipment_needed": false,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Lower Back",
+        "Glutes",
+        "Hinge Pattern"
+      ]
     },
     {
       "name": "Barbell Squat",
@@ -320,7 +386,13 @@
       "instruction": "1. Place bar on upper back. 2. Squat down until thighs are parallel to floor. 3. Drive through heels to stand up.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Squat Pattern",
+        "Hamstrings"
+      ]
     },
     {
       "name": "Romanian Deadlift",
@@ -328,7 +400,13 @@
       "instruction": "1. Hold barbell at hip height. 2. Push hips back while lowering bar down legs. 3. Feel stretch in hamstrings and return to start.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Hamstrings",
+        "Glutes",
+        "Hinge Pattern",
+        "Lower Back"
+      ]
     },
     {
       "name": "Leg Press",
@@ -336,7 +414,12 @@
       "instruction": "1. Sit in machine with feet shoulder-width apart. 2. Lower platform toward chest. 3. Press back up without locking knees.",
       "is_equipment_needed": true,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Squat Pattern"
+      ]
     },
     {
       "name": "Walking Lunges",
@@ -344,7 +427,13 @@
       "instruction": "1. Step forward and lower back knee toward ground. 2. Push up and step forward with the other leg.",
       "is_equipment_needed": false,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Lunge Pattern",
+        "Hamstrings"
+      ]
     },
     {
       "name": "Standing Calf Raise",
@@ -352,7 +441,10 @@
       "instruction": "1. Stand on a raised surface with heels hanging off. 2. Push through the balls of your feet to raise your body. 3. Lower slowly.",
       "is_equipment_needed": false,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Calves"
+      ]
     },
     {
       "name": "Plank",
@@ -360,7 +452,11 @@
       "instruction": "1. Start in a push-up position. 2. Keep your body in a straight line from head to heels. 3. Hold the position, keeping abs tight.",
       "is_equipment_needed": false,
       "video_url": "https://www.youtube.com/embed/pSHjTRCQxIw",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp"
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Abs",
+        "Full Body"
+      ]
     }
   ]
 }

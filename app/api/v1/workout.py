@@ -7,7 +7,10 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.dependencies import get_current_db_user
-from app.models.item import Exercises, Workouts, Workout_Plans, Exercises_Workouts, Workouts_Workout_Plans
+from app.models.item import (
+    Exercises, Workouts, Workout_Plans, Exercises_Workouts, Workouts_Workout_Plans,
+    Plan_Tags, Workout_Plans_Plan_Tags, Exer_Tags, Exercises_Exer_Tags
+)
 from app.schemas.item import (
     ExerciseCreate, ExerciseResponse,
     WorkoutCreate, WorkoutResponse,
@@ -15,7 +18,11 @@ from app.schemas.item import (
     ExercisesWorkoutsCreate, ExercisesWorkoutsResponse,
     WorkoutsWorkoutPlansCreate, WorkoutsWorkoutPlansResponse,
     SeederFullWorkoutPlan,
-    FullWorkoutPlanDetailResponse, FullWorkoutDetail, FullExerciseDetail
+    FullWorkoutPlanDetailResponse, FullWorkoutDetail, FullExerciseDetail,
+    ExerTagCreate, ExerTagResponse,
+    PlanTagCreate, PlanTagResponse,
+    ExercisesExerTagsCreate, ExercisesExerTagsResponse,
+    WorkoutPlansPlanTagsCreate, WorkoutPlansPlanTagsResponse
 )
 
 workout_router = APIRouter(prefix="/workout", tags=["Workout"])
@@ -32,15 +39,33 @@ def create_exercises(
     """
     created_exercises = []
     for exercise_data in exercises:
+        ex_dump = exercise_data.model_dump()
+        ex_tags = ex_dump.pop("tags", []) or []
+
         # Check if the exercise already exists by name
         existing_exercise = db.query(Exercises).filter(Exercises.name == exercise_data.name).first()
         if existing_exercise:
-            created_exercises.append(existing_exercise)
+            db_exercise = existing_exercise
         else:
             # Create a new exercise if it doesn't exist
-            db_exercise = Exercises(**exercise_data.model_dump())
+            db_exercise = Exercises(**ex_dump)
             db.add(db_exercise)
-            created_exercises.append(db_exercise)
+            db.flush()
+        
+        # Process tags
+        for tag_name in ex_tags:
+            db_tag = db.query(Exer_Tags).filter(Exer_Tags.name == tag_name).first()
+            if not db_tag:
+                db_tag = Exer_Tags(name=tag_name)
+                db.add(db_tag)
+                db.flush()
+            
+            link_exists = db.query(Exercises_Exer_Tags).filter_by(exercise_id=db_exercise.id, tag_id=db_tag.id).first()
+            if not link_exists:
+                db.add(Exercises_Exer_Tags(exercise_id=db_exercise.id, tag_id=db_tag.id))
+                db.flush()
+                
+        created_exercises.append(db_exercise)
     
     db.commit()
     for exercise in created_exercises:
@@ -60,7 +85,23 @@ def get_all_exercises(
     Retrieve all exercises.
     """
     exercises = db.query(Exercises).offset(skip).limit(limit).all()
-    return exercises
+    
+    result = []
+    for ex in exercises:
+        ex_dict = {
+            "id": ex.id,
+            "name": ex.name,
+            "description": ex.description,
+            "instruction": ex.instruction,
+            "is_equipment_needed": ex.is_equipment_needed,
+            "video_url": ex.video_url,
+            "image_url": ex.image_url,
+            "created_at": ex.created_at,
+            "tags": [link.tag.name for link in ex.exercise_exer_tags] if ex.exercise_exer_tags else []
+        }
+        result.append(ex_dict)
+        
+    return result
 
 
 @workout_router.post("/workouts", response_model=WorkoutResponse, status_code=status.HTTP_201_CREATED)
@@ -142,10 +183,29 @@ def seed_full_workout_plan(
         # 1. Create all exercises
         created_exercises = {}
         for exercise_data in plan_data.exercises:
+            ex_dump = exercise_data.model_dump()
+            ex_tags = ex_dump.pop("tags", []) or []
+            
             db_exercise = db.query(Exercises).filter(Exercises.name == exercise_data.name).first()
             if not db_exercise:
-                db_exercise = Exercises(**exercise_data.model_dump())
+                db_exercise = Exercises(**ex_dump)
                 db.add(db_exercise)
+                db.flush()
+                
+            # Process exercise tags
+            for tag_name in ex_tags:
+                db_tag = db.query(Exer_Tags).filter(Exer_Tags.name == tag_name).first()
+                if not db_tag:
+                    db_tag = Exer_Tags(name=tag_name)
+                    db.add(db_tag)
+                    db.flush()
+                
+                # Link tag to exercise
+                link_exists = db.query(Exercises_Exer_Tags).filter_by(exercise_id=db_exercise.id, tag_id=db_tag.id).first()
+                if not link_exists:
+                    db_ex_tag_link = Exercises_Exer_Tags(exercise_id=db_exercise.id, tag_id=db_tag.id)
+                    db.add(db_ex_tag_link)
+
             created_exercises[exercise_data.name] = db_exercise
 
         # Flush to assign IDs to new exercises so they can be referenced
@@ -169,6 +229,20 @@ def seed_full_workout_plan(
             db.add(db_plan)
             # Flush to assign ID to the new plan
             db.flush()
+
+        # Process plan tags
+        plan_tags = plan_info.tags or []
+        for tag_name in plan_tags:
+            db_tag = db.query(Plan_Tags).filter(Plan_Tags.name == tag_name).first()
+            if not db_tag:
+                db_tag = Plan_Tags(name=tag_name)
+                db.add(db_tag)
+                db.flush()
+            
+            link_exists = db.query(Workout_Plans_Plan_Tags).filter_by(plan_id=db_plan.id, tag_id=db_tag.id).first()
+            if not link_exists:
+                db.add(Workout_Plans_Plan_Tags(plan_id=db_plan.id, tag_id=db_tag.id))
+                db.flush()
 
         # 3. Create workouts and link everything together
         for workout_data in plan_info.workouts:
@@ -257,6 +331,7 @@ def get_full_workout_plan(
         full_exercises = []
         for ex_link in exercises_links:
             ex_obj = ex_link.exercise
+            ex_tags = [link.tag.name for link in ex_obj.exercise_exer_tags] if ex_obj.exercise_exer_tags else []
             full_exercises.append(
                 FullExerciseDetail(
                     exercise_id=ex_obj.id,
@@ -266,6 +341,7 @@ def get_full_workout_plan(
                     is_equipment_needed=ex_obj.is_equipment_needed,
                     video_url=ex_obj.video_url,
                     image_url=ex_obj.image_url,
+                    tags=ex_tags,
                     sets=ex_link.sets, # type: ignore
                     reps=ex_link.reps, # type: ignore
                     is_by_reps=ex_link.is_by_reps, # type: ignore
@@ -288,6 +364,8 @@ def get_full_workout_plan(
             )
         )
 
+    plan_tags = [link.tag.name for link in plan.workout_plan_tags] if plan.workout_plan_tags else []
+
     return FullWorkoutPlanDetailResponse(
         plan_id=plan.id, # type: ignore
         title=plan.title, # type: ignore
@@ -299,8 +377,143 @@ def get_full_workout_plan(
         is_trainer_provided=plan.is_trainer_provided, # type: ignore
         created_by=plan.created_by, # type: ignore
         assigned_to=plan.assigned_to, # type: ignore
+        tags=plan_tags,
         workouts=sorted(full_workouts, key=lambda x: x.order_index)
     )
+
+@workout_router.get("/exer-tags", response_model=List[ExerTagResponse])
+def get_all_exer_tags(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Retrieve all exercise tags.
+    """
+    tags = db.query(Exer_Tags).offset(skip).limit(limit).all()
+    return tags
+
+
+@workout_router.post("/exer-tags", response_model=List[ExerTagResponse], status_code=status.HTTP_201_CREATED)
+def create_exer_tags(
+    tags: List[ExerTagCreate],
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create multiple exercise tags using a list of tag names. See exer_tags.json for example input.
+    """
+    created_tags = []
+    for tag_data in tags:
+        existing_tag = db.query(Exer_Tags).filter(Exer_Tags.name == tag_data.name).first()
+        if existing_tag:
+            created_tags.append(existing_tag)
+        else:
+            new_tag = Exer_Tags(name=tag_data.name)
+            db.add(new_tag)
+            db.flush()
+            created_tags.append(new_tag)
+            
+    db.commit()
+    for tag in created_tags:
+        db.refresh(tag)
+        
+    return created_tags
+
+
+@workout_router.get("/plan-tags", response_model=List[PlanTagResponse])
+def get_all_plan_tags(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Retrieve all plan tags.
+    """
+    tags = db.query(Plan_Tags).offset(skip).limit(limit).all()
+    return tags
+
+
+@workout_router.post("/plan-tags", response_model=List[PlanTagResponse], status_code=status.HTTP_201_CREATED)
+def create_plan_tags(
+    tags: List[PlanTagCreate],
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create multiple plan tags using a list of tag names. See plan_tags.json for example input.
+    """
+    created_tags = []
+    for tag_data in tags:
+        existing_tag = db.query(Plan_Tags).filter(Plan_Tags.name == tag_data.name).first()
+        if existing_tag:
+            created_tags.append(existing_tag)
+        else:
+            new_tag = Plan_Tags(name=tag_data.name)
+            db.add(new_tag)
+            db.flush()
+            created_tags.append(new_tag)
+            
+    db.commit()
+    for tag in created_tags:
+        db.refresh(tag)
+        
+    return created_tags
+
+
+@workout_router.post("/exercises-tags", response_model=ExercisesExerTagsResponse, status_code=status.HTTP_201_CREATED)
+def create_exercise_tag_link(
+    link: ExercisesExerTagsCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Link a tag to an exercise using tag_id and exercise_id
+    """
+    ex = db.query(Exercises).filter(Exercises.id == link.exercise_id).first()
+    if not ex:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+    tag = db.query(Exer_Tags).filter(Exer_Tags.id == link.tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+        
+    link_exists = db.query(Exercises_Exer_Tags).filter_by(exercise_id=link.exercise_id, tag_id=link.tag_id).first()
+    if link_exists:
+        return link_exists
+        
+    db_link = Exercises_Exer_Tags(**link.model_dump())
+    db.add(db_link)
+    db.commit()
+    return link
+
+
+@workout_router.post("/workout-plans-tags", response_model=WorkoutPlansPlanTagsResponse, status_code=status.HTTP_201_CREATED)
+def create_workout_plan_tag_link(
+    link: WorkoutPlansPlanTagsCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Link a tag to a workout plan using tag_id and plan_id
+    """
+    plan = db.query(Workout_Plans).filter(Workout_Plans.id == link.plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=404, detail="Workout plan not found")
+    tag = db.query(Plan_Tags).filter(Plan_Tags.id == link.tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+        
+    link_exists = db.query(Workout_Plans_Plan_Tags).filter_by(plan_id=link.plan_id, tag_id=link.tag_id).first()
+    if link_exists:
+        return link_exists
+        
+    db_link = Workout_Plans_Plan_Tags(**link.model_dump())
+    db.add(db_link)
+    db.commit()
+    return link
+
 
 @workout_router.get("/test-current-user")
 def test_current_user(current_db_user: User = Depends(get_current_db_user)):

@@ -1,0 +1,11 @@
+[
+  { "name": "Full Body Split" },
+  { "name": "Push/Pull/Leg Split" },
+  { "name": "Upper/Lower Split" },
+  { "name": "Body Part Split" },
+  { "name": "Muscle Building Focus" },
+  { "name": "Strength Training Focus" },
+  { "name": "General Fitness Focus" },
+  { "name": "Endurance/Cardio Focus" },
+  { "name": "Weight Loss Focus" }
+]
