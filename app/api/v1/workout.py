@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID
 
 from app.database import get_db
 from app.dependencies import get_current_user
@@ -380,6 +381,21 @@ def get_full_workout_plan(
         tags=plan_tags,
         workouts=sorted(full_workouts, key=lambda x: x.order_index)
     )
+
+@workout_router.get("/workout-plans/user/{user_id}", response_model=List[WorkoutPlanResponse])
+def get_workout_plans_by_user(
+    user_id: UUID,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Retrieve all workout plans created by a specific user.
+    """
+    plans = db.query(Workout_Plans).filter(Workout_Plans.created_by == user_id).offset(skip).limit(limit).all()
+    return plans
+
 
 @workout_router.get("/exer-tags", response_model=List[ExerTagResponse])
 def get_all_exer_tags(
