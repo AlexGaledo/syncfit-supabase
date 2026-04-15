@@ -1,7 +1,7 @@
 """
 Item models including Badges and Workout Schema
 """
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Boolean, BigInteger, Enum
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Boolean, BigInteger, Enum, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -76,8 +76,11 @@ class Workout_Plans(Base):
     days_per_week = Column(Integer, nullable=True)
     ai_generated = Column(Boolean, default=False, nullable=False)
     is_trainer_provided = Column(Boolean, default=False, nullable=False)
+    is_preset = Column(Boolean, default=False, server_default=text("false"), nullable=False)  # Indicates if this is a preset plan available to all users
+    is_equipment_needed = Column(Boolean, default=False, server_default=text("false"), nullable=False)
+    image_url = Column(Text, nullable=True)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # This can be the id of the trainer, if created for a trainee, or the id of trainee if he created it for himself. It can be null if created by AI or imported from external source.
-    assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True) # This is the id of the trainee to whom this workout plan is assigned. It can be null if it's a template or created by AI without specific user assignment.
+    
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
