@@ -100,8 +100,8 @@ class UserProfileBase(BaseModel):
     bio: Optional[str] = None
     calorie_goal_daily: Optional[int] = None
     sleep_quality: Optional[str] = None  # poor/fair/good
-    weight: Optional[int] = None  # kg
-    height: Optional[int] = None  # cm
+    weight: Optional[float] = None  # kg
+    height: Optional[float] = None  # cm
 
 
 class UserProfileCreate(UserProfileBase):
@@ -172,7 +172,7 @@ class UserLimitationResponse(UserLimitationBase):
 
 class WeightLossProgressBase(BaseModel):
     """Base weight loss progress schema"""
-    weight: int  # kg
+    weight: float  # kg
 
 
 class WeightLossProgressCreate(WeightLossProgressBase):
