@@ -79,7 +79,9 @@ class WorkoutPlanBase(BaseModel):
     days_per_week: Optional[int] = None
     ai_generated: bool = False
     is_trainer_provided: bool = False
-    assigned_to: Optional[UUID] = None
+    is_preset: bool = False
+    is_equipment_needed: bool = False
+    image_url: Optional[str] = None
 
 
 class WorkoutPlanCreate(WorkoutPlanBase):
@@ -96,7 +98,9 @@ class WorkoutPlanUpdate(BaseModel):
     days_per_week: Optional[int] = None
     ai_generated: Optional[bool] = None
     is_trainer_provided: Optional[bool] = None
-    assigned_to: Optional[UUID] = None
+    is_preset: Optional[bool] = None
+    is_equipment_needed: Optional[bool] = None
+    image_url: Optional[str] = None
 
 
 class WorkoutPlanResponse(WorkoutPlanBase):
@@ -105,6 +109,7 @@ class WorkoutPlanResponse(WorkoutPlanBase):
     created_by: Optional[UUID] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -339,8 +344,10 @@ class SeederWorkoutPlan(BaseModel):
     days_per_week: Optional[int] = None
     ai_generated: bool = False
     is_trainer_provided: bool = False
+    is_preset: bool = False
+    is_equipment_needed: bool = False
+    image_url: Optional[str] = None
     created_by: Optional[UUID] = None
-    assigned_to: Optional[UUID] = None
     duration_minutes: Optional[int] = None
     workouts: List[SeederWorkout]
     tags: Optional[List[str]] = None
@@ -388,7 +395,9 @@ class FullWorkoutPlanDetailResponse(BaseModel):
     days_per_week: Optional[int] = None
     ai_generated: bool
     is_trainer_provided: bool
-    assigned_to: Optional[UUID] = None
+    is_preset: bool
+    is_equipment_needed: bool
+    image_url: Optional[str] = None
     created_by: Optional[UUID] = None
     tags: List[str] = []
     workouts: List[FullWorkoutDetail] = []

@@ -1,0 +1,493 @@
+{
+  "plan": {
+    "title": "Intermediate Upper/Lower Weight Loss",
+    "description": "A 4-day split combining moderate resistance training with supersets and active cardio rests to keep the heart rate elevated for fat burning.",
+    "duration_minutes": 240,
+    "difficulty": "Intermediate",
+    "days_per_week": 4,
+    "ai_generated": true,
+    "is_trainer_provided": false,
+    "tags": [
+      "Upper/Lower Split",
+      "Weight Loss Focus"
+    ],
+    "workouts": [
+      {
+        "title": "Upper Body & Active Rest 1",
+        "description": "Upper body push and pull exercises interlaced with high-intensity cardio bursts.",
+        "estimated_duration_minutes": 60,
+        "order_index": 1,
+        "day_of_week": 1,
+        "exercises": [
+          {
+            "exercise_name": "Barbell Bench Press",
+            "sets": 3,
+            "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Jumping Jacks",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 30,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Lat Pulldown",
+            "sets": 3,
+            "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Mountain Climbers",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 30,
+            "order_index": 4
+          },
+          {
+            "exercise_name": "Overhead Dumbbell Press",
+            "sets": 3,
+            "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 5
+          }
+        ]
+      },
+      {
+        "title": "Lower Body & Active Rest 1",
+        "description": "Lower body strength focused on high rep ranges mixed with plyometric cardio intervals.",
+        "estimated_duration_minutes": 60,
+        "order_index": 2,
+        "day_of_week": 2,
+        "exercises": [
+          {
+            "exercise_name": "Barbell Squat",
+            "sets": 3,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "High Knees",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 30,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Romanian Deadlift",
+            "sets": 3,
+            "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Burpees",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 30,
+            "order_index": 4
+          },
+          {
+            "exercise_name": "Plank",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 60,
+            "rest_duration_seconds": 30,
+            "order_index": 5
+          }
+        ]
+      },
+      {
+        "title": "Upper Body & Active Rest 2",
+        "description": "Second upper body session maintaining a high tempo for max caloric burn.",
+        "estimated_duration_minutes": 60,
+        "order_index": 3,
+        "day_of_week": 4,
+        "exercises": [
+          {
+            "exercise_name": "Incline Dumbbell Fly",
+            "sets": 3,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Seated Cable Row",
+            "sets": 3,
+            "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Jumping Jacks",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 30,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Diamond Push-Up",
+            "sets": 3,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 4
+          },
+          {
+            "exercise_name": "Bicycle Crunches",
+            "sets": 3,
+            "reps": 30,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
+            "order_index": 5
+          }
+        ]
+      },
+      {
+        "title": "Lower Body & Active Rest 2",
+        "description": "Second lower body session blending high volume legs with fast-paced cardio bursts.",
+        "estimated_duration_minutes": 60,
+        "order_index": 4,
+        "day_of_week": 5,
+        "exercises": [
+          {
+            "exercise_name": "Leg Press",
+            "sets": 3,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Walking Lunges",
+            "sets": 3,
+            "reps": 20,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Mountain Climbers",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 30,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Glute Bridge",
+            "sets": 3,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 4
+          },
+          {
+            "exercise_name": "Standing Calf Raise",
+            "sets": 3,
+            "reps": 20,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 30,
+            "order_index": 5
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "name": "Barbell Bench Press",
+      "description": "The standard compound movement for developing chest mass and upper body pushing power.",
+      "instruction": "1. Lie on the bench with eyes under the bar. 2. Grip the bar slightly wider than shoulders. 3. Lower the bar to mid-chest. 4. Press back up until arms are locked.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Chest",
+        "Push Pattern",
+        "Anterior Deltoids",
+        "Triceps"
+      ]
+    },
+    {
+      "name": "Jumping Jacks",
+      "description": "A classic cardiovascular exercise that involves the whole body to raise heart rate.",
+      "instruction": "1. Stand upright with legs together and arms at your sides. 2. Jump up, spread your legs, and bring your arms overhead. 3. Jump back to the starting position.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Cardio",
+        "Full Body"
+      ]
+    },
+    {
+      "name": "Lat Pulldown",
+      "description": "A vertical pulling exercise for developing back width (Lats).",
+      "instruction": "1. Grip bar wider than shoulders. 2. Pull bar down to upper chest while arching back slightly. 3. Slowly return bar to top.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Back",
+        "Lats",
+        "Pull Pattern",
+        "Biceps"
+      ]
+    },
+    {
+      "name": "Mountain Climbers",
+      "description": "A cardiovascular bodyweight exercise that elevates the heart rate while working the core.",
+      "instruction": "1. Start in a high plank position. 2. Rapidly drive one knee toward your chest, then switch legs as if running in place.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Abs",
+        "Full Body",
+        "Cardio"
+      ]
+    },
+    {
+      "name": "Overhead Dumbbell Press",
+      "description": "A vertical press focusing on the anterior and lateral deltoids.",
+      "instruction": "1. Sit or stand with dumbbells at shoulder height. 2. Press the weights upward until arms are straight. 3. Lower slowly back to the start.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Shoulders",
+        "Push Pattern",
+        "Anterior Deltoids",
+        "Triceps"
+      ]
+    },
+    {
+      "name": "Barbell Squat",
+      "description": "The king of lower body exercises for quads and glutes.",
+      "instruction": "1. Place bar on upper back. 2. Squat down until thighs are parallel to floor. 3. Drive through heels to stand up.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Squat Pattern",
+        "Hamstrings"
+      ]
+    },
+    {
+      "name": "High Knees",
+      "description": "An intense cardio drill that engages the hip flexors, quads, and core.",
+      "instruction": "1. Stand tall. 2. Run in place, driving your knees as high as possible toward your chest with each step.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Cardio",
+        "Quads",
+        "Full Body"
+      ]
+    },
+    {
+      "name": "Romanian Deadlift",
+      "description": "A hinge movement focusing on hamstrings and glutes.",
+      "instruction": "1. Hold barbell at hip height. 2. Push hips back while lowering bar down legs. 3. Feel stretch in hamstrings and return to start.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Hamstrings",
+        "Glutes",
+        "Hinge Pattern",
+        "Lower Back"
+      ]
+    },
+    {
+      "name": "Burpees",
+      "description": "A demanding full-body movement that acts as both resistance training and intense cardio.",
+      "instruction": "1. Start standing. 2. Drop into a squat and place hands on the floor. 3. Jump feet back into a plank and do a push-up. 4. Jump feet forward and explosively stand up.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Cardio",
+        "Full Body",
+        "Squat Pattern",
+        "Push Pattern"
+      ]
+    },
+    {
+      "name": "Plank",
+      "description": "A core isometric exercise that strengthens the abdominals and stabilizers.",
+      "instruction": "1. Start in a push-up position. 2. Keep your body in a straight line from head to heels. 3. Hold the position, keeping abs tight.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Abs",
+        "Full Body"
+      ]
+    },
+    {
+      "name": "Incline Dumbbell Fly",
+      "description": "An isolation movement to target the upper pectoral fibers.",
+      "instruction": "1. Lie on an incline bench (30-45 degrees). 2. Hold dumbbells above chest. 3. Open arms in a wide arc until a stretch is felt. 4. Squeeze back to center.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Chest",
+        "Push Pattern",
+        "Anterior Deltoids"
+      ]
+    },
+    {
+      "name": "Seated Cable Row",
+      "description": "A horizontal pull focusing on the rhomboids and middle back.",
+      "instruction": "1. Sit with feet on pads, knees slightly bent. 2. Pull handle toward abdomen. 3. Squeeze shoulder blades together. 4. Extend arms back.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Back",
+        "Lats",
+        "Pull Pattern",
+        "Biceps",
+        "Rear Deltoids"
+      ]
+    },
+    {
+      "name": "Diamond Push-Up",
+      "description": "A bodyweight push-up variation that emphasizes the triceps and inner chest.",
+      "instruction": "1. Form a diamond shape with hands under chest. 2. Lower body until chest nearly touches hands. 3. Push back to start.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Chest",
+        "Triceps",
+        "Push Pattern"
+      ]
+    },
+    {
+      "name": "Bicycle Crunches",
+      "description": "A dynamic core exercise targeting the obliques and upper abs.",
+      "instruction": "1. Lie flat on your back with hands behind your head. 2. Lift shoulders off the mat and bring your right elbow to your left knee while straightening the right leg. 3. Alternate sides rapidly.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Abs",
+        "Obliques"
+      ]
+    },
+    {
+      "name": "Leg Press",
+      "description": "Machine-based movement for high volume leg growth.",
+      "instruction": "1. Sit in machine with feet shoulder-width apart. 2. Lower platform toward chest. 3. Press back up without locking knees.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Squat Pattern"
+      ]
+    },
+    {
+      "name": "Walking Lunges",
+      "description": "Unilateral exercise for balance and leg development.",
+      "instruction": "1. Step forward and lower back knee toward ground. 2. Push up and step forward with the other leg.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Lunge Pattern",
+        "Hamstrings"
+      ]
+    },
+    {
+      "name": "Glute Bridge",
+      "description": "A floor exercise that targets the glutes and hamstrings.",
+      "instruction": "1. Lie on your back with knees bent and feet flat on the floor. 2. Squeeze your glutes and push your hips toward the ceiling. 3. Lower slowly.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Glutes",
+        "Hamstrings",
+        "Hinge Pattern"
+      ]
+    },
+    {
+      "name": "Standing Calf Raise",
+      "description": "Isolated movement for the calves.",
+      "instruction": "1. Stand on a raised surface with heels hanging off. 2. Push through the balls of your feet to raise your body. 3. Lower slowly.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Calves"
+      ]
+    }
+  ]
+}
