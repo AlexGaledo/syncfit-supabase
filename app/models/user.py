@@ -1,7 +1,7 @@
 """
 User database model
 """
-from sqlalchemy import Column, String, DateTime, Boolean, Enum, ForeignKey, Integer, JSON
+from sqlalchemy import Column, String, DateTime, Boolean, Enum, ForeignKey, Integer, Float, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -75,8 +75,8 @@ class User_Profile(Base):
     bio = Column(String, nullable=True)
     calorie_goal_daily = Column(Integer, nullable=True)
     sleep_quality = Column(String, nullable=True)  # sleep goal poor fair good
-    weight = Column(Integer, nullable=True)  # weight in kg
-    height = Column(Integer, nullable=True)  # height in cm
+    weight = Column(Float, nullable=True)  # weight in kg
+    height = Column(Float, nullable=True)  # height in cm
 
     user = relationship("User", back_populates="profile") 
     supplements = relationship("User_Supplements", back_populates="user", cascade="all, delete-orphan")

@@ -5,6 +5,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
+from enum import Enum
+
+
+class DifficultyLevel(str, Enum):
+    beginner = "beginner"
+    intermediate = "intermediate"
+    advanced = "advanced"
 
 
 # ============================================================================
@@ -68,7 +75,7 @@ class WorkoutPlanBase(BaseModel):
     title: str
     description: Optional[str] = None
     duration_minutes: Optional[int] = None
-    difficulty: Optional[str] = None  # beginner/intermediate/advanced
+    difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
     is_trainer_provided: bool = False
@@ -87,7 +94,7 @@ class WorkoutPlanUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     duration_minutes: Optional[int] = None
-    difficulty: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: Optional[bool] = None
     is_trainer_provided: Optional[bool] = None
@@ -333,7 +340,7 @@ class SeederWorkout(BaseModel):
 class SeederWorkoutPlan(BaseModel):
     title: str
     description: Optional[str] = None
-    difficulty: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
     is_trainer_provided: bool = False
@@ -384,7 +391,7 @@ class FullWorkoutPlanDetailResponse(BaseModel):
     title: str
     description: Optional[str] = None
     duration_minutes: Optional[int] = None
-    difficulty: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool
     is_trainer_provided: bool

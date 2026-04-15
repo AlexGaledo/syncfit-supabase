@@ -1,13 +1,20 @@
 """
 Item models including Badges and Workout Schema
 """
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Boolean, BigInteger, text
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Boolean, BigInteger, Enum, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
+import enum
 
 from app.database import Base
+
+
+class DifficultyLevel(enum.Enum):
+    beginner = "beginner"
+    intermediate = "intermediate"
+    advanced = "advanced"
 
 
 class Badges(Base):
@@ -65,7 +72,7 @@ class Workout_Plans(Base):
     title = Column(Text, nullable=False)
     description = Column(Text, nullable=True)
     duration_minutes = Column(Integer, nullable=True)
-    difficulty = Column(String, nullable=True)  # beginner/intermediate/advanced
+    difficulty = Column(Enum(DifficultyLevel), nullable=True)
     days_per_week = Column(Integer, nullable=True)
     ai_generated = Column(Boolean, default=False, nullable=False)
     is_trainer_provided = Column(Boolean, default=False, nullable=False)
