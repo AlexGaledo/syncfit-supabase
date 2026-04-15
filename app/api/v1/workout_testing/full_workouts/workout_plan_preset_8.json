@@ -1,44 +1,24 @@
 {
   "plan": {
-    "title": "Beginner Bro Split (Body Part Isolation)",
-    "description": "A 5-day routine dedicating each day to a single major muscle group (e.g., Chest day, Back day, Leg day), making it easy for beginners to learn specific isolations.",
-    "duration_minutes": 250,
+    "title": "Upper/Lower Bodyweight Beginner",
+    "description": "A 4-day beginner split requiring no gym equipment, focusing on fundamental bodyweight movements for general fitness.",
+    "duration_minutes": 180,
     "difficulty": "Beginner",
-    "days_per_week": 5,
+    "days_per_week": 4,
     "ai_generated": true,
     "is_trainer_provided": false,
     "tags": [
-      "Body Part Split",
-      "Muscle Building Focus"
+      "Upper/Lower Split",
+      "General Fitness Focus"
     ],
     "workouts": [
       {
-        "title": "Chest Day",
-        "description": "Focuses entirely on the pectoral muscles and pushing mechanics.",
-        "estimated_duration_minutes": 50,
+        "title": "Upper Body 1",
+        "description": "Focuses on upper body pushing and pulling using bodyweight only.",
+        "estimated_duration_minutes": 45,
         "order_index": 1,
         "day_of_week": 1,
         "exercises": [
-          {
-            "exercise_name": "Barbell Bench Press",
-            "sets": 3,
-            "reps": 10,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
-            "order_index": 1
-          },
-          {
-            "exercise_name": "Incline Dumbbell Fly",
-            "sets": 3,
-            "reps": 12,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
-            "order_index": 2
-          },
           {
             "exercise_name": "Standard Push-Up",
             "sets": 3,
@@ -47,79 +27,11 @@
             "is_by_duration": false,
             "duration_seconds": 0,
             "rest_duration_seconds": 60,
-            "order_index": 3
-          }
-        ]
-      },
-      {
-        "title": "Back Day",
-        "description": "Focuses on the lats, rhomboids, and lower back through pulling movements.",
-        "estimated_duration_minutes": 50,
-        "order_index": 2,
-        "day_of_week": 2,
-        "exercises": [
-          {
-            "exercise_name": "Lat Pulldown",
-            "sets": 3,
-            "reps": 10,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
             "order_index": 1
-          },
-          {
-            "exercise_name": "Seated Cable Row",
-            "sets": 3,
-            "reps": 12,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
-            "order_index": 2
-          },
-          {
-            "exercise_name": "Barbell Row",
-            "sets": 3,
-            "reps": 10,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
-            "order_index": 3
           },
           {
             "exercise_name": "Superman",
             "sets": 3,
-            "reps": 15,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 45,
-            "order_index": 4
-          }
-        ]
-      },
-      {
-        "title": "Leg Day",
-        "description": "Focuses on the quads, hamstrings, glutes, and calves.",
-        "estimated_duration_minutes": 50,
-        "order_index": 3,
-        "day_of_week": 3,
-        "exercises": [
-          {
-            "exercise_name": "Barbell Squat",
-            "sets": 3,
-            "reps": 10,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
-            "order_index": 1
-          },
-          {
-            "exercise_name": "Leg Press",
-            "sets": 3,
             "reps": 12,
             "is_by_reps": true,
             "is_by_duration": false,
@@ -128,97 +40,9 @@
             "order_index": 2
           },
           {
-            "exercise_name": "Romanian Deadlift",
+            "exercise_name": "Pike Push-Up",
             "sets": 3,
-            "reps": 10,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
-            "order_index": 3
-          },
-          {
-            "exercise_name": "Standing Calf Raise",
-            "sets": 3,
-            "reps": 15,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 45,
-            "order_index": 4
-          }
-        ]
-      },
-      {
-        "title": "Shoulder Day",
-        "description": "Focuses on the anterior, lateral, and rear deltoids.",
-        "estimated_duration_minutes": 50,
-        "order_index": 4,
-        "day_of_week": 4,
-        "exercises": [
-          {
-            "exercise_name": "Overhead Dumbbell Press",
-            "sets": 3,
-            "reps": 10,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
-            "order_index": 1
-          },
-          {
-            "exercise_name": "Lateral Raise",
-            "sets": 3,
-            "reps": 15,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 45,
-            "order_index": 2
-          },
-          {
-            "exercise_name": "Face Pull",
-            "sets": 3,
-            "reps": 15,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 45,
-            "order_index": 3
-          }
-        ]
-      },
-      {
-        "title": "Arm & Core Day",
-        "description": "Focuses on the biceps, triceps, and abdominal muscles.",
-        "estimated_duration_minutes": 50,
-        "order_index": 5,
-        "day_of_week": 5,
-        "exercises": [
-          {
-            "exercise_name": "Barbell Bicep Curl",
-            "sets": 3,
-            "reps": 12,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
-            "order_index": 1
-          },
-          {
-            "exercise_name": "Hammer Curl",
-            "sets": 3,
-            "reps": 12,
-            "is_by_reps": true,
-            "is_by_duration": false,
-            "duration_seconds": 0,
-            "rest_duration_seconds": 60,
-            "order_index": 2
-          },
-          {
-            "exercise_name": "Tricep Rope Pushdown",
-            "sets": 3,
-            "reps": 12,
+            "reps": 8,
             "is_by_reps": true,
             "is_by_duration": false,
             "duration_seconds": 0,
@@ -228,7 +52,125 @@
           {
             "exercise_name": "Diamond Push-Up",
             "sets": 3,
+            "reps": 8,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 4
+          },
+          {
+            "exercise_name": "Plank",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 45,
+            "order_index": 5
+          }
+        ]
+      },
+      {
+        "title": "Lower Body 1",
+        "description": "Focuses on lower body muscles and core using bodyweight only.",
+        "estimated_duration_minutes": 45,
+        "order_index": 2,
+        "day_of_week": 2,
+        "exercises": [
+          {
+            "exercise_name": "Bodyweight Squat",
+            "sets": 3,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Walking Lunges",
+            "sets": 3,
+            "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Glute Bridge",
+            "sets": 3,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Standing Calf Raise",
+            "sets": 3,
+            "reps": 20,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 4
+          },
+          {
+            "exercise_name": "Lying Leg Raise",
+            "sets": 3,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 5
+          }
+        ]
+      },
+      {
+        "title": "Upper Body 2",
+        "description": "Second upper body session focusing on pushing and pulling endurance.",
+        "estimated_duration_minutes": 45,
+        "order_index": 3,
+        "day_of_week": 4,
+        "exercises": [
+          {
+            "exercise_name": "Standard Push-Up",
+            "sets": 3,
+            "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Superman",
+            "sets": 3,
+            "reps": 15,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Pike Push-Up",
+            "sets": 3,
             "reps": 10,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Inchworm",
+            "sets": 3,
+            "reps": 8,
             "is_by_reps": true,
             "is_by_duration": false,
             "duration_seconds": 0,
@@ -246,37 +188,69 @@
             "order_index": 5
           }
         ]
+      },
+      {
+        "title": "Lower Body 2",
+        "description": "Second lower body session targeting quads, glutes, and hamstrings.",
+        "estimated_duration_minutes": 45,
+        "order_index": 4,
+        "day_of_week": 5,
+        "exercises": [
+          {
+            "exercise_name": "Bodyweight Squat",
+            "sets": 3,
+            "reps": 20,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Reverse Lunge",
+            "sets": 3,
+            "reps": 12,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Glute Bridge",
+            "sets": 3,
+            "reps": 20,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Standing Calf Raise",
+            "sets": 3,
+            "reps": 25,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 45,
+            "order_index": 4
+          },
+          {
+            "exercise_name": "Wall Sit",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 45,
+            "order_index": 5
+          }
+        ]
       }
     ]
   },
   "exercises": [
-    {
-      "name": "Barbell Bench Press",
-      "description": "The standard compound movement for developing chest mass and upper body pushing power.",
-      "instruction": "1. Lie on the bench with eyes under the bar. 2. Grip the bar slightly wider than shoulders. 3. Lower the bar to mid-chest. 4. Press back up until arms are locked.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Chest",
-        "Push Pattern",
-        "Anterior Deltoids",
-        "Triceps"
-      ]
-    },
-    {
-      "name": "Incline Dumbbell Fly",
-      "description": "An isolation movement to target the upper pectoral fibers.",
-      "instruction": "1. Lie on an incline bench (30-45 degrees). 2. Hold dumbbells above chest. 3. Open arms in a wide arc until a stretch is felt. 4. Squeeze back to center.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Chest",
-        "Push Pattern",
-        "Anterior Deltoids"
-      ]
-    },
     {
       "name": "Standard Push-Up",
       "description": "A fundamental bodyweight exercise that builds chest, shoulder, and tricep strength.",
@@ -289,49 +263,6 @@
         "Triceps",
         "Anterior Deltoids",
         "Push Pattern"
-      ]
-    },
-    {
-      "name": "Lat Pulldown",
-      "description": "A vertical pulling exercise for developing back width (Lats).",
-      "instruction": "1. Grip bar wider than shoulders. 2. Pull bar down to upper chest while arching back slightly. 3. Slowly return bar to top.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Back",
-        "Lats",
-        "Pull Pattern",
-        "Biceps"
-      ]
-    },
-    {
-      "name": "Seated Cable Row",
-      "description": "A horizontal pull focusing on the rhomboids and middle back.",
-      "instruction": "1. Sit with feet on pads, knees slightly bent. 2. Pull handle toward abdomen. 3. Squeeze shoulder blades together. 4. Extend arms back.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Back",
-        "Lats",
-        "Pull Pattern",
-        "Biceps",
-        "Rear Deltoids"
-      ]
-    },
-    {
-      "name": "Barbell Row",
-      "description": "A heavy compound horizontal pulling exercise that builds mass in the upper and middle back.",
-      "instruction": "1. Hinge forward at the hips until your torso is nearly parallel to the floor. 2. Grab the barbell and pull it towards your lower ribcage. 3. Lower the weight under control.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Back",
-        "Lats",
-        "Pull Pattern",
-        "Biceps"
       ]
     },
     {
@@ -348,131 +279,15 @@
       ]
     },
     {
-      "name": "Barbell Squat",
-      "description": "The king of lower body exercises for quads and glutes.",
-      "instruction": "1. Place bar on upper back. 2. Squat down until thighs are parallel to floor. 3. Drive through heels to stand up.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Quads",
-        "Glutes",
-        "Squat Pattern",
-        "Hamstrings"
-      ]
-    },
-    {
-      "name": "Leg Press",
-      "description": "Machine-based movement for high volume leg growth.",
-      "instruction": "1. Sit in machine with feet shoulder-width apart. 2. Lower platform toward chest. 3. Press back up without locking knees.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Quads",
-        "Glutes",
-        "Squat Pattern"
-      ]
-    },
-    {
-      "name": "Romanian Deadlift",
-      "description": "A hinge movement focusing on hamstrings and glutes.",
-      "instruction": "1. Hold barbell at hip height. 2. Push hips back while lowering bar down legs. 3. Feel stretch in hamstrings and return to start.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Hamstrings",
-        "Glutes",
-        "Hinge Pattern",
-        "Lower Back"
-      ]
-    },
-    {
-      "name": "Standing Calf Raise",
-      "description": "Isolated movement for the calves.",
-      "instruction": "1. Stand on a raised surface with heels hanging off. 2. Push through the balls of your feet to raise your body. 3. Lower slowly.",
+      "name": "Pike Push-Up",
+      "description": "A bodyweight exercise that shifts the focus to the shoulders and upper chest.",
+      "instruction": "1. Start in a downward dog position with hips high. 2. Bend your elbows and lower the top of your head toward the floor. 3. Push back up until arms are straight.",
       "is_equipment_needed": false,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
       "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
       "tags": [
-        "Calves"
-      ]
-    },
-    {
-      "name": "Overhead Dumbbell Press",
-      "description": "A vertical press focusing on the anterior and lateral deltoids.",
-      "instruction": "1. Sit or stand with dumbbells at shoulder height. 2. Press the weights upward until arms are straight. 3. Lower slowly back to the start.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
         "Shoulders",
-        "Push Pattern",
         "Anterior Deltoids",
-        "Triceps"
-      ]
-    },
-    {
-      "name": "Lateral Raise",
-      "description": "Isolated movement for the side deltoids to build shoulder width.",
-      "instruction": "1. Stand with dumbbells at sides. 2. Raise arms out to the sides until parallel with the floor. 3. Lower with control.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Shoulders",
-        "Lateral Deltoids"
-      ]
-    },
-    {
-      "name": "Face Pull",
-      "description": "Targets the rear delts and improves shoulder health/posture.",
-      "instruction": "1. Set cable to eye level with rope. 2. Pull toward forehead, pulling rope ends apart. 3. Squeeze back of shoulders and return.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Shoulders",
-        "Rear Deltoids",
-        "Traps",
-        "Pull Pattern"
-      ]
-    },
-    {
-      "name": "Barbell Bicep Curl",
-      "description": "Classic isolation movement for bicep mass.",
-      "instruction": "1. Stand with barbell in hands, palms up. 2. Curl bar toward chest without swinging torso. 3. Lower slowly to start.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Biceps",
-        "Pull Pattern"
-      ]
-    },
-    {
-      "name": "Hammer Curl",
-      "description": "Targets the brachialis and forearms for thicker looking arms.",
-      "instruction": "1. Hold dumbbells with neutral grip (palms facing each other). 2. Curl toward shoulders. 3. Lower with control.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Biceps",
-        "Forearms",
-        "Pull Pattern"
-      ]
-    },
-    {
-      "name": "Tricep Rope Pushdown",
-      "description": "Cable exercise focusing on the lateral and long heads of the triceps.",
-      "instruction": "1. Grip the rope attachment. 2. Keep elbows pinned to ribs. 3. Push hands down until arms are straight. 4. Return slowly.",
-      "is_equipment_needed": true,
-      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
-      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
-      "tags": [
-        "Triceps",
         "Push Pattern"
       ]
     },
@@ -492,13 +307,115 @@
     {
       "name": "Plank",
       "description": "A core isometric exercise that strengthens the abdominals and stabilizers.",
-      "instruction": "1. Start in a push-up position. 2. Keep your body in a straight line from head to heels. 3. Hold the position, keeping abs tight.",
+      "instruction": "1. Start in a push-up position or on your forearms. 2. Keep your body in a straight line from head to heels. 3. Hold the position, keeping abs tight.",
       "is_equipment_needed": false,
       "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
       "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
       "tags": [
         "Abs",
         "Full Body"
+      ]
+    },
+    {
+      "name": "Bodyweight Squat",
+      "description": "The foundational lower body movement for quads, glutes, and general mobility.",
+      "instruction": "1. Stand with feet shoulder-width apart. 2. Push your hips back and bend your knees. 3. Lower until thighs are parallel to the floor, then stand back up.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Squat Pattern",
+        "Hamstrings"
+      ]
+    },
+    {
+      "name": "Walking Lunges",
+      "description": "Unilateral exercise for balance and leg development.",
+      "instruction": "1. Step forward and lower back knee toward ground. 2. Push up and step forward with the other leg.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Lunge Pattern",
+        "Hamstrings"
+      ]
+    },
+    {
+      "name": "Glute Bridge",
+      "description": "A floor exercise that targets the glutes and hamstrings with no equipment.",
+      "instruction": "1. Lie on your back with knees bent and feet flat on the floor. 2. Squeeze your glutes and push your hips toward the ceiling. 3. Lower slowly.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Glutes",
+        "Hamstrings",
+        "Hinge Pattern"
+      ]
+    },
+    {
+      "name": "Standing Calf Raise",
+      "description": "Isolated movement for the calves.",
+      "instruction": "1. Stand on a flat surface or raised edge. 2. Push through the balls of your feet to raise your heels. 3. Lower slowly.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Calves"
+      ]
+    },
+    {
+      "name": "Lying Leg Raise",
+      "description": "A core exercise emphasizing the lower abdominals and hip flexors.",
+      "instruction": "1. Lie flat on your back with legs straight. 2. Keep your lower back pressed into the floor and raise your legs until they point at the ceiling. 3. Lower them slowly.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Abs",
+        "Full Body"
+      ]
+    },
+    {
+      "name": "Inchworm",
+      "description": "A dynamic movement that stretches the hamstrings while engaging the core and shoulders.",
+      "instruction": "1. Stand tall, hinge forward, and place your hands on the ground. 2. Walk your hands out to a high plank position. 3. Walk your hands back to your feet and stand up.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Shoulders",
+        "Abs",
+        "Full Body"
+      ]
+    },
+    {
+      "name": "Reverse Lunge",
+      "description": "A lunge variation that is often easier on the knees and effectively targets the glutes and quads.",
+      "instruction": "1. Stand tall. 2. Step one foot straight back and drop your hips until both knees are bent at a 90-degree angle. 3. Push through your front heel to return to the start.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Lunge Pattern"
+      ]
+    },
+    {
+      "name": "Wall Sit",
+      "description": "An isometric exercise for building muscular endurance in the quadriceps.",
+      "instruction": "1. Slide your back down a wall until your thighs are parallel to the floor. 2. Ensure your knees are directly above your ankles. 3. Hold the position for the required time.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Squat Pattern"
       ]
     }
   ]

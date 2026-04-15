@@ -1,0 +1,278 @@
+{
+  "plan": {
+    "title": "Advanced Full Body Powerlifting Prep",
+    "description": "A rigorous 3-day routine where you squat, push, and pull heavy in every single session, designed for central nervous system adaptation and max effort lifting.",
+    "duration_minutes": 270,
+    "difficulty": "Advanced",
+    "days_per_week": 3,
+    "ai_generated": true,
+    "is_trainer_provided": false,
+    "tags": [
+      "Full Body Split",
+      "Strength Training Focus"
+    ],
+    "workouts": [
+      {
+        "title": "Full Body 1: Heavy Squat & Bench",
+        "description": "Focuses on maximum strength in the barbell squat and bench press, followed by heavy horizontal pulling.",
+        "estimated_duration_minutes": 90,
+        "order_index": 1,
+        "day_of_week": 1,
+        "exercises": [
+          {
+            "exercise_name": "Barbell Squat",
+            "sets": 5,
+            "reps": 5,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 180,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Barbell Bench Press",
+            "sets": 5,
+            "reps": 5,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 180,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Barbell Row",
+            "sets": 4,
+            "reps": 6,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 120,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Plank",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 60,
+            "rest_duration_seconds": 60,
+            "order_index": 4
+          }
+        ]
+      },
+      {
+        "title": "Full Body 2: Heavy Deadlift & Overhead Press",
+        "description": "Maximal central nervous system output day featuring heavy deadlifts and vertical pressing.",
+        "estimated_duration_minutes": 90,
+        "order_index": 2,
+        "day_of_week": 3,
+        "exercises": [
+          {
+            "exercise_name": "Conventional Deadlift",
+            "sets": 5,
+            "reps": 3,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 240,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Barbell Overhead Press",
+            "sets": 5,
+            "reps": 5,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 120,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Weighted Pull-Up",
+            "sets": 4,
+            "reps": 5,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 120,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Barbell Squat",
+            "sets": 3,
+            "reps": 8,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 120,
+            "order_index": 4
+          }
+        ]
+      },
+      {
+        "title": "Full Body 3: Volume Squat & Bench",
+        "description": "A second session for squats and bench press focusing on slightly higher volume to reinforce technique.",
+        "estimated_duration_minutes": 90,
+        "order_index": 3,
+        "day_of_week": 5,
+        "exercises": [
+          {
+            "exercise_name": "Barbell Squat",
+            "sets": 4,
+            "reps": 6,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 180,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Barbell Bench Press",
+            "sets": 4,
+            "reps": 6,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 180,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Seated Cable Row",
+            "sets": 4,
+            "reps": 8,
+            "is_by_reps": true,
+            "is_by_duration": false,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 90,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Plank",
+            "sets": 3,
+            "reps": 0,
+            "is_by_reps": false,
+            "is_by_duration": true,
+            "duration_seconds": 60,
+            "rest_duration_seconds": 60,
+            "order_index": 4
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "name": "Barbell Squat",
+      "description": "The king of lower body exercises for quads and glutes, essential for building raw leg strength.",
+      "instruction": "1. Place bar on upper back. 2. Squat down until thighs are parallel to floor. 3. Drive heavily through heels to stand up.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Quads",
+        "Glutes",
+        "Squat Pattern",
+        "Hamstrings"
+      ]
+    },
+    {
+      "name": "Barbell Bench Press",
+      "description": "The standard compound movement for developing chest mass and upper body pushing power.",
+      "instruction": "1. Lie on the bench with eyes under the bar. 2. Grip the bar slightly wider than shoulders. 3. Lower the bar to mid-chest. 4. Press back up until arms are locked.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Chest",
+        "Push Pattern",
+        "Anterior Deltoids",
+        "Triceps"
+      ]
+    },
+    {
+      "name": "Barbell Row",
+      "description": "A heavy compound horizontal pulling exercise that builds mass and strength in the upper and middle back.",
+      "instruction": "1. Hinge forward at the hips until your torso is nearly parallel to the floor. 2. Grab the barbell and pull it towards your lower ribcage. 3. Lower the weight under control.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Back",
+        "Lats",
+        "Pull Pattern",
+        "Biceps"
+      ]
+    },
+    {
+      "name": "Conventional Deadlift",
+      "description": "The ultimate full-body raw strength builder, primarily taxing the posterior chain and core.",
+      "instruction": "1. Stand with mid-foot under the barbell. 2. Bend over and grab the bar. 3. Bend knees until shins touch the bar. 4. Lift chest, straighten lower back, and stand up with the weight.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Lower Back",
+        "Glutes",
+        "Hamstrings",
+        "Hinge Pattern",
+        "Quads"
+      ]
+    },
+    {
+      "name": "Barbell Overhead Press",
+      "description": "A vertical press focusing on raw strength in the anterior and lateral deltoids.",
+      "instruction": "1. Stand with a barbell resting on your front shoulders. 2. Press the weight upward until arms are locked out straight. 3. Lower slowly back to the start.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Shoulders",
+        "Push Pattern",
+        "Anterior Deltoids",
+        "Triceps"
+      ]
+    },
+    {
+      "name": "Weighted Pull-Up",
+      "description": "An advanced variation of the pull-up designed to aggressively overload the back and lats for strength and width.",
+      "instruction": "1. Attach a weight belt. 2. Grip the pull-up bar slightly wider than shoulder-width. 3. Pull your body up until your chin clears the bar. 4. Lower down with control.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Back",
+        "Lats",
+        "Pull Pattern",
+        "Biceps"
+      ]
+    },
+    {
+      "name": "Seated Cable Row",
+      "description": "A horizontal pull focusing on the rhomboids and middle back.",
+      "instruction": "1. Sit with feet on pads, knees slightly bent. 2. Pull handle toward abdomen. 3. Squeeze shoulder blades together. 4. Extend arms back.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Back",
+        "Lats",
+        "Pull Pattern",
+        "Biceps",
+        "Rear Deltoids"
+      ]
+    },
+    {
+      "name": "Plank",
+      "description": "A core isometric exercise that strengthens the abdominals and central nervous system stabilizers.",
+      "instruction": "1. Start in a push-up position. 2. Keep your body in a straight line from head to heels. 3. Hold the position, keeping abs tight.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+      "tags": [
+        "Abs",
+        "Full Body"
+      ]
+    }
+  ]
+}

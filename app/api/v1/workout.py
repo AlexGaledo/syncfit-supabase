@@ -224,8 +224,10 @@ def seed_full_workout_plan(
                 days_per_week=plan_info.days_per_week,
                 ai_generated=plan_info.ai_generated,
                 is_trainer_provided=plan_info.is_trainer_provided,
+                is_preset=plan_info.is_preset,
+                is_equipment_needed=plan_info.is_equipment_needed,
+                image_url=plan_info.image_url,
                 created_by=current_db_user.id,
-                assigned_to=None
             )
             db.add(db_plan)
             # Flush to assign ID to the new plan
@@ -376,8 +378,10 @@ def get_full_workout_plan(
         days_per_week=plan.days_per_week, # type: ignore
         ai_generated=plan.ai_generated, # type: ignore
         is_trainer_provided=plan.is_trainer_provided, # type: ignore
+        is_preset=plan.is_preset, # type: ignore
+        is_equipment_needed=plan.is_equipment_needed, # type: ignore
+        image_url=plan.image_url, # type: ignore
         created_by=plan.created_by, # type: ignore
-        assigned_to=plan.assigned_to, # type: ignore
         tags=plan_tags,
         workouts=sorted(full_workouts, key=lambda x: x.order_index)
     )
