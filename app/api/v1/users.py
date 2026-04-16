@@ -39,9 +39,19 @@ def _get_user_or_404(db: Session, user_id: UUID) -> User:
 
 def _assert_self_or_admin(user: User, current_user: dict, db: Session) -> None:
     """Raises 403 if the caller is neither the account owner nor an admin."""
-    caller = db.query(User).filter(User.supabase_user_id == current_user["sub"]).first()
-    is_owner = caller and str(caller.id) == str(user.id)
-    is_admin = caller and caller.role == UserRoleModel.admin
+    sub = current_user["sub"]
+    is_owner = (
+        db.query(User.id)
+        .filter(User.supabase_user_id == sub, User.id == user.id)
+        .first()
+        is not None
+    )
+    is_admin = (
+        db.query(User.id)
+        .filter(User.supabase_user_id == sub, User.role == UserRoleModel.admin)
+        .first()
+        is not None
+    )
     if not (is_owner or is_admin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -63,8 +73,16 @@ async def get_users(
     """
     Get all users — admin only.
     """
-    caller = db.query(User).filter(User.supabase_user_id == current_user["sub"]).first()
-    if not caller or caller.role != UserRoleModel.admin:
+    is_admin = (
+        db.query(User.id)
+        .filter(
+            User.supabase_user_id == current_user["sub"],
+            User.role == UserRoleModel.admin,
+        )
+        .first()
+        is not None
+    )
+    if not is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return db.query(User).offset(skip).limit(limit).all()
 
@@ -114,11 +132,17 @@ async def update_user(
     """Update a user. Only the account owner or an admin may do this."""
     user = _get_user_or_404(db, user_id)
 
-    caller = db.query(User).filter(User.supabase_user_id == current_user["sub"]).first()
-    is_owner = caller and str(caller.id) == str(user_id)
-    is_admin = caller and caller.role == UserRoleModel.admin
-    if not (is_owner or is_admin):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only update your own account")
+    _assert_self_or_admin(user, current_user, db)
+
+    is_admin = (
+        db.query(User.id)
+        .filter(
+            User.supabase_user_id == current_user["sub"],
+            User.role == UserRoleModel.admin,
+        )
+        .first()
+        is not None
+    )
 
     if not is_admin and user_data.role is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can change user roles")
@@ -140,12 +164,7 @@ async def delete_user(
 ):
     """Delete a user. Only the account owner or an admin may do this."""
     user = _get_user_or_404(db, user_id)
-
-    caller = db.query(User).filter(User.supabase_user_id == current_user["sub"]).first()
-    is_owner = caller and str(caller.id) == str(user_id)
-    is_admin = caller and caller.role == UserRoleModel.admin
-    if not (is_owner or is_admin):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only delete your own account")
+    _assert_self_or_admin(user, current_user, db)
 
     db.delete(user)
     db.commit()
@@ -266,9 +285,12 @@ async def remove_supplement(
     user = _get_user_or_404(db, user_id)
     _assert_self_or_admin(user, current_user, db)
 
+    if user.profile is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
     supplement = db.query(User_Supplements).filter(
         User_Supplements.id == supplement_id,
-        User_Supplements.user_id == user.profile.id if user.profile else None,
+        User_Supplements.user_id == user.profile.id,
     ).first()
     if not supplement:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supplement not found")
@@ -331,9 +353,12 @@ async def remove_limitation(
     user = _get_user_or_404(db, user_id)
     _assert_self_or_admin(user, current_user, db)
 
+    if user.profile is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
     limitation = db.query(User_Limitations).filter(
         User_Limitations.id == limitation_id,
-        User_Limitations.user_id == user.profile.id if user.profile else None,
+        User_Limitations.user_id == user.profile.id,
     ).first()
     if not limitation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Limitation not found")

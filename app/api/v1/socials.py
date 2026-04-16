@@ -7,7 +7,7 @@ Socials API endpoints
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
-from typing import List, Optional
+from typing import Any, List, Optional, cast
 from uuid import UUID
 
 from app.database import get_db
@@ -67,7 +67,8 @@ def _assert_participant(conv: Conversations, user_id: UUID) -> Conversation_Part
 def _assert_admin_participant(conv: Conversations, user_id: UUID) -> None:
     """Raises 403 if the user is not an admin participant of the conversation."""
     part = _assert_participant(conv, user_id)
-    if part.role != ConversationRoleModel.admin:
+    part_role = cast(ConversationRoleModel, part.role)
+    if part_role != ConversationRoleModel.admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Conversation admin access required")
 
 
@@ -84,7 +85,9 @@ async def send_connection_request(
     """
     Send a connection request to another user.
     """
-    if current_db_user.id == addressee_id:
+    current_user_id = cast(UUID, current_db_user.id)
+
+    if current_user_id == addressee_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot connect with yourself")
 
     addressee = db.query(User).filter(User.id == addressee_id).first()
@@ -94,9 +97,9 @@ async def send_connection_request(
     # Check for an existing connection in either direction
     existing = db.query(Connections).filter(
         (
-            (Connections.requester_id == current_db_user.id) & (Connections.addressee_id == addressee_id)
+            (Connections.requester_id == current_user_id) & (Connections.addressee_id == addressee_id)
         ) | (
-            (Connections.requester_id == addressee_id) & (Connections.addressee_id == current_db_user.id)
+            (Connections.requester_id == addressee_id) & (Connections.addressee_id == current_user_id)
         )
     ).first()
     if existing:
@@ -105,7 +108,7 @@ async def send_connection_request(
             detail=f"A connection already exists with status '{existing.status.value}'"
         )
 
-    conn = Connections(requester_id=current_db_user.id, addressee_id=addressee_id)
+    conn = Connections(requester_id=current_user_id, addressee_id=addressee_id)
     db.add(conn)
     try:
         db.commit()
@@ -128,9 +131,11 @@ async def get_my_connections(
     List current user's connections. Optionally filter by status (pending/accepted/declined/blocked).
     Returns connections where the user is either the requester or addressee.
     """
+    current_user_id = cast(UUID, current_db_user.id)
+
     query = db.query(Connections).filter(
-        (Connections.requester_id == current_db_user.id) |
-        (Connections.addressee_id == current_db_user.id)
+        (Connections.requester_id == current_user_id) |
+        (Connections.addressee_id == current_user_id)
     )
     if connection_status:
         query = query.filter(Connections.status == connection_status.value)
@@ -151,9 +156,10 @@ async def respond_to_connection(
     Either party may block.
     """
     conn = _get_connection_or_404(db, connection_id)
+    current_user_id = cast(UUID, current_db_user.id)
 
-    is_addressee = conn.addressee_id == current_db_user.id
-    is_requester = conn.requester_id == current_db_user.id
+    is_addressee = cast(UUID, conn.addressee_id) == current_user_id
+    is_requester = cast(UUID, conn.requester_id) == current_user_id
 
     if not (is_addressee or is_requester):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your connection")
@@ -165,7 +171,7 @@ async def respond_to_connection(
             detail="Only the recipient can accept or decline a connection request"
         )
 
-    conn.status = ConnectionStatusModel[new_status.value]
+    setattr(conn, "status", ConnectionStatusModel[new_status.value])
     db.commit()
     db.refresh(conn)
     return conn
@@ -181,8 +187,9 @@ async def remove_connection(
     Remove a connection. Either party may remove it.
     """
     conn = _get_connection_or_404(db, connection_id)
+    current_user_id = cast(UUID, current_db_user.id)
 
-    if conn.requester_id != current_db_user.id and conn.addressee_id != current_db_user.id:
+    if cast(UUID, conn.requester_id) != current_user_id and cast(UUID, conn.addressee_id) != current_user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your connection")
 
     db.delete(conn)
@@ -205,8 +212,10 @@ async def create_conversation(
     For direct conversations, prevents duplicate DM pairs.
     The creator is automatically added as an admin participant.
     """
+    current_user_id = cast(UUID, current_db_user.id)
+
     # Collect all participant IDs including creator
-    all_participant_ids = list(set([current_db_user.id] + list(data.participant_ids)))
+    all_participant_ids = list(set([current_user_id] + list(data.participant_ids)))
 
     if data.type == ConversationType.direct:
         if len(all_participant_ids) != 2:
@@ -215,19 +224,19 @@ async def create_conversation(
                 detail="Direct conversations must have exactly 2 participants"
             )
         # Guard duplicate DM: check if a direct conversation already exists between these two users
-        other_id = next(pid for pid in all_participant_ids if pid != current_db_user.id)
+        other_id = next(pid for pid in all_participant_ids if pid != current_user_id)
         existing_dm = (
             db.query(Conversations)
             .join(Conversation_Participants, Conversation_Participants.conversation_id == Conversations.id)
             .filter(
                 Conversations.type == ConversationTypeModel.direct,
-                Conversation_Participants.user_id == current_db_user.id,
+                Conversation_Participants.user_id == current_user_id,
                 Conversation_Participants.is_active == True,
             )
             .all()
         )
         for conv in existing_dm:
-            other_participant_ids = {p.user_id for p in conv.participants if p.user_id != current_db_user.id}
+            other_participant_ids = {cast(UUID, p.user_id) for p in conv.participants if cast(UUID, p.user_id) != current_user_id}
             if other_id in other_participant_ids:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
@@ -248,13 +257,13 @@ async def create_conversation(
     conv = Conversations(
         type=ConversationTypeModel[data.type.value],
         name=data.name,
-        creator_id=current_db_user.id,
+        creator_id=current_user_id,
     )
     db.add(conv)
     db.flush()
 
     for pid in all_participant_ids:
-        role = ConversationRoleModel.admin if pid == current_db_user.id else ConversationRoleModel.member
+        role = ConversationRoleModel.admin if pid == current_user_id else ConversationRoleModel.member
         db.add(Conversation_Participants(conversation_id=conv.id, user_id=pid, role=role))
 
     db.commit()
@@ -273,12 +282,13 @@ async def get_my_conversations(
     List all conversations the current user participates in, ordered by most recent message.
     """
     skip = (page - 1) * page_size
+    current_user_id = cast(UUID, current_db_user.id)
 
     base_query = (
         db.query(Conversations)
         .join(Conversation_Participants, Conversation_Participants.conversation_id == Conversations.id)
         .filter(
-            Conversation_Participants.user_id == current_db_user.id,
+            Conversation_Participants.user_id == current_user_id,
             Conversation_Participants.is_active == True,
         )
         .options(
@@ -292,7 +302,7 @@ async def get_my_conversations(
     conversations = base_query.offset(skip).limit(page_size).all()
 
     return PaginatedConversations(
-        conversations=conversations,
+        conversations=cast(List[ConversationResponse], conversations),
         total=total,
         page=page,
         page_size=page_size,
@@ -310,7 +320,7 @@ async def get_conversation(
     Get a conversation's details and participant list.
     """
     conv = _get_conversation_or_404(db, conversation_id)
-    _assert_participant(conv, current_db_user.id)
+    _assert_participant(conv, cast(UUID, current_db_user.id))
     return conv
 
 
@@ -325,10 +335,10 @@ async def update_conversation(
     Update conversation metadata (e.g. rename a group chat). Admin only.
     """
     conv = _get_conversation_or_404(db, conversation_id)
-    _assert_admin_participant(conv, current_db_user.id)
+    _assert_admin_participant(conv, cast(UUID, current_db_user.id))
 
     if data.name is not None:
-        conv.name = data.name
+        setattr(conv, "name", data.name)
 
     db.commit()
     db.refresh(conv)
@@ -354,9 +364,9 @@ async def add_participant(
     Add a user to a group conversation. Conversation admin only.
     """
     conv = _get_conversation_or_404(db, conversation_id)
-    _assert_admin_participant(conv, current_db_user.id)
+    _assert_admin_participant(conv, cast(UUID, current_db_user.id))
 
-    if conv.type == ConversationTypeModel.direct:
+    if cast(ConversationTypeModel, conv.type) == ConversationTypeModel.direct:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot add participants to a direct conversation"
@@ -402,10 +412,11 @@ async def remove_participant(
     Admins can remove others; any participant can remove themselves.
     """
     conv = _get_conversation_or_404(db, conversation_id)
-    caller_part = _assert_participant(conv, current_db_user.id)
+    current_user_id = cast(UUID, current_db_user.id)
+    caller_part = _assert_participant(conv, current_user_id)
 
-    is_self = user_id == current_db_user.id
-    is_admin = caller_part.role == ConversationRoleModel.admin
+    is_self = user_id == current_user_id
+    is_admin = cast(ConversationRoleModel, caller_part.role) == ConversationRoleModel.admin
 
     if not (is_self or is_admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can remove other participants")
@@ -440,7 +451,8 @@ async def send_message(
     from sqlalchemy.sql import func as sqlfunc
 
     conv = _get_conversation_or_404(db, conversation_id)
-    _assert_participant(conv, current_db_user.id)
+    current_user_id = cast(UUID, current_db_user.id)
+    _assert_participant(conv, current_user_id)
 
     if data.reply_to_id:
         reply_target = db.query(Messages).filter(
@@ -452,7 +464,7 @@ async def send_message(
 
     msg = Messages(
         conversation_id=conversation_id,
-        sender_id=current_db_user.id,
+        sender_id=current_user_id,
         content=data.content,
         type=MessageTypeModel[data.type.value],
         reply_to_id=data.reply_to_id,
@@ -487,7 +499,7 @@ async def get_messages(
     to load earlier messages). Falls back to offset pagination via `page` if omitted.
     """
     conv = _get_conversation_or_404(db, conversation_id)
-    _assert_participant(conv, current_db_user.id)
+    _assert_participant(conv, cast(UUID, current_db_user.id))
 
     query = db.query(Messages).filter(Messages.conversation_id == conversation_id)
 
@@ -524,7 +536,8 @@ async def edit_message(
     Edit a message. Only the original sender may edit.
     """
     conv = _get_conversation_or_404(db, conversation_id)
-    _assert_participant(conv, current_db_user.id)
+    current_user_id = cast(UUID, current_db_user.id)
+    _assert_participant(conv, current_user_id)
 
     msg = db.query(Messages).filter(
         Messages.id == message_id,
@@ -533,11 +546,11 @@ async def edit_message(
     if not msg:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
-    if msg.sender_id != current_db_user.id:
+    if cast(UUID, msg.sender_id) != current_user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own messages")
 
-    msg.content = data.content
-    msg.is_edited = True
+    setattr(msg, "content", data.content)
+    setattr(msg, "is_edited", True)
 
     db.commit()
     db.refresh(msg)
@@ -558,7 +571,8 @@ async def delete_message(
     Delete a message. The sender or a conversation admin may delete.
     """
     conv = _get_conversation_or_404(db, conversation_id)
-    caller_part = _assert_participant(conv, current_db_user.id)
+    current_user_id = cast(UUID, current_db_user.id)
+    caller_part = _assert_participant(conv, current_user_id)
 
     msg = db.query(Messages).filter(
         Messages.id == message_id,
@@ -567,8 +581,8 @@ async def delete_message(
     if not msg:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
 
-    is_sender = msg.sender_id == current_db_user.id
-    is_admin = caller_part.role == ConversationRoleModel.admin
+    is_sender = cast(UUID, msg.sender_id) == current_user_id
+    is_admin = cast(ConversationRoleModel, caller_part.role) == ConversationRoleModel.admin
 
     if not (is_sender or is_admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot delete this message")
