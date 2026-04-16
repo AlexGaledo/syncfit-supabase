@@ -92,8 +92,8 @@ class MealPlanBase(BaseModel):
 
 
 class MealPlanCreate(MealPlanBase):
-    """Schema for creating a daily meal plan"""
-    pass
+    """Schema for creating a daily meal plan, with an optional template."""
+    template_name: Optional[str] = None
 
 
 class MealPlanUpdate(BaseModel):
