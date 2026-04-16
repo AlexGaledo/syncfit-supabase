@@ -96,20 +96,22 @@ class Meal_Plans(Base):
     __tablename__ = "meal_plans"
     __table_args__ = (
         UniqueConstraint("user_id", "date", name="uq_meal_plans_user_id_date"),
+        Index("ix_meal_plans_template_name", "template_name"),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)  # type: ignore
-    date = Column(Date, nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)  # type: ignore
+    date = Column(Date, nullable=False)
     notes = Column(Text, nullable=True)
-    target_calories = Column(Integer, nullable=True)  # optional daily calorie target
+    target_calories = Column(Integer, nullable=True)
+    template_name = Column(String(255), nullable=True)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    user = relationship("User", back_populates="meal_plans")
+    user = relationship("User", backref="meal_plans")
     items = relationship("Meal_Plan_Items", back_populates="meal_plan", cascade="all, delete-orphan")
 
     def __repr__(self):

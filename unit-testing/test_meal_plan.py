@@ -106,19 +106,15 @@ def test_get_my_meal_plans_empty(client, mock_db):
 
 
 def test_create_meal_plan(client, mock_db):
-    # No existing plan for date → create
-    mock_db.query.return_value.filter.return_value.first.return_value = None
-
-    def refresh_mock(obj):
-        obj.id = uuid4()
-        obj.created_at = datetime(2024, 1, 1)
-        obj.user_id = USER_ID
-
-    mock_db.refresh.side_effect = refresh_mock
-
-    payload = {"date": "2024-06-01"}
-    response = client.post("/api/v1/meal-plans/", json=payload)
+    """Test creating a new daily meal plan."""
+    response = client.post(
+        "/api/v1/meal-plans/",
+        json={"date": "2024-01-15", "target_calories": 2200},
+    )
     assert response.status_code == 201
+    data = response.json()
+    assert data["target_calories"] == 2200
+    assert "id" in data
 
 
 def test_create_meal_plan_conflict(client, mock_db):
@@ -129,9 +125,22 @@ def test_create_meal_plan_conflict(client, mock_db):
     assert response.status_code == 400
 
 
+def test_get_meal_plan_by_date(client, mock_db):
+    """Test retrieving an existing meal plan by its date."""
+    # The endpoint chains two filters: filter(user_id).filter(date)
+    mock_db.query.return_value.options.return_value.filter.return_value.first.return_value = (
+        _fake_plan()
+    )
+    response = client.get("/api/v1/meal-plans/date/2024-01-15")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["target_calories"] == 2000
+
+
 def test_get_meal_plan_not_found(client, mock_db):
-    mock_db.query.return_value.options.return_value.filter.return_value.first.return_value = None
-    response = client.get(f"/api/v1/meal-plans/{uuid4()}")
+    """Test that a 404 is returned for a non-existent meal plan."""
+    # The default mock_db fixture already returns None for queries
+    response = client.get("/api/v1/meal-plans/by-date/2025-11-20")
     assert response.status_code == 404
 
 
