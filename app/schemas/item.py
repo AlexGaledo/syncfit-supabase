@@ -105,6 +105,7 @@ class WorkoutPlanResponse(WorkoutPlanBase):
     """Schema for workout plan response"""
     id: int
     created_by: Optional[UUID] = None
+    tags: List[str] = []
     created_at: datetime
     updated_at: Optional[datetime] = None
 

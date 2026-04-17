@@ -1,7 +1,7 @@
 """Workout API endpoints - Ford"""
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional, Union
 from uuid import UUID
 
 from app.database import get_db
@@ -11,7 +11,7 @@ from app.dependencies import get_current_db_user
 from app.models.item import (
     Exercises, Workouts, Workout_Plans, Exercises_Workouts, Workouts_Workout_Plans,
     Plan_Tags, Workout_Plans_Plan_Tags, Exer_Tags, Exercises_Exer_Tags,
-    Workout_Plans_Users
+    Workout_Plans_Users, DifficultyLevel
 )
 from app.schemas.item import (
     ExerciseCreate, ExerciseUpdate, ExerciseResponse,
@@ -19,7 +19,7 @@ from app.schemas.item import (
     WorkoutPlanCreate, WorkoutPlanUpdate, WorkoutPlanResponse,
     ExercisesWorkoutsCreate, ExercisesWorkoutsResponse,
     WorkoutsWorkoutPlansCreate, WorkoutsWorkoutPlansResponse,
-    WorkoutPlansUsersCreate, WorkoutPlansUsersResponse,
+    WorkoutPlansUsersCreate, WorkoutPlansUsersResponse, WorkoutPlansUsersUpdate,
     SeederFullWorkoutPlan,
     FullWorkoutPlanDetailResponse, FullWorkoutDetail, FullExerciseDetail,
     ExerTagCreate, ExerTagResponse,
@@ -30,6 +30,48 @@ from app.schemas.item import (
 
 workout_router = APIRouter(prefix="/workout", tags=["Workout"])
 
+@workout_router.get("/exercises", response_model=List[ExerciseResponse])
+def get_all_exercises(
+    name: Optional[str] = None,
+    is_equipment_needed: Optional[bool] = None,
+    exer_tags: Optional[List[str]] = Query(None),
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Retrieve all exercises with optional filtering by name, equipment needs, and tags.
+    """
+    query = db.query(Exercises)
+
+    if name is not None:
+        query = query.filter(Exercises.name.ilike(f"%{name}%"))
+        
+    if is_equipment_needed is not None:
+        query = query.filter(Exercises.is_equipment_needed == is_equipment_needed)
+        
+    if exer_tags:
+        query = query.join(Exercises.exercise_exer_tags).join(Exercises_Exer_Tags.tag).filter(Exer_Tags.name.in_(exer_tags))
+
+    exercises = query.offset(skip).limit(limit).all()
+    
+    result = []
+    for ex in exercises:
+        ex_dict = {
+            "id": ex.id,
+            "name": ex.name,
+            "description": ex.description,
+            "instruction": ex.instruction,
+            "is_equipment_needed": ex.is_equipment_needed,
+            "video_url": ex.video_url,
+            "image_url": ex.image_url,
+            "created_at": ex.created_at,
+            "tags": [link.tag.name for link in ex.exercise_exer_tags] if ex.exercise_exer_tags else []
+        }
+        result.append(ex_dict)
+        
+    return result
 
 @workout_router.post("/exercises", response_model=List[ExerciseResponse], status_code=status.HTTP_201_CREATED)
 def create_exercises(
@@ -77,98 +119,65 @@ def create_exercises(
     return created_exercises
 
 
-@workout_router.get("/exercises", response_model=List[ExerciseResponse])
-def get_all_exercises(
+@workout_router.get("/workout-plans", response_model=List[WorkoutPlanResponse])
+def get_workout_plans(
+    title: Optional[str] = None,
+    difficulty: Optional[DifficultyLevel] = None,
+    days_per_week: Optional[int] = None,
+    is_preset: Optional[bool] = None,
+    is_equipment_needed: Optional[bool] = None,
+    plan_tags: Optional[List[str]] = Query(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Retrieve all exercises.
+    Search and filter workout plans. Returns workout plan information, including tags.
     """
-    exercises = db.query(Exercises).offset(skip).limit(limit).all()
+    query = db.query(Workout_Plans)
+
+    if title is not None:
+        query = query.filter(Workout_Plans.title.ilike(f"%{title}%"))
+
+    if difficulty is not None:
+        query = query.filter(Workout_Plans.difficulty == difficulty)
+
+    if days_per_week is not None:
+        query = query.filter(Workout_Plans.days_per_week == days_per_week)
+
+    if is_preset is not None:
+        query = query.filter(Workout_Plans.is_preset == is_preset)
+
+    if is_equipment_needed is not None:
+        query = query.filter(Workout_Plans.is_equipment_needed == is_equipment_needed)
+
+    if plan_tags:
+        query = query.join(Workout_Plans.workout_plan_tags).join(Workout_Plans_Plan_Tags.tag).filter(Plan_Tags.name.in_(plan_tags))
+
+    plans = query.offset(skip).limit(limit).all()
     
     result = []
-    for ex in exercises:
-        ex_dict = {
-            "id": ex.id,
-            "name": ex.name,
-            "description": ex.description,
-            "instruction": ex.instruction,
-            "is_equipment_needed": ex.is_equipment_needed,
-            "video_url": ex.video_url,
-            "image_url": ex.image_url,
-            "created_at": ex.created_at,
-            "tags": [link.tag.name for link in ex.exercise_exer_tags] if ex.exercise_exer_tags else []
+    for plan in plans:
+        plan_dict = {
+            "id": plan.id,
+            "title": plan.title,
+            "description": plan.description,
+            "duration_minutes": plan.duration_minutes,
+            "difficulty": plan.difficulty,
+            "days_per_week": plan.days_per_week,
+            "ai_generated": plan.ai_generated,
+            "is_preset": plan.is_preset,
+            "is_equipment_needed": plan.is_equipment_needed,
+            "image_url": plan.image_url,
+            "created_by": plan.created_by,
+            "created_at": plan.created_at,
+            "updated_at": plan.updated_at,
+            "tags": [link.tag.name for link in plan.workout_plan_tags] if plan.workout_plan_tags else []
         }
-        result.append(ex_dict)
-        
+        result.append(plan_dict)
+
     return result
-
-
-@workout_router.post("/workouts", response_model=WorkoutResponse, status_code=status.HTTP_201_CREATED)
-def create_workout(
-    workout: WorkoutCreate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Create a new workout session.
-    """
-    db_workout = Workouts(**workout.model_dump())
-    db.add(db_workout)
-    db.commit()
-    db.refresh(db_workout)
-    return db_workout
-
-
-@workout_router.post("/workout-plans", response_model=WorkoutPlanResponse, status_code=status.HTTP_201_CREATED)
-def create_workout_plan(
-    workout_plan: WorkoutPlanCreate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Create a new workout plan.
-    """
-    db_workout_plan = Workout_Plans(**workout_plan.model_dump())
-    db.add(db_workout_plan)
-    db.commit()
-    db.refresh(db_workout_plan)
-    return db_workout_plan
-
-
-@workout_router.post("/exercises-workouts", response_model=ExercisesWorkoutsResponse, status_code=status.HTTP_201_CREATED)
-def create_exercise_workout_link(
-    link: ExercisesWorkoutsCreate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Link an exercise to a workout.
-    """
-    db_link = Exercises_Workouts(**link.model_dump())
-    db.add(db_link)
-    db.commit()
-    db.refresh(db_link)
-    return db_link
-
-
-@workout_router.post("/workouts-workout-plans", response_model=WorkoutsWorkoutPlansResponse, status_code=status.HTTP_201_CREATED)
-def create_workout_workout_plan_link(
-    link: WorkoutsWorkoutPlansCreate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Link a workout to a workout plan.
-    """
-    db_link = Workouts_Workout_Plans(**link.model_dump())
-    db.add(db_link)
-    db.commit()
-    db.refresh(db_link)
-    return db_link
 
 
 @workout_router.post("/assign-workout-plan", response_model=WorkoutPlansUsersResponse, status_code=status.HTTP_201_CREATED)
@@ -214,26 +223,106 @@ def assign_workout_plan_to_user(
     return new_assignment
 
 
-@workout_router.get("/my-active-plan", response_model=FullWorkoutPlanDetailResponse)
-def get_my_active_workout_plan(
+@workout_router.get("/my-workout-plan", response_model=Union[List[FullWorkoutPlanDetailResponse], FullWorkoutPlanDetailResponse])
+def get_my_workout_plan(
+    is_active: Optional[bool] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_db_user)
 ):
     """
-    Retrieve the active workout plan for the current user.
+    Retrieve workout plans assigned to the current user (where the user is trainee).
+    ### Query Parameters:
+    - **is_active** (bool, optional): 
+        - `true`: Returns a **single object** representing the currently active plan.
+        - `false`: Returns a **list** of all plans that are currently marked inactive.
+        - `None` (Default): Returns a **list** of all assigned plans (Active + Inactive).
     """
-    active_assignment = db.query(Workout_Plans_Users).filter(
-        Workout_Plans_Users.trainee_id == current_user.id,
-        Workout_Plans_Users.is_active == True
-    ).first()
+    query = db.query(Workout_Plans_Users).filter(
+        Workout_Plans_Users.trainee_id == current_user.id
+    )
 
-    if not active_assignment:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active workout plan found for the current user.")
+    if is_active is not None:
+        query = query.filter(Workout_Plans_Users.is_active == is_active)
 
-    plan_id = active_assignment.plan_id  
-    
-    # Reuse the logic from get_full_workout_plan
-    return get_full_workout_plan(plan_id=plan_id, db=db, current_user=current_user) # type: ignore
+    assignments = query.all()
+
+    if not assignments:
+        if is_active is True:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active workout plan found for the current user.")
+        return []
+
+    plans = []
+    for assignment in assignments:
+        try:
+            full_plan = get_full_workout_plan(plan_id=assignment.plan_id, db=db, current_user=current_user) # type: ignore
+            plans.append(full_plan)
+        except Exception:
+            continue
+
+    if is_active is True:
+        return plans[0] if plans else None
+
+    return plans
+
+
+@workout_router.patch("/assign-workout-plan/update/{assignment_id}", response_model=WorkoutPlansUsersResponse)
+def update_workout_plan_assignment(
+    assignment_id: int,
+    assignment_update: WorkoutPlansUsersUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Update a workout plan user assignment.
+    """
+    assignment = db.query(Workout_Plans_Users).filter(Workout_Plans_Users.id == assignment_id).first()
+    if not assignment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan assignment not found")
+
+    # Authorize: Only the trainee, the assigned trainer, or an admin can update
+    if current_user.role.value != "admin" and current_user.id != assignment.trainee_id and current_user.id != assignment.trainer_id: # type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this assignment")
+
+    if assignment_update.is_active is True:
+        # Prevent multiple active assignments for the same trainee
+        existing_active_assignments = db.query(Workout_Plans_Users).filter(
+            Workout_Plans_Users.trainee_id == assignment.trainee_id,
+            Workout_Plans_Users.is_active == True,
+            Workout_Plans_Users.id != assignment.id
+        ).all()
+        for active_assignment in existing_active_assignments:
+            active_assignment.is_active = False # type: ignore
+            db.add(active_assignment)
+
+    update_data = assignment_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(assignment, field, value)
+
+    db.commit()
+    db.refresh(assignment)
+    return assignment
+
+
+@workout_router.delete("/assign-workout-plan/delete/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_workout_plan_assignment(
+    assignment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Delete a workout plan user assignment.
+    """
+    assignment = db.query(Workout_Plans_Users).filter(Workout_Plans_Users.id == assignment_id).first()
+    if not assignment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan assignment not found")
+
+    # Authorize: Only the trainee, the assigned trainer, or an admin can delete
+    if current_user.role.value != "admin" and current_user.id != assignment.trainee_id and current_user.id != assignment.trainer_id: # type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this assignment")
+
+    db.delete(assignment)
+    db.commit()
+    return None
 
 
 @workout_router.post("/seed-full-workout-plan", status_code=status.HTTP_201_CREATED)
@@ -609,28 +698,8 @@ def test_current_user(current_db_user: User = Depends(get_current_db_user)):
 
 
 # ============================================================================
-# WORKOUT PLANS — LIST / UPDATE / DELETE
+# WORKOUT PLANS — UPDATE / DELETE
 # ============================================================================
-
-@workout_router.get("/workout-plans", response_model=List[WorkoutPlanResponse])
-def get_workout_plans(
-    assigned_to: UUID = None, #type:ignore
-    created_by: UUID = None, #type:ignore
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
-):
-    """
-    List workout plans. Optionally filter by assigned_to or created_by.
-    """
-    query = db.query(Workout_Plans)
-    if assigned_to:
-        query = query.filter(Workout_Plans.assigned_to == assigned_to)
-    if created_by:
-        query = query.filter(Workout_Plans.created_by == created_by)
-    return query.offset(skip).limit(limit).all()
-
 
 @workout_router.patch("/workout-plans/{plan_id}", response_model=WorkoutPlanResponse)
 def update_workout_plan(
