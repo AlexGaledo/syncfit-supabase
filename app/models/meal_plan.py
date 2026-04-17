@@ -111,7 +111,7 @@ class Meal_Plans(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    user = relationship("User", backref="meal_plans")
+    user = relationship("User", back_populates="meal_plans")
     items = relationship("Meal_Plan_Items", back_populates="meal_plan", cascade="all, delete-orphan")
 
     def __repr__(self):
