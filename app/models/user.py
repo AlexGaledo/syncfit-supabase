@@ -45,8 +45,9 @@ class User(Base):
     email_verified = Column(Boolean, default=False, nullable=False)
 
     # Supabase user ID (from auth.users)
-    supabase_user_id = Column(UUID(as_uuid=True), unique=True, index=True, nullable=False)  # type: ignore
-    is_active = Column(Boolean, default=True, nullable=False)
+    supabase_user_id = Column(UUID(as_uuid=True), unique=True, index=True, nullable=False)   # type: ignore
+    # authenticated or no
+    is_active = Column(Boolean, default=False, nullable=False)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

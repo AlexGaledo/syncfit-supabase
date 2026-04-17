@@ -4,7 +4,19 @@
       "Bash(alembic current:*)",
       "Bash(python -c ' *)",
       "Bash(python -m pytest unit-testing/ --collect-only -q)",
-      "Bash(uv run *)"
+      "Bash(uv run *)",
+      "Bash(find C:/Users/alex/Desktop/SyncFit/backendv2/app -name \"*.pyc\" -delete)",
+      "Bash(find C:/Users/alex/Desktop/SyncFit/backendv2/app -name \"__pycache__\" -type d -exec rm -rf {} +)",
+      "Bash(curl -v http://127.0.0.1:8000/api/v1/users/be65324a-97cc-48bc-b163-de901db47244)",
+      "Bash(tasklist /FI \"IMAGENAME eq python.exe\")",
+      "Bash(wmic process *)",
+      "Bash(curl -s http://127.0.0.1:8000/)",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/health)",
+      "Bash(curl -sv http://127.0.0.1:8000/api/v1/users/get_users)",
+      "Bash(.venv/Scripts/python.exe -c \"from app.dependencies import get_current_user; import inspect; print\\(inspect.getsource\\(get_current_user\\)\\)\")",
+      "Bash(kill 1489)",
+      "Bash(.venv/Scripts/uvicorn.exe main:app --port 8000)",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/users/be65324a-97cc-48bc-b163-de901db47244)"
     ]
   }
 }
