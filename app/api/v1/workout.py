@@ -669,7 +669,6 @@ def seed_full_workout_plan(
     return {"message": f"Workout plan '{plan_info.title}' seeded successfully."}
 
 
-
 @workout_router.get("/workout-plans/user/{user_id}", response_model=List[WorkoutPlanResponse])
 def get_workout_plans_by_user(
     user_id: UUID,
