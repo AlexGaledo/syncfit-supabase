@@ -42,11 +42,11 @@ class User(Base):
     type = Column(Enum(UserType), default=UserType.trainee, nullable=False)  # type: ignore
     gender = Column(Enum(UserGender), default=UserGender.others, nullable=False)  # type: ignore
     birthdate = Column(DateTime, nullable=True)
-    email_verified = Column(Boolean, default=False, nullable=False)
+    email_verified = Column(Boolean, default=True, nullable=False)
 
     # Supabase user ID (from auth.users)
     supabase_user_id = Column(UUID(as_uuid=True), unique=True, index=True, nullable=False)  # type: ignore
-    is_active = Column(Boolean, default=False, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

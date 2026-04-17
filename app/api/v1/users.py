@@ -91,7 +91,6 @@ async def get_users(
 async def get_user(
     user_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
 ):
     """Get a specific user by ID."""
     return _get_user_or_404(db, user_id)
