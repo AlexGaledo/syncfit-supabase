@@ -11,3 +11,4 @@ wheels/
 .env
 readme2.txt
 app/testing
+.pytest_cache
