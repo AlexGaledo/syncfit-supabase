@@ -355,6 +355,41 @@ class SeederFullWorkoutPlan(BaseModel):
     exercises: List[ExerciseCreate]
 
 # ============================================================================
+# USER FULL PLAN CREATION SCHEMAS
+# ============================================================================
+
+class CreateExerciseWorkout(BaseModel):
+    exercise_id: int
+    sets: Optional[int] = None
+    reps: Optional[int] = None
+    is_by_reps: bool = True
+    is_by_duration: bool = False
+    duration_seconds: Optional[int] = 0
+    rest_duration_seconds: Optional[int] = 30
+    order_index: int
+
+class CreateWorkout(BaseModel):
+    title: str
+    description: Optional[str] = None
+    estimated_duration_minutes: Optional[int] = None
+    exercises: List[CreateExerciseWorkout]
+    order_index: int
+    day_of_week: int 
+
+class CreateFullWorkoutPlan(BaseModel):
+    title: str
+    description: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
+    days_per_week: Optional[int] = None
+    ai_generated: bool = False
+    is_preset: bool = False
+    is_equipment_needed: bool = False
+    image_url: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    workouts: List[CreateWorkout]
+    tags: Optional[List[str]] = None
+
+# ============================================================================
 # FULL DETAIL RESPONSES
 # ============================================================================
 
