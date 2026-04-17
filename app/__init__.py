@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from app.config import settings
 from app.database import init_db
 from app.middleware.cors import setup_cors
-from app.api.v1 import health, auth, users
+from app.api.v1 import health, auth, users, meal_plan, socials
 from app.api.v1.workout import workout_router
 
 
@@ -58,6 +58,8 @@ def create_app() -> FastAPI:
     application.include_router(health.router, prefix=settings.API_V1_PREFIX, tags=["Health"])
     application.include_router(auth.router, prefix=settings.API_V1_PREFIX)
     application.include_router(users.router, prefix=settings.API_V1_PREFIX)
+    application.include_router(meal_plan.router, prefix=settings.API_V1_PREFIX)
+    application.include_router(socials.socials_router, prefix=settings.API_V1_PREFIX)
     application.include_router(workout_router, prefix=settings.API_V1_PREFIX)
 
     return application

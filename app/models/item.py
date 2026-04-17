@@ -1,13 +1,20 @@
 """
 Item models including Badges and Workout Schema
 """
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Boolean, BigInteger
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Boolean, BigInteger, Enum, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
+import enum
 
 from app.database import Base
+
+
+class DifficultyLevel(enum.Enum):
+    beginner = "beginner"
+    intermediate = "intermediate"
+    advanced = "advanced"
 
 
 class Badges(Base):
@@ -65,12 +72,14 @@ class Workout_Plans(Base):
     title = Column(Text, nullable=False)
     description = Column(Text, nullable=True)
     duration_minutes = Column(Integer, nullable=True)
-    difficulty = Column(String, nullable=True)  # beginner/intermediate/advanced
+    difficulty = Column(Enum(DifficultyLevel), nullable=True)
     days_per_week = Column(Integer, nullable=True)
     ai_generated = Column(Boolean, default=False, nullable=False)
-    is_trainer_provided = Column(Boolean, default=False, nullable=False)
+    is_preset = Column(Boolean, default=False, server_default=text("false"), nullable=False)  # Indicates if this is a preset plan available to all users
+    is_equipment_needed = Column(Boolean, default=False, server_default=text("false"), nullable=False)
+    image_url = Column(Text, nullable=True)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # This can be the id of the trainer, if created for a trainee, or the id of trainee if he created it for himself. It can be null if created by AI or imported from external source.
-    assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True) # This is the id of the trainee to whom this workout plan is assigned. It can be null if it's a template or created by AI without specific user assignment.
+    
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -79,6 +88,7 @@ class Workout_Plans(Base):
     # Relationships
     workout_plan_workouts = relationship("Workouts_Workout_Plans", back_populates="plan", cascade="all, delete-orphan")
     workout_plan_tags = relationship("Workout_Plans_Plan_Tags", back_populates="plan", cascade="all, delete-orphan")
+    assigned_users = relationship("Workout_Plans_Users", back_populates="plan", cascade="all, delete-orphan")
 
     
     def __repr__(self):
@@ -241,6 +251,33 @@ class Exercises_Exer_Tags(Base):
 
     def __repr__(self):
         return f"<Exercises_Exer_Tags exercise_id={self.exercise_id} tag_id={self.tag_id}>"
+
+class Workout_Plans_Users(Base):
+    """
+    Association table linking workout plans to users (trainees and trainers).
+    """
+    __tablename__ = "workout_plans_users"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    trainee_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    trainer_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    plan_id = Column(BigInteger, ForeignKey("workout_plans.id", ondelete="CASCADE"), nullable=False)
+    is_trainer_provided = Column(Boolean, default=False, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    trainee = relationship("User", foreign_keys=[trainee_id], back_populates="trainee_workout_plans")
+    trainer = relationship("User", foreign_keys=[trainer_id], back_populates="trainer_workout_plans")
+    plan = relationship("Workout_Plans", back_populates="assigned_users")
+
+    def __repr__(self):
+        return f"<Workout_Plans_Users trainee={self.trainee_id} plan={self.plan_id}>"
 
 
 

@@ -1,7 +1,7 @@
 """
 Social schemas for request/response validation
 """
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
@@ -72,18 +72,28 @@ class ConnectionResponse(ConnectionBase):
 class ConversationBase(BaseModel):
     """Base conversation schema"""
     type: ConversationType = ConversationType.direct
+    name: Optional[str] = Field(None, max_length=100)  # for group conversations
 
 
 class ConversationCreate(ConversationBase):
     """Schema for creating a conversation"""
-    pass
+    creator_id: UUID
+    participant_ids: list[UUID] = Field(min_length=1)
+
+
+class ConversationUpdate(BaseModel):
+    """Schema for updating a conversation (rename group, etc.)"""
+    name: Optional[str] = Field(None, max_length=100)
 
 
 class ConversationResponse(ConversationBase):
     """Schema for conversation response"""
     id: UUID
+    creator_id: UUID
     created_at: datetime
     last_message_at: Optional[datetime] = None
+    participants: list["ConversationParticipantResponse"] = []  # embedded participants
+    last_message: Optional["MessageResponse"] = None            # embedded last message preview
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -104,9 +114,15 @@ class ConversationParticipantCreate(ConversationParticipantBase):
     pass
 
 
+class ConversationParticipantUpdate(BaseModel):
+    """Schema for updating a participant role"""
+    role: ConversationRole
+
+
 class ConversationParticipantResponse(ConversationParticipantBase):
     """Schema for conversation participant response"""
     joined_at: datetime
+    is_active: bool = True  # False if they left the conversation
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -117,7 +133,7 @@ class ConversationParticipantResponse(ConversationParticipantBase):
 
 class MessageBase(BaseModel):
     """Base message schema"""
-    content: str
+    content: str = Field(min_length=1, max_length=5000)
     type: MessageType = MessageType.text
 
 
@@ -125,6 +141,12 @@ class MessageCreate(MessageBase):
     """Schema for creating a message"""
     conversation_id: UUID
     sender_id: UUID
+    reply_to_id: Optional[UUID] = None  # for replying to a specific message
+
+
+class MessageUpdate(BaseModel):
+    """Schema for editing a message"""
+    content: str = Field(min_length=1, max_length=5000)
 
 
 class MessageResponse(MessageBase):
@@ -132,6 +154,35 @@ class MessageResponse(MessageBase):
     id: UUID
     conversation_id: UUID
     sender_id: UUID
+    reply_to_id: Optional[UUID] = None
+    is_edited: bool = False
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# PAGINATED RESPONSES
+# ============================================================================
+
+class PaginatedMessages(BaseModel):
+    """Paginated message list for chat history"""
+    messages: list[MessageResponse]
+    total: int
+    page: int
+    page_size: int
+    has_more: bool
+
+
+class PaginatedConversations(BaseModel):
+    """Paginated conversation list"""
+    conversations: list[ConversationResponse]
+    total: int
+    page: int
+    page_size: int
+    has_more: bool
+
+
+# Resolve forward references
+ConversationResponse.model_rebuild()

@@ -331,8 +331,16 @@ async def create_meal_plan(
             detail="A meal plan already exists for this date. Use the existing plan or update it.",
         )
 
-    db_plan = Meal_Plans(**plan_data.model_dump(), user_id=user_id)
+    db_plan = Meal_Plans(**plan_data.model_dump(exclude={"template_name"}), user_id=user_id)
     db.add(db_plan)
+
+    # If a template was provided, apply it
+    if plan_data.template_name:
+        # In a real implementation, you would fetch the template's meals
+        # from the database here and create Meal_Plan_Items for them.
+        # For now, we can just add a note.
+        db_plan.notes = f"Started with template: {plan_data.template_name}"
+
     try:
         db.commit()
     except IntegrityError:

@@ -5,6 +5,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
+from enum import Enum
+
+
+class DifficultyLevel(str, Enum):
+    beginner = "beginner"
+    intermediate = "intermediate"
+    advanced = "advanced"
 
 
 # ============================================================================
@@ -68,11 +75,12 @@ class WorkoutPlanBase(BaseModel):
     title: str
     description: Optional[str] = None
     duration_minutes: Optional[int] = None
-    difficulty: Optional[str] = None  # beginner/intermediate/advanced
+    difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
-    is_trainer_provided: bool = False
-    assigned_to: Optional[UUID] = None
+    is_preset: bool = False
+    is_equipment_needed: bool = False
+    image_url: Optional[str] = None
 
 
 class WorkoutPlanCreate(WorkoutPlanBase):
@@ -85,20 +93,22 @@ class WorkoutPlanUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     duration_minutes: Optional[int] = None
-    difficulty: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: Optional[bool] = None
-    is_trainer_provided: Optional[bool] = None
-    assigned_to: Optional[UUID] = None
+    is_preset: Optional[bool] = None
+    is_equipment_needed: Optional[bool] = None
+    image_url: Optional[str] = None
 
 
 class WorkoutPlanResponse(WorkoutPlanBase):
     """Schema for workout plan response"""
     id: int
     created_by: Optional[UUID] = None
+    tags: List[str] = []
     created_at: datetime
     updated_at: Optional[datetime] = None
-    video_url: Optional[str] = None
+
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -329,12 +339,13 @@ class SeederWorkout(BaseModel):
 class SeederWorkoutPlan(BaseModel):
     title: str
     description: Optional[str] = None
-    difficulty: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
-    is_trainer_provided: bool = False
+    is_preset: bool = False
+    is_equipment_needed: bool = False
+    image_url: Optional[str] = None
     created_by: Optional[UUID] = None
-    assigned_to: Optional[UUID] = None
     duration_minutes: Optional[int] = None
     workouts: List[SeederWorkout]
     tags: Optional[List[str]] = None
@@ -342,6 +353,41 @@ class SeederWorkoutPlan(BaseModel):
 class SeederFullWorkoutPlan(BaseModel):
     plan: SeederWorkoutPlan
     exercises: List[ExerciseCreate]
+
+# ============================================================================
+# USER FULL PLAN CREATION SCHEMAS
+# ============================================================================
+
+class CreateExerciseWorkout(BaseModel):
+    exercise_id: int
+    sets: Optional[int] = None
+    reps: Optional[int] = None
+    is_by_reps: bool = True
+    is_by_duration: bool = False
+    duration_seconds: Optional[int] = 0
+    rest_duration_seconds: Optional[int] = 30
+    order_index: int
+
+class CreateWorkout(BaseModel):
+    title: str
+    description: Optional[str] = None
+    estimated_duration_minutes: Optional[int] = None
+    exercises: List[CreateExerciseWorkout]
+    order_index: int
+    day_of_week: int 
+
+class CreateFullWorkoutPlan(BaseModel):
+    title: str
+    description: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
+    days_per_week: Optional[int] = None
+    ai_generated: bool = False
+    is_preset: bool = False
+    is_equipment_needed: bool = False
+    image_url: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    workouts: List[CreateWorkout]
+    tags: Optional[List[str]] = None
 
 # ============================================================================
 # FULL DETAIL RESPONSES
@@ -378,13 +424,51 @@ class FullWorkoutPlanDetailResponse(BaseModel):
     title: str
     description: Optional[str] = None
     duration_minutes: Optional[int] = None
-    difficulty: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool
-    is_trainer_provided: bool
-    assigned_to: Optional[UUID] = None
+    is_preset: bool
+    is_equipment_needed: bool
+    image_url: Optional[str] = None
     created_by: Optional[UUID] = None
     tags: List[str] = []
     workouts: List[FullWorkoutDetail] = []
     
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# WORKOUT_PLANS_USERS SCHEMAS
+# ============================================================================
+
+class WorkoutPlansUsersBase(BaseModel):
+    """Base schema for assigning a workout plan to a user"""
+    trainee_id: UUID
+    trainer_id: Optional[UUID] = None
+    plan_id: int
+    is_trainer_provided: bool = False
+    is_active: bool = True
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+
+
+class WorkoutPlansUsersCreate(WorkoutPlansUsersBase):
+    """Schema for assigning a workout plan to a user"""
+    pass
+
+
+class WorkoutPlansUsersUpdate(BaseModel):
+    """Schema for updating a workout plan assignment"""
+    is_active: Optional[bool] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+
+class WorkoutPlansUsersResponse(WorkoutPlansUsersBase):
+    """Schema for workout plan user response"""
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
     model_config = ConfigDict(from_attributes=True)

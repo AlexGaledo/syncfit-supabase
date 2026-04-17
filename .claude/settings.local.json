@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(alembic current:*)"
+      "Bash(alembic current:*)",
+      "Bash(python -c ' *)",
+      "Bash(python -m pytest unit-testing/ --collect-only -q)",
+      "Bash(uv run *)"
     ]
   }
 }
