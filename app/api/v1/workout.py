@@ -339,6 +339,7 @@ def create_full_workout_plan(
     Creates a complete workout plan including workouts and their associations with existing exercises.
     This endpoint is intended for end users (trainees/trainers) to construct a program using the existing exercise library.
     All operations are performed in a single transaction.
+    This does not assign the plan to any user - it only creates the plan and its related workouts. Use the /assign-workout-plan endpoint to link it to a trainee/trainer.
     """
     try:
         # 1. Create the workout plan
