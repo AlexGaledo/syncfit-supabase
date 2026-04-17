@@ -78,7 +78,6 @@ class WorkoutPlanBase(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
-    is_trainer_provided: bool = False
     is_preset: bool = False
     is_equipment_needed: bool = False
     image_url: Optional[str] = None
@@ -97,7 +96,6 @@ class WorkoutPlanUpdate(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: Optional[bool] = None
-    is_trainer_provided: Optional[bool] = None
     is_preset: Optional[bool] = None
     is_equipment_needed: Optional[bool] = None
     image_url: Optional[str] = None
@@ -343,7 +341,6 @@ class SeederWorkoutPlan(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
-    is_trainer_provided: bool = False
     is_preset: bool = False
     is_equipment_needed: bool = False
     image_url: Optional[str] = None
@@ -394,7 +391,6 @@ class FullWorkoutPlanDetailResponse(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool
-    is_trainer_provided: bool
     is_preset: bool
     is_equipment_needed: bool
     image_url: Optional[str] = None
@@ -402,4 +398,38 @@ class FullWorkoutPlanDetailResponse(BaseModel):
     tags: List[str] = []
     workouts: List[FullWorkoutDetail] = []
     
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# WORKOUT_PLANS_USERS SCHEMAS
+# ============================================================================
+
+class WorkoutPlansUsersBase(BaseModel):
+    """Base schema for assigning a workout plan to a user"""
+    trainee_id: UUID
+    trainer_id: Optional[UUID] = None
+    plan_id: int
+    is_trainer_provided: bool = False
+    is_active: bool = True
+    duration_weeks: Optional[int] = None
+
+
+class WorkoutPlansUsersCreate(WorkoutPlansUsersBase):
+    """Schema for assigning a workout plan to a user"""
+    pass
+
+
+class WorkoutPlansUsersUpdate(BaseModel):
+    """Schema for updating a workout plan assignment"""
+    is_active: Optional[bool] = None
+    duration_weeks: Optional[int] = None
+
+
+class WorkoutPlansUsersResponse(WorkoutPlansUsersBase):
+    """Schema for workout plan user response"""
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
     model_config = ConfigDict(from_attributes=True)

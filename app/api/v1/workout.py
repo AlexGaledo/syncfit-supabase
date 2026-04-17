@@ -10,7 +10,8 @@ from app.models.user import User
 from app.dependencies import get_current_db_user
 from app.models.item import (
     Exercises, Workouts, Workout_Plans, Exercises_Workouts, Workouts_Workout_Plans,
-    Plan_Tags, Workout_Plans_Plan_Tags, Exer_Tags, Exercises_Exer_Tags
+    Plan_Tags, Workout_Plans_Plan_Tags, Exer_Tags, Exercises_Exer_Tags,
+    Workout_Plans_Users
 )
 from app.schemas.item import (
     ExerciseCreate, ExerciseUpdate, ExerciseResponse,
@@ -18,6 +19,7 @@ from app.schemas.item import (
     WorkoutPlanCreate, WorkoutPlanUpdate, WorkoutPlanResponse,
     ExercisesWorkoutsCreate, ExercisesWorkoutsResponse,
     WorkoutsWorkoutPlansCreate, WorkoutsWorkoutPlansResponse,
+    WorkoutPlansUsersCreate, WorkoutPlansUsersResponse,
     SeederFullWorkoutPlan,
     FullWorkoutPlanDetailResponse, FullWorkoutDetail, FullExerciseDetail,
     ExerTagCreate, ExerTagResponse,
@@ -169,6 +171,71 @@ def create_workout_workout_plan_link(
     return db_link
 
 
+@workout_router.post("/assign-workout-plan", response_model=WorkoutPlansUsersResponse, status_code=status.HTTP_201_CREATED)
+def assign_workout_plan_to_user(
+    assignment: WorkoutPlansUsersCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Assign a workout plan to a trainee, and optionally a trainer.
+    Ensures that only one workout plan can be active for a trainee at any time.
+    """
+    # Check if the plan and user exist
+    plan = db.query(Workout_Plans).filter(Workout_Plans.id == assignment.plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan not found")
+    
+    trainee = db.query(User).filter(User.id == assignment.trainee_id).first()
+    if not trainee:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainee not found")
+
+    if assignment.trainer_id:
+        trainer = db.query(User).filter(User.id == assignment.trainer_id).first()
+        if not trainer:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer not found")
+
+    # If the new assignment is to be active, deactivate any existing active plans for the trainee
+    if assignment.is_active:
+        existing_active_assignments = db.query(Workout_Plans_Users).filter(
+            Workout_Plans_Users.trainee_id == assignment.trainee_id,
+            Workout_Plans_Users.is_active == True
+        ).all()
+        for active_assignment in existing_active_assignments:
+            active_assignment.is_active = False # type: ignore
+            db.add(active_assignment)
+
+    # Create the new assignment
+    new_assignment = Workout_Plans_Users(**assignment.model_dump())
+    db.add(new_assignment)
+    db.commit()
+    db.refresh(new_assignment)
+    
+    return new_assignment
+
+
+@workout_router.get("/my-active-plan", response_model=FullWorkoutPlanDetailResponse)
+def get_my_active_workout_plan(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Retrieve the active workout plan for the current user.
+    """
+    active_assignment = db.query(Workout_Plans_Users).filter(
+        Workout_Plans_Users.trainee_id == current_user.id,
+        Workout_Plans_Users.is_active == True
+    ).first()
+
+    if not active_assignment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active workout plan found for the current user.")
+
+    plan_id = active_assignment.plan_id  
+    
+    # Reuse the logic from get_full_workout_plan
+    return get_full_workout_plan(plan_id=plan_id, db=db, current_user=current_user) # type: ignore
+
+
 @workout_router.post("/seed-full-workout-plan", status_code=status.HTTP_201_CREATED)
 def seed_full_workout_plan(
     plan_data: SeederFullWorkoutPlan,
@@ -223,7 +290,6 @@ def seed_full_workout_plan(
                 difficulty=plan_info.difficulty,
                 days_per_week=plan_info.days_per_week,
                 ai_generated=plan_info.ai_generated,
-                is_trainer_provided=plan_info.is_trainer_provided,
                 is_preset=plan_info.is_preset,
                 is_equipment_needed=plan_info.is_equipment_needed,
                 image_url=plan_info.image_url,
@@ -377,7 +443,6 @@ def get_full_workout_plan(
         difficulty=plan.difficulty, # type: ignore
         days_per_week=plan.days_per_week, # type: ignore
         ai_generated=plan.ai_generated, # type: ignore
-        is_trainer_provided=plan.is_trainer_provided, # type: ignore
         is_preset=plan.is_preset, # type: ignore
         is_equipment_needed=plan.is_equipment_needed, # type: ignore
         image_url=plan.image_url, # type: ignore
@@ -753,3 +818,5 @@ def delete_exercise(
     db.delete(ex)
     db.commit()
     return None
+
+

@@ -58,6 +58,9 @@ class User(Base):
     event_logs = relationship("Event_Logs", backref="user", cascade="all, delete-orphan")
     meal_plans = relationship("Meal_Plans", back_populates="user", cascade="all, delete-orphan")
 
+    trainee_workout_plans = relationship("Workout_Plans_Users", foreign_keys="[Workout_Plans_Users.trainee_id]", back_populates="trainee", cascade="all, delete-orphan")
+    trainer_workout_plans = relationship("Workout_Plans_Users", foreign_keys="[Workout_Plans_Users.trainer_id]", back_populates="trainer", cascade="all, delete-orphan")
+
     def __repr__(self):
         return f"<User {self.email}>"
 
@@ -142,6 +145,3 @@ class Event_Logs(Base):
 
     def __repr__(self):
         return f"<Event_Logs {self.user_id} - {self.event_type} - {self.event_timestamp}>"
-
-
-
