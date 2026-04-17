@@ -412,7 +412,9 @@ class WorkoutPlansUsersBase(BaseModel):
     plan_id: int
     is_trainer_provided: bool = False
     is_active: bool = True
-    duration_weeks: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
 
 
 class WorkoutPlansUsersCreate(WorkoutPlansUsersBase):
@@ -423,7 +425,8 @@ class WorkoutPlansUsersCreate(WorkoutPlansUsersBase):
 class WorkoutPlansUsersUpdate(BaseModel):
     """Schema for updating a workout plan assignment"""
     is_active: Optional[bool] = None
-    duration_weeks: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
 
 
 class WorkoutPlansUsersResponse(WorkoutPlansUsersBase):
