@@ -21,6 +21,7 @@ from app.schemas.item import (
     WorkoutsWorkoutPlansCreate, WorkoutsWorkoutPlansResponse,
     WorkoutPlansUsersCreate, WorkoutPlansUsersResponse, WorkoutPlansUsersUpdate,
     SeederFullWorkoutPlan, CreateFullWorkoutPlan, CreateWorkout, CreateExerciseWorkout,
+    CreateFullWorkoutRequest, UpdateFullWorkout, UpdateFullWorkoutExercise,
     FullWorkoutPlanDetailResponse, FullWorkoutDetail, FullExerciseDetail,
     ExerTagCreate, ExerTagResponse,
     PlanTagCreate, PlanTagResponse,
@@ -221,7 +222,7 @@ def delete_exercise(
 
 
 # ============================================================================
-# WORKOUTS — LIST / GET / UPDATE / DELETE
+# WORKOUTS — LIST / GET / POST / UPDATE / DELETE
 # ============================================================================
 
 @workout_router.get("/workouts", response_model=List[WorkoutResponse])
@@ -231,8 +232,74 @@ def get_all_workouts(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    """Retrieve all workouts."""
+    """Retrieve all workouts metadata."""
     return db.query(Workouts).offset(skip).limit(limit).all()
+
+
+@workout_router.post("/workouts/full", response_model=FullWorkoutDetail, status_code=status.HTTP_201_CREATED)
+def create_full_workout(
+    workout_data: CreateFullWorkoutRequest,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user),
+):
+    """
+    Creates a new workout, links it to a workout plan, and inserts its exercises.
+    """
+    # 1. Verify the plan exists and check authorization if necessary
+    plan = db.query(Workout_Plans).filter(Workout_Plans.id == workout_data.plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan not found")
+        
+    # Optional authorization check
+    if plan.created_by != current_db_user.id and current_db_user.role.value != "admin": # type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to alter this workout plan")
+
+    try:
+        # 2. Create the workout metadata
+        db_workout = Workouts(
+            title=workout_data.title,
+            description=workout_data.description,
+            estimated_duration_minutes=workout_data.estimated_duration_minutes
+        )
+        db.add(db_workout)
+        db.flush() # Flush to get the new workout id
+
+        # 3. Link workout to the workout plan
+        db_plan_link = Workouts_Workout_Plans(
+            plan_id=workout_data.plan_id,
+            workout_id=db_workout.id,
+            order_index=workout_data.order_index,
+            day_of_week=workout_data.day_of_week
+        )
+        db.add(db_plan_link)
+
+        # 4. Insert exercises 
+        for ex in workout_data.exercises:
+            ex_exists = db.query(Exercises).filter(Exercises.id == ex.exercise_id).first()
+            if not ex_exists:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Exercise with id {ex.exercise_id} not found")
+            
+            db_ex_link = Exercises_Workouts(
+                workout_id=db_workout.id,
+                exercise_id=ex.exercise_id,
+                sets=ex.sets,
+                reps=ex.reps,
+                duration_seconds=ex.duration_seconds,
+                rest_duration_seconds=ex.rest_duration_seconds,
+                order_index=ex.order_index
+            )
+            db.add(db_ex_link)
+            
+        db.commit()
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {str(e)}")
+
+    # 5. Return updated full state
+    return get_full_workout(workout_id=db_workout.id, db=db, current_user=current_db_user) # type: ignore
 
 
 @workout_router.get("/workouts/{workout_id}", response_model=WorkoutResponse)
@@ -248,6 +315,53 @@ def get_workout(
     return workout
 
 
+@workout_router.get("/workouts/{workout_id}/full", response_model=FullWorkoutDetail)
+def get_full_workout(
+    workout_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Retrieve all details of a single workout, including all details of its associated exercises."""
+    workout = db.query(Workouts).filter(Workouts.id == workout_id).first()
+    if not workout:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout not found")
+
+    exercises_links = db.query(Exercises_Workouts).filter(Exercises_Workouts.workout_id == workout_id).all()
+    full_exercises = []
+    for ex_link in exercises_links:
+        ex_obj = ex_link.exercise
+        ex_tags = [link.tag.name for link in ex_obj.exercise_exer_tags] if ex_obj.exercise_exer_tags else []
+        full_exercises.append(
+            FullExerciseDetail(
+                exercise_id=ex_obj.id,
+                name=ex_obj.name,
+                description=ex_obj.description,
+                instruction=ex_obj.instruction,
+                is_equipment_needed=ex_obj.is_equipment_needed,
+                video_url=ex_obj.video_url,
+                image_url=ex_obj.image_url,
+                tags=ex_tags,
+                sets=ex_link.sets, # type: ignore
+                reps=ex_link.reps, # type: ignore
+                is_by_reps=ex_obj.is_by_reps, # type: ignore
+                is_by_duration=ex_obj.is_by_duration, # type: ignore
+                duration_seconds=ex_link.duration_seconds, # type: ignore
+                rest_duration_seconds=ex_link.rest_duration_seconds, # type: ignore
+                order_index=ex_link.order_index # type: ignore
+            )
+        )
+
+    return FullWorkoutDetail(
+        workout_id=workout.id, # type: ignore
+        title=workout.title, # type: ignore
+        description=workout.description, # type: ignore
+        estimated_duration_minutes=workout.estimated_duration_minutes, # type: ignore
+        day_of_week=None,
+        order_index=None,
+        exercises=sorted(full_exercises, key=lambda x: x.order_index or 0)
+    )
+
+
 @workout_router.patch("/workouts/{workout_id}", response_model=WorkoutResponse)
 def update_workout(
     workout_id: int,
@@ -255,7 +369,7 @@ def update_workout(
     db: Session = Depends(get_db),
     current_db_user: User = Depends(get_current_db_user),
 ):
-    """Update a workout."""
+    """Update a workout metadata."""
     workout = db.query(Workouts).filter(Workouts.id == workout_id).first()
     if not workout:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout not found")
@@ -267,6 +381,61 @@ def update_workout(
     db.commit()
     db.refresh(workout)
     return workout
+
+
+@workout_router.patch("/workouts/{workout_id}/full", response_model=FullWorkoutDetail)
+def update_full_workout(
+    workout_id: int,
+    workout_data: UpdateFullWorkout,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user),
+):
+    """
+    Update a workout metadata AND replace all its exercises.
+    If 'exercises' is provided, the current exercise list is wiped and fully replaced with the provided list, in the new provided order.
+    """
+    workout = db.query(Workouts).filter(Workouts.id == workout_id).first()
+    if not workout:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout not found")
+
+    try:
+        # Update metadata if provided
+        update_data = workout_data.model_dump(exclude_unset=True, exclude={"exercises"})
+        for field, value in update_data.items():
+            setattr(workout, field, value)
+
+        # Synchronize exercises if the array is provided
+        if workout_data.exercises is not None:
+            # Drop old list first
+            db.query(Exercises_Workouts).filter(Exercises_Workouts.workout_id == workout_id).delete(synchronize_session=False)
+
+            # Insert new list
+            for ex in workout_data.exercises:
+                ex_exists = db.query(Exercises).filter(Exercises.id == ex.exercise_id).first()
+                if not ex_exists:
+                    raise HTTPException(status_code=400, detail=f"Exercise with id {ex.exercise_id} not found")
+                
+                db_ex_link = Exercises_Workouts(
+                    workout_id=workout_id,
+                    exercise_id=ex.exercise_id,
+                    sets=ex.sets,
+                    reps=ex.reps,
+                    duration_seconds=ex.duration_seconds,
+                    rest_duration_seconds=ex.rest_duration_seconds,
+                    order_index=ex.order_index
+                )
+                db.add(db_ex_link)
+        
+        db.commit()
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An error occurred: {str(e)}")
+
+    # Return updated full state
+    return get_full_workout(workout_id=workout_id, db=db, current_user=current_db_user) # type: ignore
 
 
 @workout_router.delete("/workouts/{workout_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -387,8 +556,8 @@ def get_full_workout_plan(
                     tags=ex_tags,
                     sets=ex_link.sets, # type: ignore
                     reps=ex_link.reps, # type: ignore
-                    is_by_reps=ex_link.is_by_reps, # type: ignore
-                    is_by_duration=ex_link.is_by_duration, # type: ignore
+                    is_by_reps=ex_obj.is_by_reps, # type: ignore
+                    is_by_duration=ex_obj.is_by_duration, # type: ignore
                     duration_seconds=ex_link.duration_seconds, # type: ignore
                     rest_duration_seconds=ex_link.rest_duration_seconds, # type: ignore
                     order_index=ex_link.order_index # type: ignore
@@ -565,8 +734,6 @@ def create_full_workout_plan(
                     "order_index": ex_workout_data.order_index,
                     "sets": ex_workout_data.sets,
                     "reps": ex_workout_data.reps,
-                    "is_by_reps": ex_workout_data.is_by_reps,
-                    "is_by_duration": ex_workout_data.is_by_duration,
                     "duration_seconds": ex_workout_data.duration_seconds,
                     "rest_duration_seconds": ex_workout_data.rest_duration_seconds,
                 }
@@ -761,8 +928,6 @@ def seed_full_workout_plan(
                         "order_index": ex_workout_data.order_index,
                         "sets": ex_workout_data.sets,
                         "reps": ex_workout_data.reps,
-                        "is_by_reps": ex_workout_data.is_by_reps,
-                        "is_by_duration": ex_workout_data.is_by_duration,
                         "duration_seconds": ex_workout_data.duration_seconds,
                         "rest_duration_seconds": ex_workout_data.rest_duration_seconds,
                     }
@@ -780,9 +945,6 @@ def seed_full_workout_plan(
     # We don't need to refresh all objects unless we return them.
     # The success message is sufficient.
     return {"message": f"Workout plan '{plan_info.title}' seeded successfully."}
-
-
-
 
 
 # ============================================================================
