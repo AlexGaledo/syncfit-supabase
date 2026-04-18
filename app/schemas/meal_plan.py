@@ -40,11 +40,11 @@ class MealBase(BaseModel):
     name: str
     description: Optional[str] = None
     category: MealCategory = MealCategory.other
-    calories: int = 0
-    protein_grams: Optional[float] = 0
-    carbs_grams: Optional[float] = 0
-    fat_grams: Optional[float] = 0
-    fiber_grams: Optional[float] = 0
+    calories: int = Field(default=0, ge=0)
+    protein_grams: Optional[float] = Field(default=0, ge=0)
+    carbs_grams: Optional[float] = Field(default=0, ge=0)
+    fat_grams: Optional[float] = Field(default=0, ge=0)
+    fiber_grams: Optional[float] = Field(default=0, ge=0)
     serving_size: Optional[str] = None  # e.g. "1 cup", "100g"
     image_url: Optional[str] = None
 
@@ -60,11 +60,11 @@ class MealUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     category: Optional[MealCategory] = None
-    calories: Optional[int] = None
-    protein_grams: Optional[float] = None
-    carbs_grams: Optional[float] = None
-    fat_grams: Optional[float] = None
-    fiber_grams: Optional[float] = None
+    calories: Optional[int] = Field(default=None, ge=0)
+    protein_grams: Optional[float] = Field(default=None, ge=0)
+    carbs_grams: Optional[float] = Field(default=None, ge=0)
+    fat_grams: Optional[float] = Field(default=None, ge=0)
+    fiber_grams: Optional[float] = Field(default=None, ge=0)
     serving_size: Optional[str] = None
     image_url: Optional[str] = None
 
@@ -88,7 +88,7 @@ class MealPlanBase(BaseModel):
     """Base meal plan schema - a user's daily meal plan"""
     date: date
     notes: Optional[str] = None
-    target_calories: Optional[int] = None
+    target_calories: Optional[int] = Field(default=None, ge=0)
 
 
 class MealPlanCreate(MealPlanBase):
@@ -99,7 +99,7 @@ class MealPlanCreate(MealPlanBase):
 class MealPlanUpdate(BaseModel):
     """Schema for updating a meal plan"""
     notes: Optional[str] = None
-    target_calories: Optional[int] = None
+    target_calories: Optional[int] = Field(default=None, ge=0)
 
 
 class MealPlanResponse(MealPlanBase):
