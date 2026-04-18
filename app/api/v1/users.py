@@ -96,7 +96,7 @@ async def get_user(
     return _get_user_or_404(db, user_id)
 
 
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: Optional[UserCreateRequest] = Body(default=None),
     db: Session = Depends(get_db),
