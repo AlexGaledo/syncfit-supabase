@@ -37,6 +37,12 @@ def test_current_user(current_db_user: User = Depends(get_current_db_user)):
     """
     return current_db_user
 
+
+# ============================================================================
+# EXERCISES — LIST / GET / CREATE / UPDATE / DELETE
+# ============================================================================
+
+
 @workout_router.get("/exercises", response_model=List[ExerciseResponse])
 def get_all_exercises(
     name: Optional[str] = None,
@@ -113,6 +119,7 @@ def create_exercises(
 ):
     """
     Create one or more new exercises. If an exercise with the same name already exists, reuse it instead of creating a duplicate.
+    This is for admin purposes only. Ordinary users should not be creating exercises - they should use the existing library when building workouts.
     """
     created_exercises = []
     for exercise_data in exercises:
@@ -149,6 +156,73 @@ def create_exercises(
         db.refresh(exercise)
         
     return created_exercises
+
+
+@workout_router.patch("/exercises/{exercise_id}", response_model=ExerciseResponse)
+def update_exercise(
+    exercise_id: int,
+    exercise_data: ExerciseUpdate,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user),
+):
+    """
+    Update an exercise's metadata.
+    These are for admin purposes only. Ordinary users should not be updating exercises - they should use the existing library when building workouts.
+    """
+    if current_db_user.role.value != "admin": # type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can modify exercises")
+
+    ex = db.query(Exercises).filter(Exercises.id == exercise_id).first()
+    if not ex:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
+
+    update_data = exercise_data.model_dump(exclude_unset=True)
+    update_data.pop("tags", None)  # Prevent standard update from overriding relationship list directly
+
+    for field, value in update_data.items():
+        setattr(ex, field, value)
+
+    db.commit()
+    db.refresh(ex)
+    
+    return {
+        "id": ex.id,
+        "name": ex.name,
+        "description": ex.description,
+        "instruction": ex.instruction,
+        "is_equipment_needed": ex.is_equipment_needed,
+        "video_url": ex.video_url,
+        "image_url": ex.image_url,
+        "created_at": ex.created_at,
+        "tags": [link.tag.name for link in ex.exercise_exer_tags] if ex.exercise_exer_tags else []
+    }
+
+
+@workout_router.delete("/exercises/{exercise_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_exercise(
+    exercise_id: int,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user),
+):
+    """
+    Delete an exercise.
+    These are for admin purposes only. Ordinary users should not be deleting exercises - they should use the existing library when building workouts.
+    """
+    if current_db_user.role.value != "admin": # type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can delete exercises")
+
+    ex = db.query(Exercises).filter(Exercises.id == exercise_id).first()
+    if not ex:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found")
+
+    db.delete(ex)
+    db.commit()
+    return None
+
+
+# ============================================================================
+# WORKOUT PLANS — LIST / GET / CREATE / UPDATE / DELETE
+# ============================================================================
 
 
 @workout_router.get("/workout-plans", response_model=List[WorkoutPlanResponse])
@@ -287,7 +361,7 @@ def get_full_workout_plan(
     )
 
 
-@workout_router.get("/my-workout-plan", response_model=Union[List[FullWorkoutPlanDetailResponse], FullWorkoutPlanDetailResponse])
+@workout_router.get("/workout-plans/my-workout-plan", response_model=Union[List[FullWorkoutPlanDetailResponse], FullWorkoutPlanDetailResponse])
 def get_my_workout_plan(
     is_active: Optional[bool] = None,
     db: Session = Depends(get_db),
@@ -329,7 +403,7 @@ def get_my_workout_plan(
     return plans
 
 
-@workout_router.post("/create-full-workout-plan", response_model=FullWorkoutPlanDetailResponse, status_code=status.HTTP_201_CREATED)
+@workout_router.post("/workout-plans/create-full", response_model=FullWorkoutPlanDetailResponse, status_code=status.HTTP_201_CREATED)
 def create_full_workout_plan(
     plan_data: CreateFullWorkoutPlan,
     db: Session = Depends(get_db),
@@ -425,7 +499,54 @@ def create_full_workout_plan(
     return get_full_workout_plan(plan_id=db_plan.id, db=db, current_user=current_db_user) # type: ignore
 
 
-@workout_router.post("/assign-workout-plan", response_model=WorkoutPlansUsersResponse, status_code=status.HTTP_201_CREATED)
+@workout_router.patch("/workout-plans/{plan_id}", response_model=WorkoutPlanResponse)
+def update_workout_plan(
+    plan_id: int,
+    plan_data: WorkoutPlanUpdate,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user),
+):
+    """
+    Update a workout plan's metadata. Only the creator or an admin may do this.
+    """
+    plan = db.query(Workout_Plans).filter(Workout_Plans.id == plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan not found")
+
+    if plan.created_by != current_db_user.id and current_db_user.role.value != "admin": #type:ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only update your own workout plans")
+
+    update_data = plan_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(plan, field, value)
+
+    db.commit()
+    db.refresh(plan)
+    return plan
+
+
+@workout_router.delete("/workout-plans/{plan_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_workout_plan(
+    plan_id: int,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user),
+):
+    """
+    Delete a workout plan. Only the creator or an admin may do this.
+    """
+    plan = db.query(Workout_Plans).filter(Workout_Plans.id == plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan not found")
+
+    if plan.created_by != current_db_user.id and current_db_user.role.value != "admin": #type:ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only delete your own workout plans")
+
+    db.delete(plan)
+    db.commit()
+    return None
+
+
+@workout_router.post("/workout-plans/assign", response_model=WorkoutPlansUsersResponse, status_code=status.HTTP_201_CREATED)
 def assign_workout_plan_to_user(
     assignment: WorkoutPlansUsersCreate,
     db: Session = Depends(get_db),
@@ -468,7 +589,7 @@ def assign_workout_plan_to_user(
     return new_assignment
 
 
-@workout_router.patch("/assign-workout-plan/update/{assignment_id}", response_model=WorkoutPlansUsersResponse)
+@workout_router.patch("/workout-plans/assign/{assignment_id}", response_model=WorkoutPlansUsersResponse)
 def update_workout_plan_assignment(
     assignment_id: int,
     assignment_update: WorkoutPlansUsersUpdate,
@@ -506,7 +627,7 @@ def update_workout_plan_assignment(
     return assignment
 
 
-@workout_router.delete("/assign-workout-plan/delete/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@workout_router.delete("/workout-plans/assign/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_workout_plan_assignment(
     assignment_id: int,
     db: Session = Depends(get_db),
@@ -528,7 +649,7 @@ def delete_workout_plan_assignment(
     return None
 
 
-@workout_router.post("/seed-full-workout-plan", status_code=status.HTTP_201_CREATED)
+@workout_router.post("/workout-plans/seed-full", status_code=status.HTTP_201_CREATED)
 def seed_full_workout_plan(
     plan_data: SeederFullWorkoutPlan,
     db: Session = Depends(get_db),
@@ -684,191 +805,6 @@ def get_workout_plans_by_user(
     return plans
 
 
-@workout_router.get("/exer-tags", response_model=List[ExerTagResponse])
-def get_all_exer_tags(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Retrieve all exercise tags.
-    """
-    tags = db.query(Exer_Tags).offset(skip).limit(limit).all()
-    return tags
-
-
-@workout_router.post("/exer-tags", response_model=List[ExerTagResponse], status_code=status.HTTP_201_CREATED)
-def create_exer_tags(
-    tags: List[ExerTagCreate],
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Create multiple exercise tags using a list of tag names. See exer_tags.json for sample input.
-    """
-    created_tags = []
-    for tag_data in tags:
-        existing_tag = db.query(Exer_Tags).filter(Exer_Tags.name == tag_data.name).first()
-        if existing_tag:
-            created_tags.append(existing_tag)
-        else:
-            new_tag = Exer_Tags(name=tag_data.name)
-            db.add(new_tag)
-            db.flush()
-            created_tags.append(new_tag)
-            
-    db.commit()
-    for tag in created_tags:
-        db.refresh(tag)
-        
-    return created_tags
-
-
-@workout_router.get("/plan-tags", response_model=List[PlanTagResponse])
-def get_all_plan_tags(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Retrieve all plan tags.
-    """
-    tags = db.query(Plan_Tags).offset(skip).limit(limit).all()
-    return tags
-
-
-@workout_router.post("/plan-tags", response_model=List[PlanTagResponse], status_code=status.HTTP_201_CREATED)
-def create_plan_tags(
-    tags: List[PlanTagCreate],
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Create multiple plan tags using a list of tag names. See plan_tags.json for sample input.
-    """
-    created_tags = []
-    for tag_data in tags:
-        existing_tag = db.query(Plan_Tags).filter(Plan_Tags.name == tag_data.name).first()
-        if existing_tag:
-            created_tags.append(existing_tag)
-        else:
-            new_tag = Plan_Tags(name=tag_data.name)
-            db.add(new_tag)
-            db.flush()
-            created_tags.append(new_tag)
-            
-    db.commit()
-    for tag in created_tags:
-        db.refresh(tag)
-        
-    return created_tags
-
-
-@workout_router.post("/link-exercises-tags", response_model=ExercisesExerTagsResponse, status_code=status.HTTP_201_CREATED)
-def create_exercise_tag_link(
-    link: ExercisesExerTagsCreate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Link a tag to an exercise using tag_id and exercise_id
-    """
-    ex = db.query(Exercises).filter(Exercises.id == link.exercise_id).first()
-    if not ex:
-        raise HTTPException(status_code=404, detail="Exercise not found")
-    tag = db.query(Exer_Tags).filter(Exer_Tags.id == link.tag_id).first()
-    if not tag:
-        raise HTTPException(status_code=404, detail="Tag not found")
-        
-    link_exists = db.query(Exercises_Exer_Tags).filter_by(exercise_id=link.exercise_id, tag_id=link.tag_id).first()
-    if link_exists:
-        return link_exists
-        
-    db_link = Exercises_Exer_Tags(**link.model_dump())
-    db.add(db_link)
-    db.commit()
-    return link
-
-
-@workout_router.post("/link-workout-plans-tags", response_model=WorkoutPlansPlanTagsResponse, status_code=status.HTTP_201_CREATED)
-def create_workout_plan_tag_link(
-    link: WorkoutPlansPlanTagsCreate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Link a tag to a workout plan using tag_id and plan_id
-    """
-    plan = db.query(Workout_Plans).filter(Workout_Plans.id == link.plan_id).first()
-    if not plan:
-        raise HTTPException(status_code=404, detail="Workout plan not found")
-    tag = db.query(Plan_Tags).filter(Plan_Tags.id == link.tag_id).first()
-    if not tag:
-        raise HTTPException(status_code=404, detail="Tag not found")
-        
-    link_exists = db.query(Workout_Plans_Plan_Tags).filter_by(plan_id=link.plan_id, tag_id=link.tag_id).first()
-    if link_exists:
-        return link_exists
-        
-    db_link = Workout_Plans_Plan_Tags(**link.model_dump())
-    db.add(db_link)
-    db.commit()
-    return link
-
-
-# ============================================================================
-# WORKOUT PLANS — UPDATE / DELETE
-# ============================================================================
-
-@workout_router.patch("/workout-plans/{plan_id}", response_model=WorkoutPlanResponse)
-def update_workout_plan(
-    plan_id: int,
-    plan_data: WorkoutPlanUpdate,
-    db: Session = Depends(get_db),
-    current_db_user: User = Depends(get_current_db_user),
-):
-    """
-    Update a workout plan's metadata. Only the creator or an admin may do this.
-    """
-    plan = db.query(Workout_Plans).filter(Workout_Plans.id == plan_id).first()
-    if not plan:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan not found")
-
-    if plan.created_by != current_db_user.id and current_db_user.role.value != "admin": #type:ignore
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only update your own workout plans")
-
-    update_data = plan_data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(plan, field, value)
-
-    db.commit()
-    db.refresh(plan)
-    return plan
-
-
-@workout_router.delete("/workout-plans/{plan_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_workout_plan(
-    plan_id: int,
-    db: Session = Depends(get_db),
-    current_db_user: User = Depends(get_current_db_user),
-):
-    """
-    Delete a workout plan. Only the creator or an admin may do this.
-    """
-    plan = db.query(Workout_Plans).filter(Workout_Plans.id == plan_id).first()
-    if not plan:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan not found")
-
-    if plan.created_by != current_db_user.id and current_db_user.role.value != "admin": #type:ignore
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only delete your own workout plans")
-
-    db.delete(plan)
-    db.commit()
-    return None
-
-
 # ============================================================================
 # WORKOUTS — LIST / GET / UPDATE / DELETE
 # ============================================================================
@@ -934,5 +870,205 @@ def delete_workout(
     return None
 
 
+# ============================================================================
+# EXERCISE AND WORKOUT PLAN TAGS — LIST / GET / CREATE / DELETE
+# ============================================================================
 
+
+@workout_router.get("/exer-tags", response_model=List[ExerTagResponse])
+def get_all_exer_tags(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Retrieve all exercise tags.
+    """
+    tags = db.query(Exer_Tags).offset(skip).limit(limit).all()
+    return tags
+
+
+@workout_router.post("/exer-tags", response_model=List[ExerTagResponse], status_code=status.HTTP_201_CREATED)
+def create_exer_tags(
+    tags: List[ExerTagCreate],
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create multiple exercise tags using a list of tag names. See exer_tags.json for sample input.
+    """
+    created_tags = []
+    for tag_data in tags:
+        existing_tag = db.query(Exer_Tags).filter(Exer_Tags.name == tag_data.name).first()
+        if existing_tag:
+            created_tags.append(existing_tag)
+        else:
+            new_tag = Exer_Tags(name=tag_data.name)
+            db.add(new_tag)
+            db.flush()
+            created_tags.append(new_tag)
+            
+    db.commit()
+    for tag in created_tags:
+        db.refresh(tag)
+        
+    return created_tags
+
+
+@workout_router.get("/exer-tags/{tag_id}", response_model=ExerTagResponse)
+def get_exer_tag(
+    tag_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Retrieve a single exercise tag."""
+    tag = db.query(Exer_Tags).filter(Exer_Tags.id == tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise tag not found")
+    return tag
+
+
+@workout_router.delete("/exer-tags/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_exer_tag(
+    tag_id: int,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user)
+):
+    """Delete an exercise tag. (Admin only)"""
+    if current_db_user.role.value != "admin": # type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can delete exercise tags")
+        
+    tag = db.query(Exer_Tags).filter(Exer_Tags.id == tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise tag not found")
+        
+    db.delete(tag)
+    db.commit()
+    return None
+
+
+@workout_router.get("/plan-tags", response_model=List[PlanTagResponse])
+def get_all_plan_tags(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Retrieve all plan tags.
+    """
+    tags = db.query(Plan_Tags).offset(skip).limit(limit).all()
+    return tags
+
+
+@workout_router.post("/plan-tags", response_model=List[PlanTagResponse], status_code=status.HTTP_201_CREATED)
+def create_plan_tags(
+    tags: List[PlanTagCreate],
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create multiple plan tags using a list of tag names. See plan_tags.json for sample input.
+    """
+    created_tags = []
+    for tag_data in tags:
+        existing_tag = db.query(Plan_Tags).filter(Plan_Tags.name == tag_data.name).first()
+        if existing_tag:
+            created_tags.append(existing_tag)
+        else:
+            new_tag = Plan_Tags(name=tag_data.name)
+            db.add(new_tag)
+            db.flush()
+            created_tags.append(new_tag)
+            
+    db.commit()
+    for tag in created_tags:
+        db.refresh(tag)
+        
+    return created_tags
+
+
+@workout_router.get("/plan-tags/{tag_id}", response_model=PlanTagResponse)
+def get_plan_tag(
+    tag_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Retrieve a single plan tag."""
+    tag = db.query(Plan_Tags).filter(Plan_Tags.id == tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plan tag not found")
+    return tag
+
+
+@workout_router.delete("/plan-tags/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_plan_tag(
+    tag_id: int,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user)
+):
+    """Delete a plan tag. (Admin only)"""
+    if current_db_user.role.value != "admin": # type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can delete plan tags")
+        
+    tag = db.query(Plan_Tags).filter(Plan_Tags.id == tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Plan tag not found")
+        
+    db.delete(tag)
+    db.commit()
+    return None
+
+
+@workout_router.post("/exer-tags/link-to-exercise", response_model=ExercisesExerTagsResponse, status_code=status.HTTP_201_CREATED)
+def create_exercise_tag_link(
+    link: ExercisesExerTagsCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Link a tag to an exercise using tag_id and exercise_id
+    """
+    ex = db.query(Exercises).filter(Exercises.id == link.exercise_id).first()
+    if not ex:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+    tag = db.query(Exer_Tags).filter(Exer_Tags.id == link.tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+        
+    link_exists = db.query(Exercises_Exer_Tags).filter_by(exercise_id=link.exercise_id, tag_id=link.tag_id).first()
+    if link_exists:
+        return link_exists
+        
+    db_link = Exercises_Exer_Tags(**link.model_dump())
+    db.add(db_link)
+    db.commit()
+    return link
+
+
+@workout_router.post("/plan-tags/link-to-workout-plan", response_model=WorkoutPlansPlanTagsResponse, status_code=status.HTTP_201_CREATED)
+def create_workout_plan_tag_link(
+    link: WorkoutPlansPlanTagsCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Link a tag to a workout plan using tag_id and plan_id
+    """
+    plan = db.query(Workout_Plans).filter(Workout_Plans.id == link.plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=404, detail="Workout plan not found")
+    tag = db.query(Plan_Tags).filter(Plan_Tags.id == link.tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+        
+    link_exists = db.query(Workout_Plans_Plan_Tags).filter_by(plan_id=link.plan_id, tag_id=link.tag_id).first()
+    if link_exists:
+        return link_exists
+        
+    db_link = Workout_Plans_Plan_Tags(**link.model_dump())
+    db.add(db_link)
+    db.commit()
+    return link
 
