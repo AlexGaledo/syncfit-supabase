@@ -1,11 +1,11 @@
 [
-  { "name": "Full Body Split" },
-  { "name": "Push/Pull/Leg Split" },
-  { "name": "Upper/Lower Split" },
-  { "name": "Body Part Split" },
-  { "name": "Muscle Building Focus" },
-  { "name": "Strength Training Focus" },
-  { "name": "General Fitness Focus" },
-  { "name": "Endurance/Cardio Focus" },
-  { "name": "Weight Loss Focus" }
+  { "name": "full body split" },
+  { "name": "push/pull/leg split" },
+  { "name": "upper/lower split" },
+  { "name": "body part split" },
+  { "name": "muscle building focus" },
+  { "name": "strength training focus" },
+  { "name": "general fitness focus" },
+  { "name": "endurance/cardio focus" },
+  { "name": "weight loss focus" }
 ]
