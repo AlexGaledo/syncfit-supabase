@@ -198,8 +198,13 @@ async def create_profile(
     user = _get_user_or_404(db, user_id)
     _assert_self_or_admin(user, current_user, db)
 
-    if user.profile:
-        return user.profile
+    existing_profile = (
+        db.query(User_Profile)
+        .filter(User_Profile.user_id == user_id)
+        .first()
+    )
+    if existing_profile:
+        return existing_profile
 
     profile = User_Profile(user_id=user_id, **profile_data.model_dump(exclude_unset=True))
     db.add(profile)

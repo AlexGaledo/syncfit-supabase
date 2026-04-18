@@ -18,8 +18,8 @@ class UserRole(enum.Enum):
 
 class UserType(enum.Enum):
     """Enum for user types"""
-    trainer = 'internal'
-    trainee = 'external'
+    trainer = 'trainer'
+    trainee = 'trainee'
 
 
 class UserGender(enum.Enum):

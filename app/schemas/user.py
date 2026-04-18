@@ -17,8 +17,8 @@ class UserRole(str, Enum):
     user = "user"
 
 class UserType(str, Enum):
-    trainer = "internal"
-    trainee = "external"
+    trainer = "trainer"
+    trainee = "trainee"
 
 class UserGender(str, Enum):
     male = "male"
