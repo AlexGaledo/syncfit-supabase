@@ -156,6 +156,8 @@ class ExerciseBase(BaseModel):
     is_equipment_needed: bool = False
     video_url: Optional[str] = None
     image_url: Optional[str] = None
+    is_by_reps: bool = True
+    is_by_duration: bool = False
     tags: Optional[List[str]] = None
 
 
@@ -172,6 +174,8 @@ class ExerciseUpdate(BaseModel):
     is_equipment_needed: Optional[bool] = None
     video_url: Optional[str] = None
     image_url: Optional[str] = None
+    is_by_reps: Optional[bool] = None
+    is_by_duration: Optional[bool] = None
 
 
 class ExerciseResponse(ExerciseBase):
@@ -216,8 +220,6 @@ class ExercisesWorkoutsBase(BaseModel):
     exercise_id: int
     sets: Optional[int] = None
     reps: Optional[int] = None
-    is_by_reps: bool = True
-    is_by_duration: bool = False
     duration_seconds: Optional[int] = 0
     rest_duration_seconds: Optional[int] = 30
     order_index: Optional[int] = None
@@ -232,8 +234,6 @@ class ExercisesWorkoutsUpdate(BaseModel):
     """Schema for updating a workout exercise"""
     sets: Optional[int] = None
     reps: Optional[int] = None
-    is_by_reps: Optional[bool] = None
-    is_by_duration: Optional[bool] = None
     duration_seconds: Optional[int] = None
     rest_duration_seconds: Optional[int] = None
     order_index: Optional[int] = None
@@ -322,8 +322,6 @@ class SeederExerciseWorkout(BaseModel):
     exercise_name: str
     sets: Optional[int] = None
     reps: Optional[int] = None
-    is_by_reps: bool = True
-    is_by_duration: bool = False
     duration_seconds: Optional[int] = 0
     rest_duration_seconds: Optional[int] = 30
     order_index: int
@@ -362,8 +360,6 @@ class CreateExerciseWorkout(BaseModel):
     exercise_id: int
     sets: Optional[int] = None
     reps: Optional[int] = None
-    is_by_reps: bool = True
-    is_by_duration: bool = False
     duration_seconds: Optional[int] = 0
     rest_duration_seconds: Optional[int] = 30
     order_index: int
@@ -375,6 +371,9 @@ class CreateWorkout(BaseModel):
     exercises: List[CreateExerciseWorkout]
     order_index: int
     day_of_week: int 
+
+class CreateFullWorkoutRequest(CreateWorkout):
+    plan_id: int
 
 class CreateFullWorkoutPlan(BaseModel):
     title: str
@@ -388,6 +387,24 @@ class CreateFullWorkoutPlan(BaseModel):
     duration_minutes: Optional[int] = None
     workouts: List[CreateWorkout]
     tags: Optional[List[str]] = None
+
+# ============================================================================
+# USER FULL PLAN UPDATE SCHEMAS
+# ============================================================================
+
+class UpdateFullWorkoutExercise(BaseModel):
+    exercise_id: int
+    sets: Optional[int] = None
+    reps: Optional[int] = None
+    duration_seconds: Optional[int] = None
+    rest_duration_seconds: Optional[int] = None
+    order_index: int
+
+class UpdateFullWorkout(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    estimated_duration_minutes: Optional[int] = None
+    exercises: Optional[List[UpdateFullWorkoutExercise]] = None
 
 # ============================================================================
 # FULL DETAIL RESPONSES
@@ -415,8 +432,8 @@ class FullWorkoutDetail(BaseModel):
     title: str
     description: Optional[str] = None
     estimated_duration_minutes: Optional[int] = None
-    day_of_week: int
-    order_index: int
+    day_of_week: Optional[int] = None
+    order_index: Optional[int] = None
     exercises: List[FullExerciseDetail] = []
 
 class FullWorkoutPlanDetailResponse(BaseModel):

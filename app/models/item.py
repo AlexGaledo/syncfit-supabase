@@ -130,6 +130,8 @@ class Exercises(Base):
     is_equipment_needed = Column(Boolean, default=False, nullable=False)
     video_url = Column(Text, nullable=True)
     image_url = Column(Text, nullable=True)
+    is_by_reps = Column(Boolean, default=True)
+    is_by_duration = Column(Boolean, default=False)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -173,8 +175,6 @@ class Exercises_Workouts(Base):
     exercise_id = Column(BigInteger, ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
     sets = Column(Integer, nullable=True)
     reps = Column(Integer, nullable=True, default=0)
-    is_by_reps = Column(Boolean, default=True)
-    is_by_duration = Column(Boolean, default=False)
     duration_seconds = Column(Integer, nullable=True, default=0)
     rest_duration_seconds = Column(Integer, nullable=True, default=30)
     order_index = Column(Integer, nullable=True)

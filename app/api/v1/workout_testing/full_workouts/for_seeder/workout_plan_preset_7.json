@@ -1,0 +1,637 @@
+{
+    "plan": {
+        "title": "Push/Pull/Legs (PPL) Advanced 6-Day",
+        "description": "An advanced 6-day split designed for maximum hypertrophy and strength, featuring high frequency, intense compound lifts, and targeted isolation exercises.",
+        "duration_minutes": 540,
+        "difficulty": "Advanced",
+        "days_per_week": 6,
+        "ai_generated": true,
+        "is_trainer_provided": false,
+        "tags": [
+            "Push/Pull/Leg Split",
+            "Muscle Building Focus",
+            "Strength Training Focus"
+        ],
+        "workouts": [
+            {
+                "title": "Advanced Push Day 1",
+                "description": "Intense upper body pushing workout focusing on heavy compounds and high-volume isolation for chest, shoulders, and triceps.",
+                "estimated_duration_minutes": 90,
+                "order_index": 1,
+                "day_of_week": 1,
+                "exercises": [
+                    {
+                        "exercise_name": "Barbell Bench Press",
+                        "sets": 5,
+                        "reps": 5,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 90,
+                        "order_index": 1
+                    },
+                    {
+                        "exercise_name": "Overhead Dumbbell Press",
+                        "sets": 4,
+                        "reps": 8,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 2
+                    },
+                    {
+                        "exercise_name": "Weighted Dips",
+                        "sets": 4,
+                        "reps": 10,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 3
+                    },
+                    {
+                        "exercise_name": "Cable Lateral Raise",
+                        "sets": 4,
+                        "reps": 12,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 4
+                    },
+                    {
+                        "exercise_name": "Tricep Overhead Extension",
+                        "sets": 4,
+                        "reps": 12,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 5
+                    },
+                    {
+                        "exercise_name": "Incline Dumbbell Fly",
+                        "sets": 3,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 6
+                    }
+                ]
+            },
+            {
+                "title": "Advanced Pull Day 1",
+                "description": "Heavy back and bicep session designed for widening the lats and building upper back density.",
+                "estimated_duration_minutes": 90,
+                "order_index": 2,
+                "day_of_week": 2,
+                "exercises": [
+                    {
+                        "exercise_name": "Weighted Pull-Up",
+                        "sets": 5,
+                        "reps": 5,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 90,
+                        "order_index": 1
+                    },
+                    {
+                        "exercise_name": "Barbell Row",
+                        "sets": 4,
+                        "reps": 8,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 2
+                    },
+                    {
+                        "exercise_name": "Lat Pulldown",
+                        "sets": 3,
+                        "reps": 10,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 3
+                    },
+                    {
+                        "exercise_name": "Face Pull",
+                        "sets": 4,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 4
+                    },
+                    {
+                        "exercise_name": "Barbell Bicep Curl",
+                        "sets": 4,
+                        "reps": 10,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 5
+                    },
+                    {
+                        "exercise_name": "Hammer Curl",
+                        "sets": 3,
+                        "reps": 12,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 6
+                    }
+                ]
+            },
+            {
+                "title": "Advanced Leg Day 1",
+                "description": "High-intensity lower body workout emphasizing heavy squats and targeted hamstring/glute volume.",
+                "estimated_duration_minutes": 90,
+                "order_index": 3,
+                "day_of_week": 3,
+                "exercises": [
+                    {
+                        "exercise_name": "Barbell Squat",
+                        "sets": 5,
+                        "reps": 5,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 90,
+                        "order_index": 1
+                    },
+                    {
+                        "exercise_name": "Romanian Deadlift",
+                        "sets": 4,
+                        "reps": 8,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 90,
+                        "order_index": 2
+                    },
+                    {
+                        "exercise_name": "Bulgarian Split Squat",
+                        "sets": 4,
+                        "reps": 10,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 3
+                    },
+                    {
+                        "exercise_name": "Leg Press",
+                        "sets": 3,
+                        "reps": 12,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 4
+                    },
+                    {
+                        "exercise_name": "Standing Calf Raise",
+                        "sets": 5,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 5
+                    },
+                    {
+                        "exercise_name": "Hanging Leg Raise",
+                        "sets": 4,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 6
+                    }
+                ]
+            },
+            {
+                "title": "Advanced Push Day 2",
+                "description": "Second upper body pushing session of the week, slightly more focused on hypertrophy volume.",
+                "estimated_duration_minutes": 90,
+                "order_index": 4,
+                "day_of_week": 4,
+                "exercises": [
+                    {
+                        "exercise_name": "Barbell Bench Press",
+                        "sets": 4,
+                        "reps": 8,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 90,
+                        "order_index": 1
+                    },
+                    {
+                        "exercise_name": "Overhead Dumbbell Press",
+                        "sets": 4,
+                        "reps": 10,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 2
+                    },
+                    {
+                        "exercise_name": "Weighted Dips",
+                        "sets": 4,
+                        "reps": 10,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 3
+                    },
+                    {
+                        "exercise_name": "Cable Lateral Raise",
+                        "sets": 4,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 4
+                    },
+                    {
+                        "exercise_name": "Tricep Overhead Extension",
+                        "sets": 4,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 5
+                    },
+                    {
+                        "exercise_name": "Incline Dumbbell Fly",
+                        "sets": 3,
+                        "reps": 12,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 6
+                    }
+                ]
+            },
+            {
+                "title": "Advanced Pull Day 2",
+                "description": "Second upper body pulling session of the week, slightly more focused on hypertrophy volume.",
+                "estimated_duration_minutes": 90,
+                "order_index": 5,
+                "day_of_week": 5,
+                "exercises": [
+                    {
+                        "exercise_name": "Weighted Pull-Up",
+                        "sets": 4,
+                        "reps": 8,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 90,
+                        "order_index": 1
+                    },
+                    {
+                        "exercise_name": "Barbell Row",
+                        "sets": 4,
+                        "reps": 10,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 2
+                    },
+                    {
+                        "exercise_name": "Lat Pulldown",
+                        "sets": 3,
+                        "reps": 12,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 3
+                    },
+                    {
+                        "exercise_name": "Face Pull",
+                        "sets": 4,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 4
+                    },
+                    {
+                        "exercise_name": "Barbell Bicep Curl",
+                        "sets": 4,
+                        "reps": 12,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 5
+                    },
+                    {
+                        "exercise_name": "Hammer Curl",
+                        "sets": 3,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 6
+                    }
+                ]
+            },
+            {
+                "title": "Advanced Leg Day 2",
+                "description": "Second lower body session of the week, maintaining high volume and intensity.",
+                "estimated_duration_minutes": 90,
+                "order_index": 6,
+                "day_of_week": 6,
+                "exercises": [
+                    {
+                        "exercise_name": "Barbell Squat",
+                        "sets": 4,
+                        "reps": 8,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 90,
+                        "order_index": 1
+                    },
+                    {
+                        "exercise_name": "Romanian Deadlift",
+                        "sets": 4,
+                        "reps": 10,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 90,
+                        "order_index": 2
+                    },
+                    {
+                        "exercise_name": "Bulgarian Split Squat",
+                        "sets": 4,
+                        "reps": 12,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 3
+                    },
+                    {
+                        "exercise_name": "Leg Press",
+                        "sets": 3,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 60,
+                        "order_index": 4
+                    },
+                    {
+                        "exercise_name": "Standing Calf Raise",
+                        "sets": 5,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 5
+                    },
+                    {
+                        "exercise_name": "Hanging Leg Raise",
+                        "sets": 4,
+                        "reps": 15,
+                        "duration_seconds": 0,
+                        "rest_duration_seconds": 45,
+                        "order_index": 6
+                    }
+                ]
+            }
+        ]
+    },
+    "exercises": [
+        {
+            "name": "Barbell Bench Press",
+            "description": "The standard compound movement for developing chest mass and upper body pushing power.",
+            "instruction": "1. Lie on the bench with eyes under the bar. 2. Grip the bar slightly wider than shoulders. 3. Lower the bar to mid-chest. 4. Press back up until arms are locked.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Chest",
+                "Push Pattern",
+                "Anterior Deltoids",
+                "Triceps"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Overhead Dumbbell Press",
+            "description": "A vertical press focusing on the anterior and lateral deltoids.",
+            "instruction": "1. Sit or stand with dumbbells at shoulder height. 2. Press the weights upward until arms are straight. 3. Lower slowly back to the start.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Shoulders",
+                "Push Pattern",
+                "Anterior Deltoids",
+                "Triceps"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Weighted Dips",
+            "description": "An advanced pushing exercise emphasizing the lower chest, anterior deltoids, and triceps.",
+            "instruction": "1. Attach a weight belt around your waist. 2. Mount the dip bars and lower your body until shoulders are below elbows. 3. Press back up to full extension.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Chest",
+                "Triceps",
+                "Push Pattern",
+                "Anterior Deltoids"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Cable Lateral Raise",
+            "description": "Provides constant tension on the side deltoids to maximize shoulder width and hypertrophy.",
+            "instruction": "1. Stand next to a low cable pulley. 2. Grab the handle with the hand furthest from the machine. 3. Raise your arm to the side until parallel to the floor. 4. Lower under control.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Shoulders",
+                "Lateral Deltoids"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Tricep Overhead Extension",
+            "description": "Targets the long head of the triceps for maximum arm thickness.",
+            "instruction": "1. Hold a dumbbell or use a cable rope overhead. 2. Lower the weight behind your head by bending your elbows. 3. Extend your arms to return to the starting position.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Triceps",
+                "Push Pattern"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Incline Dumbbell Fly",
+            "description": "An isolation movement to target the upper pectoral fibers.",
+            "instruction": "1. Lie on an incline bench (30-45 degrees). 2. Hold dumbbells above chest. 3. Open arms in a wide arc until a stretch is felt. 4. Squeeze back to center.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Chest",
+                "Push Pattern",
+                "Anterior Deltoids"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Weighted Pull-Up",
+            "description": "An advanced variation of the pull-up designed to aggressively overload the back and lats for strength and width.",
+            "instruction": "1. Attach a weight belt. 2. Grip the pull-up bar slightly wider than shoulder-width. 3. Pull your body up until your chin clears the bar. 4. Lower down with control.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Back",
+                "Lats",
+                "Pull Pattern",
+                "Biceps"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Barbell Row",
+            "description": "A heavy compound horizontal pulling exercise that builds mass in the upper and middle back.",
+            "instruction": "1. Hinge forward at the hips until your torso is nearly parallel to the floor. 2. Grab the barbell and pull it towards your lower ribcage. 3. Lower the weight under control.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Back",
+                "Lats",
+                "Pull Pattern",
+                "Biceps",
+                "Rear Deltoids"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Lat Pulldown",
+            "description": "A vertical pulling exercise for developing back width (Lats).",
+            "instruction": "1. Grip bar wider than shoulders. 2. Pull bar down to upper chest while arching back slightly. 3. Slowly return bar to top.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Back",
+                "Lats",
+                "Pull Pattern",
+                "Biceps"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Face Pull",
+            "description": "Targets the rear delts and improves shoulder health/posture.",
+            "instruction": "1. Set cable to eye level with rope. 2. Pull toward forehead, pulling rope ends apart. 3. Squeeze back of shoulders and return.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Shoulders",
+                "Rear Deltoids",
+                "Traps",
+                "Pull Pattern"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Barbell Bicep Curl",
+            "description": "Classic isolation movement for bicep mass.",
+            "instruction": "1. Stand with barbell in hands, palms up. 2. Curl bar toward chest without swinging torso. 3. Lower slowly to start.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Biceps",
+                "Pull Pattern"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Hammer Curl",
+            "description": "Targets the brachialis and forearms for thicker looking arms.",
+            "instruction": "1. Hold dumbbells with neutral grip (palms facing each other). 2. Curl toward shoulders. 3. Lower with control.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Biceps",
+                "Forearms",
+                "Pull Pattern"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Barbell Squat",
+            "description": "The king of lower body exercises for quads and glutes.",
+            "instruction": "1. Place bar on upper back. 2. Squat down until thighs are parallel to floor. 3. Drive through heels to stand up.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Quads",
+                "Glutes",
+                "Squat Pattern",
+                "Hamstrings"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Romanian Deadlift",
+            "description": "A hinge movement focusing on hamstrings and glutes.",
+            "instruction": "1. Hold barbell at hip height. 2. Push hips back while lowering bar down legs. 3. Feel stretch in hamstrings and return to start.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Hamstrings",
+                "Glutes",
+                "Hinge Pattern",
+                "Lower Back"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Bulgarian Split Squat",
+            "description": "A challenging unilateral leg exercise focusing heavily on the quads and glutes.",
+            "instruction": "1. Stand a few feet in front of a bench. 2. Place one foot behind you on the bench. 3. Lower your body until your front thigh is parallel to the ground. 4. Drive back up.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Quads",
+                "Glutes",
+                "Lunge Pattern",
+                "Hamstrings"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Leg Press",
+            "description": "Machine-based movement for high volume leg growth.",
+            "instruction": "1. Sit in machine with feet shoulder-width apart. 2. Lower platform toward chest. 3. Press back up without locking knees.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Quads",
+                "Glutes",
+                "Squat Pattern"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Standing Calf Raise",
+            "description": "Isolated movement for the calves.",
+            "instruction": "1. Stand on a raised surface with heels hanging off. 2. Push through the balls of your feet to raise your body. 3. Lower slowly.",
+            "is_equipment_needed": false,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Calves"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        },
+        {
+            "name": "Hanging Leg Raise",
+            "description": "An advanced core exercise challenging the entire abdominal wall and hip flexors.",
+            "instruction": "1. Hang from a pull-up bar with a pronated grip. 2. Keeping your legs straight, raise them until they are parallel to the floor or higher. 3. Lower them under control.",
+            "is_equipment_needed": true,
+            "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=GOXE-93vsPW2Bmpi",
+            "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=webp",
+            "tags": [
+                "Abs",
+                "Obliques"
+            ],
+            "is_by_reps": true,
+            "is_by_duration": false
+        }
+    ]
+}
