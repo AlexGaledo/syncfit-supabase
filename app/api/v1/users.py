@@ -31,7 +31,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 # ============================================================================
 
 def _get_user_or_404(db: Session, user_id: UUID) -> User:
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.supabase_user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
@@ -200,13 +200,13 @@ async def create_profile(
 
     existing_profile = (
         db.query(User_Profile)
-        .filter(User_Profile.user_id == user_id)
+        .filter(User_Profile.user_id == user.id)
         .first()
     )
     if existing_profile:
         return existing_profile
 
-    profile = User_Profile(user_id=user_id, **profile_data.model_dump(exclude_unset=True))
+    profile = User_Profile(user_id=user.id, **profile_data.model_dump(exclude_unset=True))
     db.add(profile)
     db.commit()
     db.refresh(profile)
@@ -390,7 +390,7 @@ async def get_weight_progress(
 
     entries = (
         db.query(Weight_Loss_Progress)
-        .filter(Weight_Loss_Progress.user_id == user_id)
+        .filter(Weight_Loss_Progress.user_id == user.id)
         .order_by(Weight_Loss_Progress.date.desc())
         .offset(skip)
         .limit(limit)
@@ -410,7 +410,7 @@ async def log_weight(
     user = _get_user_or_404(db, user_id)
     _assert_self_or_admin(user, current_user, db)
 
-    entry = Weight_Loss_Progress(user_id=user_id, weight=progress_data.weight)
+    entry = Weight_Loss_Progress(user_id=user.id, weight=progress_data.weight)
     db.add(entry)
     db.commit()
     db.refresh(entry)
@@ -428,6 +428,6 @@ async def get_badges(
     current_user: dict = Depends(get_current_user)
 ):
     """Get all badges earned by a user."""
-    _get_user_or_404(db, user_id)
-    badges = db.query(User_Badges).filter(User_Badges.user_id == user_id).all()
+    user = _get_user_or_404(db, user_id)
+    badges = db.query(User_Badges).filter(User_Badges.user_id == user.id).all()
     return badges
