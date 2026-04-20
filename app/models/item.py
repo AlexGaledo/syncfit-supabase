@@ -110,7 +110,7 @@ class Workouts(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships
-    workout_plan_workouts = relationship("Workouts_Workout_Plans", back_populates="workout")
+    workout_plan_workouts = relationship("Workouts_Workout_Plans", back_populates="workout", cascade="all, delete-orphan")
     workout_exercises = relationship("Exercises_Workouts", back_populates="workout", cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -137,7 +137,7 @@ class Exercises(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships
-    workout_exercises = relationship("Exercises_Workouts", back_populates="exercise")
+    workout_exercises = relationship("Exercises_Workouts", back_populates="exercise", cascade="all, delete-orphan")
     exercise_exer_tags = relationship("Exercises_Exer_Tags", back_populates="exercise", cascade="all, delete-orphan")
 
     def __repr__(self):

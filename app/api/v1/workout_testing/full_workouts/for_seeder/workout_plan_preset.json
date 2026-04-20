@@ -1,0 +1,282 @@
+{
+  "plan": {
+    "title": "Beginner Full Body Strength",
+    "description": "An introductory 3-day program focusing on the basic squat pattern, hinge pattern, and push pattern movements to build core strength.",
+    "difficulty": "beginner",
+    "days_per_week": 3,
+    "ai_generated": true,
+    "is_preset": true,
+    "is_equipment_needed": true,
+    "duration_minutes": 180,
+    "image_url": "https://assets.gqindia.com/photos/6901d75412ed49c7aea3ce5c/16:9/w_2560%2Cc_limit/work.jpg",
+    "tags": [
+      "full body split",
+      "strength training focus"
+    ],
+    "workouts": [
+      {
+        "title": "Full Body Workout A",
+        "description": "Focuses on the barbell squat, bench press, and horizontal pulling to build baseline strength.",
+        "estimated_duration_minutes": 60,
+        "order_index": 1,
+        "day_of_week": 1,
+        "exercises": [
+          {
+            "exercise_name": "Barbell Squat",
+            "sets": 3,
+            "reps": 10,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 90,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Flat Barbell Bench Press",
+            "sets": 3,
+            "reps": 10,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 90,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Barbell Row",
+            "sets": 3,
+            "reps": 10,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 90,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Plank",
+            "sets": 3,
+            "reps": 0,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 45,
+            "order_index": 4
+          }
+        ]
+      },
+      {
+        "title": "Full Body Workout B",
+        "description": "Focuses on the hinge pattern with Romanian deadlifts, overhead pressing, and vertical pulling.",
+        "estimated_duration_minutes": 60,
+        "order_index": 2,
+        "day_of_week": 3,
+        "exercises": [
+          {
+            "exercise_name": "Romanian Deadlift",
+            "sets": 3,
+            "reps": 10,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 90,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Overhead Dumbbell Press",
+            "sets": 3,
+            "reps": 10,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 90,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Lat Pulldown",
+            "sets": 3,
+            "reps": 10,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 90,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Plank",
+            "sets": 3,
+            "reps": 0,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 45,
+            "order_index": 4
+          }
+        ]
+      },
+      {
+        "title": "Full Body Workout C",
+        "description": "Returns to the squat pattern, with bodyweight pushing and machine pulling for varied stimulus.",
+        "estimated_duration_minutes": 60,
+        "order_index": 3,
+        "day_of_week": 5,
+        "exercises": [
+          {
+            "exercise_name": "Barbell Squat",
+            "sets": 3,
+            "reps": 10,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 90,
+            "order_index": 1
+          },
+          {
+            "exercise_name": "Standard Push-Up",
+            "sets": 3,
+            "reps": 12,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 2
+          },
+          {
+            "exercise_name": "Seated Cable Row",
+            "sets": 3,
+            "reps": 12,
+            "duration_seconds": 0,
+            "rest_duration_seconds": 60,
+            "order_index": 3
+          },
+          {
+            "exercise_name": "Plank",
+            "sets": 3,
+            "reps": 0,
+            "duration_seconds": 45,
+            "rest_duration_seconds": 45,
+            "order_index": 4
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "name": "Barbell Squat",
+      "description": "The foundational lower body movement for building core strength and leg mass.",
+      "instruction": "Place the barbell on your upper back. Squat down until your thighs are parallel to the floor, then drive through your heels to stand up.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=-hncsxeOq2FS_wQp",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=jpg",
+      "is_by_reps": true,
+      "is_by_duration": false,
+      "tags": [
+        "quads",
+        "glutes",
+        "squat pattern",
+        "hamstrings"
+      ]
+    },
+    {
+      "name": "Flat Barbell Bench Press",
+      "description": "Standard compound horizontal pushing movement.",
+      "instruction": "Lie flat on the bench, unrack the bar, lower it to your chest and press back up.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=-hncsxeOq2FS_wQp",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=jpg",
+      "is_by_reps": true,
+      "is_by_duration": false,
+      "tags": [
+        "chest",
+        "triceps",
+        "push pattern",
+        "anterior deltoids"
+      ]
+    },
+    {
+      "name": "Barbell Row",
+      "description": "A heavy compound horizontal pulling exercise that builds mass in the upper and middle back.",
+      "instruction": "Hinge forward at the hips until your torso is nearly parallel to the floor. Grab the barbell and pull it towards your lower ribcage. Lower the weight under control.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=-hncsxeOq2FS_wQp",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=jpg",
+      "is_by_reps": true,
+      "is_by_duration": false,
+      "tags": [
+        "back",
+        "lats",
+        "pull pattern"
+      ]
+    },
+    {
+      "name": "Plank",
+      "description": "A core isometric exercise that strengthens the abdominals.",
+      "instruction": "Start in a push-up position. Hold the position, keeping abs tight.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=-hncsxeOq2FS_wQp",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=jpg",
+      "is_by_reps": false,
+      "is_by_duration": true,
+      "tags": [
+        "abs",
+        "full body"
+      ]
+    },
+    {
+      "name": "Romanian Deadlift",
+      "description": "A fundamental hinge movement focusing on hamstrings and glutes.",
+      "instruction": "Hold the barbell at hip height. Push your hips back while lowering the bar down your legs. Feel the stretch in your hamstrings and return to the start.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=-hncsxeOq2FS_wQp",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=jpg",
+      "is_by_reps": true,
+      "is_by_duration": false,
+      "tags": [
+        "hamstrings",
+        "glutes",
+        "hinge pattern",
+        "lower back"
+      ]
+    },
+    {
+      "name": "Overhead Dumbbell Press",
+      "description": "A vertical press focusing on the shoulders and arm strength.",
+      "instruction": "Sit or stand with dumbbells at shoulder height. Press the weights upward until arms are straight. Lower slowly back to the start.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=-hncsxeOq2FS_wQp",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=jpg",
+      "is_by_reps": true,
+      "is_by_duration": false,
+      "tags": [
+        "shoulders",
+        "push pattern",
+        "anterior deltoids",
+        "triceps"
+      ]
+    },
+    {
+      "name": "Lat Pulldown",
+      "description": "A vertical pulling exercise for developing back width.",
+      "instruction": "Grip the bar wider than your shoulders. Pull the bar down to your upper chest while arching your back slightly. Slowly return the bar to the top.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=-hncsxeOq2FS_wQp",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=jpg",
+      "is_by_reps": true,
+      "is_by_duration": false,
+      "tags": [
+        "back",
+        "lats",
+        "pull pattern"
+      ]
+    },
+    {
+      "name": "Standard Push-Up",
+      "description": "A fundamental bodyweight exercise that builds chest, shoulder, and tricep strength.",
+      "instruction": "Start in a high plank position. Lower your body until your chest is just above the floor. Push back up to the starting position.",
+      "is_equipment_needed": false,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=-hncsxeOq2FS_wQp",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=jpg",
+      "is_by_reps": true,
+      "is_by_duration": false,
+      "tags": [
+        "chest",
+        "triceps",
+        "push pattern"
+      ]
+    },
+    {
+      "name": "Seated Cable Row",
+      "description": "A horizontal pull focusing on the middle back.",
+      "instruction": "Sit with your feet on the pads, knees slightly bent. Pull the handle toward your abdomen. Squeeze your shoulder blades together, then extend your arms back.",
+      "is_equipment_needed": true,
+      "video_url": "https://www.youtube.com/embed/WDIpL0pjun0?si=-hncsxeOq2FS_wQp",
+      "image_url": "https://static.bodyspec.com/tr/79/74/7974592a390496d4?w=1536&h=690&f=jpg",
+      "is_by_reps": true,
+      "is_by_duration": false,
+      "tags": [
+        "back",
+        "lats",
+        "pull pattern"
+      ]
+    }
+  ]
+}

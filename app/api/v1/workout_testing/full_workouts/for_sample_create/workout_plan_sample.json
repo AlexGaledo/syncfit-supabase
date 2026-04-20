@@ -1,82 +1,65 @@
 {
   "title": "Sample Workout Plan by Ford",
-  "description": "A comprehensive 3-day split designed for linear strength progression and hypertrophy.",
-  "difficulty": "beginner",
-  "days_per_week": 3,
+  "description": "A 2-day full body workout plan I created for myself.",
+  "difficulty": "intermediate",
+  "days_per_week": 2,
   "ai_generated": false,
   "is_preset": false,
   "is_equipment_needed": true,
-  "image_url": "https://example.com/images/ppl-plan.jpg",
-  "duration_minutes": 45,
+  "duration_minutes": 120,
+  "image_url": "https://assets.gqindia.com/photos/6901d75412ed49c7aea3ce5c/16:9/w_2560%2Cc_limit/work.jpg",
   "tags": [
-      "Push/Pull/Leg Split",
-      "Muscle Building Focus"
-    ],
+    "full body split",
+    "strength training focus"
+  ],
   "workouts": [
     {
-      "title": "Push Day (Chest/Shoulders/Triceps)",
-      "description": "Focus on horizontal and vertical pushing movements.",
-      "estimated_duration_minutes": 45,
-      "order_index": 0,
+      "title": "Day 1: Full Body A",
+      "description": "First full body session focusing on pushing movements and quads.",
+      "estimated_duration_minutes": 60,
+      "order_index": 1,
       "day_of_week": 1,
       "exercises": [
         {
-          "exercise_id": 188,
+          "exercise_id": 229,
           "sets": 3,
           "reps": 10,
-          "is_by_reps": true,
-          "is_by_duration": false,
-          "duration_seconds": 0,
-          "rest_duration_seconds": 90,
-          "order_index": 0
-        },
-        {
-          "exercise_id": 210,
-          "sets": 3,
-          "reps": 12,
-          "is_by_reps": true,
-          "is_by_duration": false,
           "duration_seconds": 0,
           "rest_duration_seconds": 60,
           "order_index": 1
-        }
-      ]
-    },
-    {
-      "title": "Pull Day (Back/Biceps)",
-      "description": "Focus on vertical and horizontal pulling movements.",
-      "estimated_duration_minutes": 45,
-      "order_index": 1,
-      "day_of_week": 3,
-      "exercises": [
+        },
         {
-          "exercise_id": 188,
+          "exercise_id": 233,
           "sets": 3,
-          "reps": 8,
-          "is_by_reps": true,
-          "is_by_duration": false,
+          "reps": 12,
           "duration_seconds": 0,
-          "rest_duration_seconds": 120,
-          "order_index": 0
+          "rest_duration_seconds": 90,
+          "order_index": 2
         }
       ]
     },
     {
-      "title": "Leg Day (Quads/Hams/Calves)",
-      "description": "Lower body strength and stability.",
-      "estimated_duration_minutes": 50,
+      "title": "Day 2: Full Body B",
+      "description": "Second session focusing on pulling movements and hamstrings/core.",
+      "estimated_duration_minutes": 60,
       "order_index": 2,
-      "day_of_week": 5,
+      "day_of_week": 4,
       "exercises": [
         {
-          "exercise_id": 210,
+          "exercise_id": 229,
           "sets": 4,
-          "reps": 10,
-          "is_by_reps": true,
-          "is_by_duration": false,
+          "reps": 8,
           "duration_seconds": 0,
-          "rest_duration_seconds": 120,
-          "order_index": 0
+          "rest_duration_seconds": 60,
+          "order_index": 1
+        },
+        {
+          "exercise_id": 233,
+          "sets": 3,
+          "reps": 10,
+          "duration_seconds": 0,
+          "rest_duration_seconds": 30,
+          "order_index": 2
         }
       ]
     }
