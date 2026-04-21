@@ -150,6 +150,7 @@ class Event_Logs(Base):
 class Trainer_info(Base):
     __tablename__ = 'trainer_info'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
+    name = Column(String, unique=True, nullable=False)
     expertise = Column(String, nullable=True)
     rate_per_week = Column(Integer, nullable=True, default=0)
     rating = Column(Float, nullable=True, default=5.0)

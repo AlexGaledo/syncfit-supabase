@@ -592,6 +592,10 @@ async def delete_message(
     return None
 
 
+@socials_router.get('/get-trainer-info/{user_id}')
+async def get_trainer_info(user_id: str):
+    
+    return 
 # ============================================================================
 # WebSocket Manager
 # ============================================================================
