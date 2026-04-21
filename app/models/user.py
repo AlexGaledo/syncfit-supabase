@@ -145,3 +145,12 @@ class Event_Logs(Base):
 
     def __repr__(self):
         return f"<Event_Logs {self.user_id} - {self.event_type} - {self.event_timestamp}>"
+
+
+class Trainer_info(Base):
+    __tablename__ = 'trainer_info'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
+    expertise = Column(String, nullable=True)
+    rate_per_week = Column(Integer, nullable=True, default=0)
+    rating = Column(Float, nullable=True, default=5.0)
+    user = relationship("User", back_populates="trainer_info") 
