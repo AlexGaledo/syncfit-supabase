@@ -52,6 +52,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    trainer_info = relationship("trainer_info", back_populates="user",cascade="all, delete-orphan")
     profile = relationship("User_Profile", uselist=False, back_populates="user", cascade="all, delete-orphan")
     badges = relationship("User_Badges", back_populates="user")
     weight_progress = relationship("Weight_Loss_Progress", backref="user", cascade="all, delete-orphan")
