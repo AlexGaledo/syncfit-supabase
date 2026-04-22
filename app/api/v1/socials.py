@@ -431,7 +431,7 @@ async def remove_participant(
 
 
 # ============================================================================
-# MESSAGES ENDPOINTS
+# MESSAGES ENDPOINTS (x)
 # ============================================================================
 
 @socials_router.post(
@@ -590,3 +590,53 @@ async def delete_message(
     db.delete(msg)
     db.commit()
     return None
+
+
+@socials_router.get('/get-trainer-info/{user_id}')
+async def get_trainer_info(user_id: str):
+    
+    return 
+# ============================================================================
+# WebSocket Manager
+# ============================================================================
+
+from fastapi import WebSocket, WebSocketDisconnect, WebSocketException
+from typing import Dict, List
+import json
+
+class ConnectionManager:
+    def __init__(self) -> None:
+        self.rooms: Dict[str, List[WebSocket]] = {}
+
+
+    async def connect(self, websocket: WebSocket, room_id:str):
+        await websocket.accept()
+        self.rooms.setdefault(room_id, []).append(websocket)
+
+
+    def disconnect(self, websocket: WebSocket, room_id:str):
+        self.rooms.get(room_id, []).remove(websocket)
+
+
+    async def broadcast(self, room_id:str, message: Dict):
+        for ws in self.rooms.get(room_id, []):
+            await ws.send_text(json.dumps(message))
+
+connection = ConnectionManager()
+
+@socials_router.websocket('/ws/{room_id}/{user_id}')
+async def websocket_endpoint(
+    websocket: WebSocket,
+    room_id: str,
+    user_id:str
+):
+    await connection.connect(websocket=websocket, room_id=room_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await connection.broadcast(room_id,{
+                "user": user_id,
+                "text": data
+            })
+    except WebSocketDisconnect:
+        connection.disconnect(websocket=websocket,room_id=room_id)
