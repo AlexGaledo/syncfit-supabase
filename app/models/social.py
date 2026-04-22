@@ -51,8 +51,8 @@ class Connections(Base):
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    requester_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    addressee_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    requester_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False)
+    addressee_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False)
     status = Column(Enum(ConnectionStatus), default=ConnectionStatus.pending, nullable=False)
 
     # Timestamps
@@ -76,12 +76,12 @@ class Conversations(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     type = Column(Enum(ConversationType), default=ConversationType.direct, nullable=False)
     name = Column(String(100), nullable=True)                                             # added — group chat name
-    creator_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)      # added — tracks who created it
+    creator_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False)      # added — tracks who created it
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     last_message_at = Column(DateTime(timezone=True), nullable=True)
-    last_message_id = Column(UUID(as_uuid=True), ForeignKey("messages.id"), nullable=True)
+    last_message_id = Column(UUID(as_uuid=True), ForeignKey("messages.id", ondelete='CASCADE'), nullable=True)
 
     # Relationships
     creator = relationship("User", foreign_keys=[creator_id], backref="created_conversations")
@@ -105,7 +105,7 @@ class Conversation_Participants(Base):
     __tablename__ = "conversation_participants"
 
     conversation_id = Column(UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="CASCADE"), primary_key=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), primary_key=True)
     role = Column(Enum(ConversationRole), default=ConversationRole.member, nullable=False)
     joined_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)                             # added — tracks if user left
@@ -126,10 +126,10 @@ class Messages(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     conversation_id = Column(UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False)
-    sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False)
     content = Column(Text, nullable=False)
     type = Column(Enum(MessageType), default=MessageType.text, nullable=False)
-    reply_to_id = Column(UUID(as_uuid=True), ForeignKey("messages.id"), nullable=True)   # added — reply threading
+    reply_to_id = Column(UUID(as_uuid=True), ForeignKey("messages.id", ondelete='CASCADE'), nullable=True)   # added — reply threading
     is_edited = Column(Boolean, default=False, nullable=False)                            # added — edit tracking
 
     # Timestamps
