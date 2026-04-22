@@ -62,6 +62,7 @@ class User(Base):
     trainer_workout_plans = relationship("Workout_Plans_Users", foreign_keys="[Workout_Plans_Users.trainer_id]", back_populates="trainer", cascade="all, delete-orphan")
     workout_logs = relationship("Workout_Logs", back_populates="trainee", cascade="all, delete-orphan")
     workout_stats = relationship("Workout_User_Stats", back_populates="trainee", uselist=False, cascade="all, delete-orphan")
+    trainer_info = relationship("Trainer_info", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User {self.email}>"
@@ -152,6 +153,7 @@ class Event_Logs(Base):
 class Trainer_info(Base):
     __tablename__ = 'trainer_info'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, unique=True)  # type: ignore
     name = Column(String, unique=True, nullable=False)
     expertise = Column(String, nullable=True)
     rate_per_week = Column(Integer, nullable=True, default=0)

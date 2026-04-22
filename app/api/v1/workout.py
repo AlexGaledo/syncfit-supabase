@@ -80,6 +80,8 @@ def get_all_exercises(
             "is_equipment_needed": ex.is_equipment_needed,
             "video_url": ex.video_url,
             "image_url": ex.image_url,
+            "is_by_reps": ex.is_by_reps,
+            "is_by_duration": ex.is_by_duration,
             "created_at": ex.created_at,
             "tags": [link.tag.name for link in ex.exercise_exer_tags] if ex.exercise_exer_tags else []
         }
@@ -107,6 +109,8 @@ def get_exercise(
         "is_equipment_needed": ex.is_equipment_needed,
         "video_url": ex.video_url,
         "image_url": ex.image_url,
+        "is_by_reps": ex.is_by_reps,
+        "is_by_duration": ex.is_by_duration,
         "created_at": ex.created_at,
         "tags": [link.tag.name for link in ex.exercise_exer_tags] if ex.exercise_exer_tags else [],
     }
@@ -194,6 +198,8 @@ def update_exercise(
         "is_equipment_needed": ex.is_equipment_needed,
         "video_url": ex.video_url,
         "image_url": ex.image_url,
+        "is_by_reps": ex.is_by_reps,
+        "is_by_duration": ex.is_by_duration,
         "created_at": ex.created_at,
         "tags": [link.tag.name for link in ex.exercise_exer_tags] if ex.exercise_exer_tags else []
     }

@@ -78,7 +78,6 @@ class WorkoutPlanBase(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
-    is_trainer_provided: bool = False
     is_preset: bool = False
     is_equipment_needed: bool = False
     image_url: Optional[str] = None
@@ -97,7 +96,6 @@ class WorkoutPlanUpdate(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: Optional[bool] = None
-    is_trainer_provided: Optional[bool] = None
     is_preset: Optional[bool] = None
     is_equipment_needed: Optional[bool] = None
     image_url: Optional[str] = None
@@ -342,7 +340,6 @@ class SeederWorkoutPlan(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
-    is_trainer_provided: bool = False
     is_preset: bool = False
     is_equipment_needed: bool = False
     image_url: Optional[str] = None

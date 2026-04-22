@@ -75,7 +75,6 @@ class Workout_Plans(Base):
     difficulty = Column(Enum(DifficultyLevel), nullable=True)
     days_per_week = Column(Integer, nullable=True)
     ai_generated = Column(Boolean, default=False, nullable=False)
-    is_trainer_provided = Column(Boolean, default=False, nullable=False)
     is_preset = Column(Boolean, default=False, server_default=text("false"), nullable=False)  # Indicates if this is a preset plan available to all users
     is_equipment_needed = Column(Boolean, default=False, server_default=text("false"), nullable=False)
     image_url = Column(Text, nullable=True)
