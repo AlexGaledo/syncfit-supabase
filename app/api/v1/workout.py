@@ -1,5 +1,6 @@
 """Workout API endpoints - Ford"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from datetime import datetime, timedelta, date
 from sqlalchemy.orm import Session
 from typing import List, Optional, Union
 from uuid import UUID
@@ -11,7 +12,7 @@ from app.dependencies import get_current_db_user
 from app.models.item import (
     Exercises, Workouts, Workout_Plans, Exercises_Workouts, Workouts_Workout_Plans,
     Plan_Tags, Workout_Plans_Plan_Tags, Exer_Tags, Exercises_Exer_Tags,
-    Workout_Plans_Users, DifficultyLevel
+    Workout_Plans_Users, Workout_Logs, Workout_User_Stats, DifficultyLevel
 )
 from app.schemas.item import (
     ExerciseCreate, ExerciseUpdate, ExerciseResponse,
@@ -23,6 +24,9 @@ from app.schemas.item import (
     SeederFullWorkoutPlan, CreateFullWorkoutPlan, CreateWorkout, CreateExerciseWorkout,
     CreateFullWorkoutRequest, UpdateFullWorkout, UpdateFullWorkoutExercise,
     FullWorkoutPlanDetailResponse, FullWorkoutDetail, FullExerciseDetail,
+    FinishWorkoutLogCreate,
+    FinishWorkoutLogResponse, WorkoutLogResponse,
+    WorkoutUserStatsMessageResponse, WorkoutUserStatsResponse,
     ExerTagCreate, ExerTagResponse,
     PlanTagCreate, PlanTagResponse,
     ExercisesExerTagsCreate, ExercisesExerTagsResponse,
@@ -526,6 +530,165 @@ def get_workout_plans(
     return result
 
 
+# ============================================================================
+# WORKOUT STATS AND LOGS
+# ============================================================================
+
+@workout_router.get("/stats/my-stats", response_model=WorkoutUserStatsMessageResponse)
+def get_my_workout_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Retrieve the current user's workout stats.
+    If none exist, return default values and a message.
+    """
+    stats = db.query(Workout_User_Stats).filter(Workout_User_Stats.trainee_id == current_user.id).first()
+    if not stats:
+        return WorkoutUserStatsMessageResponse(
+            message="Workout stats do not exist yet or no workouts done yet.",
+            trainee_id=current_user.id, # type: ignore[arg-type]
+            total_workouts_done=0,
+            current_streak=0,
+            longest_streak=0,
+            total_minutes_trained=0,
+            last_workout_log_id=None,
+        )
+
+    return WorkoutUserStatsMessageResponse(
+        trainee_id=stats.trainee_id, # type: ignore[arg-type]
+        total_workouts_done=stats.total_workouts_done, # type: ignore[arg-type]
+        current_streak=stats.current_streak, # type: ignore[arg-type]
+        longest_streak=stats.longest_streak, # type: ignore[arg-type]
+        total_minutes_trained=stats.total_minutes_trained, # type: ignore[arg-type]
+        last_workout_log_id=stats.last_workout_log_id, # type: ignore[arg-type]
+    )
+
+
+@workout_router.post("/logs/finish-workout", response_model=FinishWorkoutLogResponse, status_code=status.HTTP_201_CREATED)
+def finish_workout(
+    payload: FinishWorkoutLogCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Log a completed workout session and update the user's workout stats.
+    """
+    if payload.plan_id is None:
+        assignment = db.query(Workout_Plans_Users).filter(
+            Workout_Plans_Users.trainee_id == current_user.id,
+            Workout_Plans_Users.is_active == True
+        ).first()
+        if not assignment:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active workout plan found")
+        plan_id = assignment.plan_id
+    else:
+        plan_id = payload.plan_id
+
+    # Ensure workout is part of the plan
+    workout_link = db.query(Workouts_Workout_Plans).filter(
+        Workouts_Workout_Plans.plan_id == plan_id,
+        Workouts_Workout_Plans.workout_id == payload.workout_id,
+    ).first()
+    if not workout_link:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Workout is not part of the plan")
+
+    # Compute duration and total exercises
+    duration_minutes = int((payload.end_datetime - payload.start_datetime).total_seconds() // 60)
+    total_exercises_completed = db.query(Exercises_Workouts).filter(
+        Exercises_Workouts.workout_id == payload.workout_id
+    ).count()
+
+    # Insert workout log
+    log = Workout_Logs(
+        trainee_id=current_user.id,
+        plan_id=plan_id,
+        workout_id=payload.workout_id,
+        start_datetime=payload.start_datetime,
+        end_datetime=payload.end_datetime,
+        duration_minutes=duration_minutes,
+        total_exercises_completed=total_exercises_completed,
+    )
+    db.add(log)
+    db.flush()
+
+    # Ensure stats row exists
+    stats = db.query(Workout_User_Stats).filter(Workout_User_Stats.trainee_id == current_user.id).first()
+    if not stats:
+        stats = Workout_User_Stats(trainee_id=current_user.id)
+        db.add(stats)
+        db.flush()
+
+    # Build schedule (day_of_week: 1=Mon ... 7=Sun)
+    schedule_days = db.query(Workouts_Workout_Plans.day_of_week).filter(
+        Workouts_Workout_Plans.plan_id == plan_id
+    ).distinct().all()
+    schedule_set = {row[0] for row in schedule_days if row[0] is not None}
+
+    last_log = None
+    if stats.last_workout_log_id is not None:
+        last_log = db.query(Workout_Logs).filter(Workout_Logs.id == stats.last_workout_log_id).first()
+
+    current_date = payload.start_datetime.date()
+
+    if not last_log or not schedule_set:
+        # First logged workout or no schedule defined
+        new_streak = 1
+    else:
+        last_date = last_log.start_datetime.date()
+        if last_date >= current_date:
+            new_streak = stats.current_streak or 1
+        else:
+            missed_scheduled = False
+            check_date = last_date + timedelta(days=1)
+            while check_date < current_date:
+                weekday = check_date.weekday() + 1
+                if weekday in schedule_set:
+                    missed_scheduled = True
+                    break
+                check_date += timedelta(days=1)
+            current_streak = int(stats.current_streak or 0)  # type: ignore[arg-type]
+            new_streak = 1 if missed_scheduled else (current_streak + 1)
+
+    total_workouts_done = int(stats.total_workouts_done or 0) + 1  # type: ignore[arg-type]
+    total_minutes_trained = int(stats.total_minutes_trained or 0) + duration_minutes  # type: ignore[arg-type]
+    longest_streak = int(stats.longest_streak or 0)  # type: ignore[arg-type]
+
+    new_streak_value = int(new_streak)  # type: ignore[arg-type]
+
+    stats.total_workouts_done = total_workouts_done  # type: ignore[assignment]
+    stats.total_minutes_trained = total_minutes_trained  # type: ignore[assignment]
+    stats.current_streak = new_streak_value  # type: ignore[assignment]
+    if new_streak_value > longest_streak:
+        stats.longest_streak = new_streak_value  # type: ignore[assignment]
+    stats.last_workout_log_id = log.id
+
+    db.commit()
+    db.refresh(stats)
+
+    return FinishWorkoutLogResponse(
+        message="Workout log created and stats updated.",
+        workout_log=WorkoutLogResponse(
+            id=log.id, # type: ignore[arg-type]
+            trainee_id=log.trainee_id, # type: ignore[arg-type]
+            plan_id=log.plan_id, # type: ignore[arg-type]
+            workout_id=log.workout_id, # type: ignore[arg-type]
+            start_datetime=log.start_datetime, # type: ignore[arg-type]
+            end_datetime=log.end_datetime, # type: ignore[arg-type]
+            duration_minutes=log.duration_minutes, # type: ignore[arg-type]
+            total_exercises_completed=log.total_exercises_completed, # type: ignore[arg-type]
+        ),
+        stats=WorkoutUserStatsResponse(
+            trainee_id=stats.trainee_id, # type: ignore[arg-type]
+            total_workouts_done=stats.total_workouts_done, # type: ignore[arg-type]
+            current_streak=stats.current_streak, # type: ignore[arg-type]
+            longest_streak=stats.longest_streak, # type: ignore[arg-type]
+            total_minutes_trained=stats.total_minutes_trained, # type: ignore[arg-type]
+            last_workout_log_id=stats.last_workout_log_id, # type: ignore[arg-type]
+        ),
+    )
+
+
 @workout_router.get("/workout-plans/{plan_id}/full", response_model=FullWorkoutPlanDetailResponse)
 def get_full_workout_plan(
     plan_id: int,
@@ -599,6 +762,172 @@ def get_full_workout_plan(
         tags=plan_tags,
         workouts=sorted(full_workouts, key=lambda x: x.order_index)
     )
+
+
+@workout_router.get("/workout-plans/{plan_id}/schedule")
+def get_workout_plan_schedule(
+    plan_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Retrieve the workout schedule for a plan.
+    """
+    plan = db.query(Workout_Plans).filter(Workout_Plans.id == plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan not found")
+
+    day_name_map = {
+        1: "Monday",
+        2: "Tuesday",
+        3: "Wednesday",
+        4: "Thursday",
+        5: "Friday",
+        6: "Saturday",
+        7: "Sunday",
+    }
+
+    links = db.query(Workouts_Workout_Plans).filter(Workouts_Workout_Plans.plan_id == plan_id).all()
+    schedule = []
+    for link in links:
+        day_of_week_int = link.day_of_week if link.day_of_week is not None else None
+        day_name = "Unknown"
+        if day_of_week_int is not None:
+            day_name = day_name_map.get(day_of_week_int, "Unknown")  # type: ignore[arg-type]
+        schedule.append({
+            "workout_id": link.workout_id,
+            "workout_title": link.workout.title,
+            "day_of_week_int": day_of_week_int, # type: ignore[assignment]
+            "day_of_week_string": day_name,
+            "order_index": link.order_index,
+        })
+
+    return {
+        "plan_id": plan.id,
+        "days_per_week": plan.days_per_week,
+        "schedule": sorted(schedule, key=lambda x: (x["day_of_week_int"] or 0, x["order_index"] or 0)),
+    }
+
+
+@workout_router.get("/workout-plans/today-workout")
+def get_today_workout_plan(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Retrieve today's workout for the user's active plan, or the most recent pending workout.
+    """
+    assignment = db.query(Workout_Plans_Users).filter(
+        Workout_Plans_Users.trainee_id == current_user.id,
+        Workout_Plans_Users.is_active == True
+    ).first()
+    if not assignment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active workout plan found")
+
+    plan_id = assignment.plan_id
+    links = db.query(Workouts_Workout_Plans).filter(Workouts_Workout_Plans.plan_id == plan_id).all()
+    if not links:
+        return {
+            "workout_id": None,
+            "title": "Rest Day",
+            "description": None,
+            "estimated_duration_minutes": None,
+            "day_of_week": None,
+            "order_index": None,
+            "exercises": [],
+            "message": "No workouts are scheduled for this plan.",
+        }
+
+    today = datetime.now().date()
+    today = date(2026, 4, 19)
+    today_weekday = today.weekday() + 1
+    today_weekday = 7
+
+    day_name_map = {
+        1: "Monday",
+        2: "Tuesday",
+        3: "Wednesday",
+        4: "Thursday",
+        5: "Friday",
+        6: "Saturday",
+        7: "Sunday",
+    }
+
+    links_by_day = {}
+    for link in links:
+        if link.day_of_week is None:
+            continue
+        links_by_day.setdefault(link.day_of_week, []).append(link)
+
+    for day_links in links_by_day.values():
+        day_links.sort(key=lambda l: l.order_index or 0)
+
+    today_links = links_by_day.get(today_weekday)
+    if today_links:
+        link = today_links[0]
+        workout_detail = get_full_workout(workout_id=link.workout_id, db=db, current_user=current_user) # type: ignore
+        workout_detail = workout_detail.model_copy(update={
+            "day_of_week": link.day_of_week,
+            "order_index": link.order_index,
+        })
+        return workout_detail.model_dump()
+
+    # Find the most recent scheduled day before today
+    target_date = None
+    target_link = None
+    for offset in range(1, 8):
+        candidate_date = today - timedelta(days=offset)
+        candidate_weekday = candidate_date.weekday() + 1
+        candidate_links = links_by_day.get(candidate_weekday)
+        if candidate_links:
+            target_date = candidate_date
+            target_link = candidate_links[0]
+            break
+
+    if not target_link or not target_date:
+        return {
+            "workout_id": None,
+            "title": "Rest Day",
+            "description": None,
+            "estimated_duration_minutes": None,
+            "day_of_week": today_weekday,
+            "order_index": None,
+            "exercises": [],
+            "message": "No scheduled workout found for today.",
+        }
+
+    # Check if the most recent scheduled workout is already done
+    done_log = db.query(Workout_Logs).filter(
+        Workout_Logs.trainee_id == current_user.id,
+        Workout_Logs.plan_id == plan_id,
+        Workout_Logs.workout_id == target_link.workout_id,
+        Workout_Logs.start_datetime >= datetime.combine(target_date, datetime.min.time()),
+        Workout_Logs.start_datetime <= datetime.combine(target_date, datetime.max.time()),
+    ).first()
+
+    if done_log:
+        return {
+            "workout_id": None,
+            "title": "Rest Day",
+            "description": None,
+            "estimated_duration_minutes": None,
+            "day_of_week": today_weekday,
+            "order_index": None,
+            "exercises": [],
+            "message": "No workout scheduled for today. Enjoy your rest day.",
+        }
+
+    workout_detail = get_full_workout(workout_id=target_link.workout_id, db=db, current_user=current_user) # type: ignore
+    workout_detail = workout_detail.model_copy(update={
+        "day_of_week": target_link.day_of_week,
+        "order_index": target_link.order_index,
+    })
+
+    response = workout_detail.model_dump()
+    response["message"] = (
+        f"Pending workout from {day_name_map.get(target_link.day_of_week, 'previous scheduled day')}."
+    )
+    return response
 
 
 @workout_router.get("/workout-plans/my-workout-plan", response_model=Union[List[FullWorkoutPlanDetailResponse], FullWorkoutPlanDetailResponse])

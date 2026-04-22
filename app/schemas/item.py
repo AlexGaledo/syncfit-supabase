@@ -511,6 +511,14 @@ class WorkoutLogCreate(WorkoutLogBase):
     pass
 
 
+class FinishWorkoutLogCreate(BaseModel):
+    """Schema for finishing a workout session and logging it"""
+    plan_id: Optional[int] = None
+    workout_id: int
+    start_datetime: datetime
+    end_datetime: datetime
+
+
 class WorkoutLogUpdate(BaseModel):
     """Schema for updating a workout log"""
     end_datetime: Optional[datetime] = None
@@ -523,6 +531,13 @@ class WorkoutLogResponse(WorkoutLogBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class FinishWorkoutLogResponse(BaseModel):
+    """Schema for finish workout response"""
+    message: str
+    workout_log: WorkoutLogResponse
+    stats: "WorkoutUserStatsResponse"
 
 
 # ============================================================================
@@ -556,3 +571,8 @@ class WorkoutUserStatsUpdate(BaseModel):
 class WorkoutUserStatsResponse(WorkoutUserStatsBase):
     """Schema for workout user stats response"""
     model_config = ConfigDict(from_attributes=True)
+
+
+class WorkoutUserStatsMessageResponse(WorkoutUserStatsResponse):
+    """Schema for workout user stats response with optional message"""
+    message: Optional[str] = None
