@@ -75,6 +75,7 @@ class Workout_Plans(Base):
     difficulty = Column(Enum(DifficultyLevel), nullable=True)
     days_per_week = Column(Integer, nullable=True)
     ai_generated = Column(Boolean, default=False, nullable=False)
+    is_trainer_provided = Column(Boolean, default=False, nullable=False)
     is_preset = Column(Boolean, default=False, server_default=text("false"), nullable=False)  # Indicates if this is a preset plan available to all users
     is_equipment_needed = Column(Boolean, default=False, server_default=text("false"), nullable=False)
     image_url = Column(Text, nullable=True)
@@ -278,6 +279,51 @@ class Workout_Plans_Users(Base):
 
     def __repr__(self):
         return f"<Workout_Plans_Users trainee={self.trainee_id} plan={self.plan_id}>"
+
+
+class Workout_Logs(Base):
+    """
+    Workout session logs for trainees.
+    """
+    __tablename__ = "workout_logs"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    trainee_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    plan_id = Column(BigInteger, ForeignKey("workout_plans.id", ondelete="SET NULL"), nullable=True)
+    workout_id = Column(BigInteger, ForeignKey("workouts.id", ondelete="SET NULL"), nullable=True)
+    start_datetime = Column(DateTime(timezone=True), nullable=False)
+    end_datetime = Column(DateTime(timezone=True), nullable=True)
+    duration_minutes = Column(Integer, nullable=True)
+    total_exercises_completed = Column(Integer, nullable=True)
+
+    # Relationships
+    trainee = relationship("User", back_populates="workout_logs")
+    plan = relationship("Workout_Plans")
+    workout = relationship("Workouts")
+
+    def __repr__(self):
+        return f"<Workout_Logs id={self.id} trainee_id={self.trainee_id}>"
+
+
+class Workout_User_Stats(Base):
+    """
+    Aggregated workout stats for a trainee.
+    """
+    __tablename__ = "workout_user_stats"
+
+    trainee_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    total_workouts_done = Column(Integer, nullable=False, default=0, server_default=text("0"))
+    current_streak = Column(Integer, nullable=False, default=0, server_default=text("0"))
+    longest_streak = Column(Integer, nullable=False, default=0, server_default=text("0"))
+    total_minutes_trained = Column(Integer, nullable=False, default=0, server_default=text("0"))
+    last_workout_log_id = Column(BigInteger, ForeignKey("workout_logs.id", ondelete="SET NULL"), nullable=True)
+
+    # Relationships
+    trainee = relationship("User", back_populates="workout_stats")
+    last_workout_log = relationship("Workout_Logs")
+
+    def __repr__(self):
+        return f"<Workout_User_Stats trainee_id={self.trainee_id}>"
 
 
 

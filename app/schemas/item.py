@@ -78,6 +78,7 @@ class WorkoutPlanBase(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
+    is_trainer_provided: bool = False
     is_preset: bool = False
     is_equipment_needed: bool = False
     image_url: Optional[str] = None
@@ -96,6 +97,7 @@ class WorkoutPlanUpdate(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: Optional[bool] = None
+    is_trainer_provided: Optional[bool] = None
     is_preset: Optional[bool] = None
     is_equipment_needed: Optional[bool] = None
     image_url: Optional[str] = None
@@ -340,6 +342,7 @@ class SeederWorkoutPlan(BaseModel):
     difficulty: Optional[DifficultyLevel] = None
     days_per_week: Optional[int] = None
     ai_generated: bool = False
+    is_trainer_provided: bool = False
     is_preset: bool = False
     is_equipment_needed: bool = False
     image_url: Optional[str] = None
@@ -488,4 +491,71 @@ class WorkoutPlansUsersResponse(WorkoutPlansUsersBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# WORKOUT LOGS SCHEMAS
+# ============================================================================
+
+class WorkoutLogBase(BaseModel):
+    """Base workout log schema"""
+    trainee_id: UUID
+    plan_id: Optional[int] = None
+    workout_id: Optional[int] = None
+    start_datetime: datetime
+    end_datetime: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    total_exercises_completed: Optional[int] = None
+
+
+class WorkoutLogCreate(WorkoutLogBase):
+    """Schema for creating a workout log"""
+    pass
+
+
+class WorkoutLogUpdate(BaseModel):
+    """Schema for updating a workout log"""
+    end_datetime: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    total_exercises_completed: Optional[int] = None
+
+
+class WorkoutLogResponse(WorkoutLogBase):
+    """Schema for workout log response"""
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# WORKOUT USER STATS SCHEMAS
+# ============================================================================
+
+class WorkoutUserStatsBase(BaseModel):
+    """Base workout user stats schema"""
+    trainee_id: UUID
+    total_workouts_done: int = 0
+    current_streak: int = 0
+    longest_streak: int = 0
+    total_minutes_trained: int = 0
+    last_workout_log_id: Optional[int] = None
+
+
+class WorkoutUserStatsCreate(WorkoutUserStatsBase):
+    """Schema for creating workout user stats"""
+    pass
+
+
+class WorkoutUserStatsUpdate(BaseModel):
+    """Schema for updating workout user stats"""
+    total_workouts_done: Optional[int] = None
+    current_streak: Optional[int] = None
+    longest_streak: Optional[int] = None
+    total_minutes_trained: Optional[int] = None
+    last_workout_log_id: Optional[int] = None
+
+
+class WorkoutUserStatsResponse(WorkoutUserStatsBase):
+    """Schema for workout user stats response"""
     model_config = ConfigDict(from_attributes=True)

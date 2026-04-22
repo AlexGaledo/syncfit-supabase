@@ -18,8 +18,8 @@ class UserRole(enum.Enum):
 
 class UserType(enum.Enum):
     """Enum for user types"""
-    trainer = 'trainer'
-    trainee = 'trainee'
+    trainer = 'internal'
+    trainee = 'external'
 
 
 class UserGender(enum.Enum):
@@ -42,11 +42,11 @@ class User(Base):
     type = Column(Enum(UserType), default=UserType.trainee, nullable=False)  # type: ignore
     gender = Column(Enum(UserGender), default=UserGender.others, nullable=False)  # type: ignore
     birthdate = Column(DateTime, nullable=True)
-    email_verified = Column(Boolean, default=True, nullable=False)
+    email_verified = Column(Boolean, default=False, nullable=False)
 
     # Supabase user ID (from auth.users)
     supabase_user_id = Column(UUID(as_uuid=True), unique=True, index=True, nullable=False)  # type: ignore
-    is_active = Column(Boolean, default=False, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -60,6 +60,8 @@ class User(Base):
 
     trainee_workout_plans = relationship("Workout_Plans_Users", foreign_keys="[Workout_Plans_Users.trainee_id]", back_populates="trainee", cascade="all, delete-orphan")
     trainer_workout_plans = relationship("Workout_Plans_Users", foreign_keys="[Workout_Plans_Users.trainer_id]", back_populates="trainer", cascade="all, delete-orphan")
+    workout_logs = relationship("Workout_Logs", back_populates="trainee", cascade="all, delete-orphan")
+    workout_stats = relationship("Workout_User_Stats", back_populates="trainee", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User {self.email}>"
@@ -78,8 +80,8 @@ class User_Profile(Base):
     bio = Column(String, nullable=True)
     calorie_goal_daily = Column(Integer, nullable=True)
     sleep_quality = Column(String, nullable=True)  # sleep goal poor fair good
-    weight = Column(Float, nullable=True)  # weight in kg
-    height = Column(Float, nullable=True)  # height in cm
+    weight = Column(Integer, nullable=True)  # weight in kg
+    height = Column(Integer, nullable=True)  # height in cm
 
     user = relationship("User", back_populates="profile") 
     supplements = relationship("User_Supplements", back_populates="user", cascade="all, delete-orphan")
