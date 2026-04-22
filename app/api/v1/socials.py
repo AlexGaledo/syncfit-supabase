@@ -12,7 +12,7 @@ from uuid import UUID
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_db_user
-from app.models.user import User
+from app.models.user import User, Trainer_info
 from app.models.social import (
     Connections, ConnectionStatus as ConnectionStatusModel,
     Conversations, ConversationType as ConversationTypeModel,
@@ -24,7 +24,7 @@ from app.schemas.social import (
     ConversationType, ConversationResponse, ConversationCreate, ConversationUpdate,
     ConversationParticipantResponse,
     MessageType, MessageCreate, MessageUpdate, MessageResponse,
-    PaginatedMessages, PaginatedConversations,
+    PaginatedMessages, PaginatedConversations, TrainerInfoResponse,
 )
 
 socials_router = APIRouter(prefix="/socials", tags=["Socials"])
@@ -592,10 +592,17 @@ async def delete_message(
     return None
 
 
-@socials_router.get('/get-trainer-info/{user_id}')
-async def get_trainer_info(user_id: str):
-    
-    return 
+@socials_router.get('/get-trainer-info/{user_id}', response_model=TrainerInfoResponse)
+async def get_trainer_info(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user),
+):
+    """Get trainer profile info by trainer user ID."""
+    trainer_info = db.query(Trainer_info).filter(Trainer_info.user_id == user_id).first()
+    if not trainer_info:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer info not found")
+    return trainer_info
 # ============================================================================
 # WebSocket Manager
 # ============================================================================

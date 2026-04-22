@@ -184,5 +184,17 @@ class PaginatedConversations(BaseModel):
     has_more: bool
 
 
+class TrainerInfoResponse(BaseModel):
+    """Trainer profile info exposed by socials API."""
+    id: UUID
+    user_id: UUID
+    name: str
+    expertise: Optional[str] = None
+    rate_per_week: Optional[int] = None
+    rating: Optional[float] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 # Resolve forward references
 ConversationResponse.model_rebuild()
