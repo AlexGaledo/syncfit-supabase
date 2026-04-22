@@ -65,6 +65,7 @@ class User(Base):
     workout_stats = relationship("Workout_User_Stats", back_populates="trainee", uselist=False, cascade="all, delete-orphan")
     trainer_info = relationship("Trainer_info", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
+    
     def __repr__(self):
         return f"<User {self.email}>"
 
@@ -76,7 +77,7 @@ class User_Profile(Base):
     __tablename__ = "user_profiles"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, unique=True)  # type: ignore
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False, unique=True)  # type: ignore
     address = Column(String, nullable=True)
     phone_number = Column(String, nullable=True)
     bio = Column(String, nullable=True)
@@ -99,7 +100,7 @@ class User_Supplements(Base):
     """
     __tablename__ = "user_supplements"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user_profiles.id"), nullable=False)  # type: ignore
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user_profiles.id", ondelete='CASCADE'), nullable=False)  # type: ignore
     supplement_name = Column(String, nullable=False)
     user = relationship("User_Profile", back_populates="supplements")
 
@@ -113,7 +114,7 @@ class User_Limitations(Base):
     """
     __tablename__ = "user_limitations"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user_profiles.id"), nullable=False)  # type: ignore
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user_profiles.id", ondelete='CASCADE'), nullable=False)  # type: ignore
     limitation_description = Column(String, nullable=False)
     user = relationship("User_Profile", back_populates="limitations")
 
@@ -127,7 +128,7 @@ class Weight_Loss_Progress(Base): #tbf
     """
     __tablename__ = "weight_loss_progress"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)  # type: ignore
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False)  # type: ignore
     date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     weight = Column(Integer, nullable=False)  # weight in kg
     base_weight = Column(Integer, nullable=True)  # base weight in kg for progress tracking
@@ -142,7 +143,7 @@ class Event_Logs(Base):
     """
     __tablename__ = "event_logs"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)  # type: ignore
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False)  # type: ignore
     event_type = Column(String, nullable=False)
     event_timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     event_details = Column(JSON, nullable=True)
@@ -154,7 +155,7 @@ class Event_Logs(Base):
 class Trainer_info(Base):
     __tablename__ = 'trainer_info'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, unique=True)  # type: ignore
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False, unique=True)  # type: ignore
     name = Column(String, unique=True, nullable=False)
     expertise = Column(String, nullable=True)
     rate_per_week = Column(Integer, nullable=True, default=0)
