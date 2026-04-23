@@ -24,6 +24,7 @@ class ConnectionStatus(enum.Enum):
 class ConversationType(enum.Enum):
     direct = "direct"
     group = "group"
+    trainer = 'trainer_trainee'
 
 
 class ConversationRole(enum.Enum):

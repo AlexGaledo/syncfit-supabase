@@ -160,4 +160,7 @@ class Trainer_info(Base):
     expertise = Column(String, nullable=True)
     rate_per_week = Column(Integer, nullable=True, default=0)
     rating = Column(Float, nullable=True, default=5.0)
-    user = relationship("User", back_populates="trainer_info") 
+    user = relationship("User", back_populates="trainer_info")
+
+
+
