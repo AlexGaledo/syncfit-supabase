@@ -597,7 +597,6 @@ async def delete_message(
 
 @socials_router.get('/get-connected-trainers')
 async def get_connected_trainers(
-    user_id: UUID,
     db: Session = Depends(get_db),
     current_db_user: User = Depends(get_current_db_user)
 ):
