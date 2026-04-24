@@ -24,19 +24,19 @@ class ConnectionStatus(enum.Enum):
 class ConversationType(enum.Enum):
     direct = "direct"
     group = "group"
-    trainer = 'trainer_trainee'
-
 
 class ConversationRole(enum.Enum):
     member = "member"
     admin = "admin"
-
 
 class MessageType(enum.Enum):
     text = "text"
     image = "image"
     file = "file"
 
+class ConnectionType(enum.Enum):
+    friend = 'friends'
+    trainership = 'trainer_trainee'
 
 # ============================================================================
 # SOCIAL MODELS
@@ -55,6 +55,7 @@ class Connections(Base):
     requester_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False)
     addressee_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False)
     status = Column(Enum(ConnectionStatus), default=ConnectionStatus.pending, nullable=False)
+    connection_type = Column(Enum(ConnectionType), default = ConnectionType.friend, nullable = True)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

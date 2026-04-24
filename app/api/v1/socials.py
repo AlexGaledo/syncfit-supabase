@@ -17,7 +17,7 @@ from app.models.social import (
     Connections, ConnectionStatus as ConnectionStatusModel,
     Conversations, ConversationType as ConversationTypeModel,
     Conversation_Participants, ConversationRole as ConversationRoleModel,
-    Messages, MessageType as MessageTypeModel,
+    Messages, MessageType as MessageTypeModel, 
 )
 from app.schemas.social import (
     ConnectionStatus, ConnectionResponse,
@@ -592,6 +592,17 @@ async def delete_message(
     return None
 
 
+@socials_router.get('/get-connected-trainers')
+async def get_connected_trainers(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user)
+):
+    connected_trainers = db.query(Connections).filter(
+        Connections.id == current_db_user.id 
+    )
+
+
 @socials_router.get('/get-trainer-info/{user_id}', response_model=TrainerInfoResponse)
 async def get_trainer_info(
     user_id: UUID,
@@ -603,6 +614,10 @@ async def get_trainer_info(
     if not trainer_info:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer info not found")
     return trainer_info
+
+
+
+
 # ============================================================================
 # WebSocket Manager
 # ============================================================================
