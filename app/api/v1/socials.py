@@ -603,19 +603,21 @@ async def get_connected_trainers(
     try:
         # retrieve connected trainers first 
         connected_trainers = db.query(Connections).filter(
-            or_(Connections.addressee_id == current_db_user.id, Connections.requester_id == current_db_user.id), 
-            Connections.connection_type == ConnectionType.trainership
+            or_(Connections.addressee_id == current_db_user.id, Connections.requester_id == current_db_user.id),
+            Connections.connection_type == ConnectionType.trainership,
+            Connections.status == ConnectionStatusModel.accepted
         ).all()
 
         # retrieve info for each trainers
         connected_trainers_info = []
-        
+
         for trainer in connected_trainers:
             trainer_id = trainer.requester_id if trainer.addressee_id == current_db_user.id else trainer.addressee_id #type:ignore
             trainer_info = db.query(Trainer_info).filter(Trainer_info.user_id == trainer_id).first()
-            connected_trainers_info.append(trainer_info)
+            if trainer_info:
+                connected_trainers_info.append(trainer_info)
 
-        return connected_trainers_info if connected_trainers_info else 'no trainers connected'
+        return connected_trainers_info
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-connected-trainers endpoint: {e}')
 
