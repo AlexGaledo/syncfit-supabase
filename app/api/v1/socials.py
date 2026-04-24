@@ -6,6 +6,7 @@ Socials API endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from typing import Any, List, Optional, cast
 from uuid import UUID
@@ -14,11 +15,13 @@ from app.database import get_db
 from app.dependencies import get_current_user, get_current_db_user
 from app.models.user import User, Trainer_info
 from app.models.social import (
-    Connections, ConnectionStatus as ConnectionStatusModel,
+    Connections, ConnectionStatus, ConnectionType as ConnectionStatusModel,
     Conversations, ConversationType as ConversationTypeModel,
     Conversation_Participants, ConversationRole as ConversationRoleModel,
     Messages, MessageType as MessageTypeModel, 
+
 )
+
 from app.schemas.social import (
     ConnectionStatus, ConnectionResponse,
     ConversationType, ConversationResponse, ConversationCreate, ConversationUpdate,
@@ -598,9 +601,23 @@ async def get_connected_trainers(
     db: Session = Depends(get_db),
     current_db_user: User = Depends(get_current_db_user)
 ):
-    connected_trainers = db.query(Connections).filter(
-        Connections.id == current_db_user.id 
-    )
+    try:
+        # retrieve connected trainers first 
+        connected_trainers = db.query(Connections).filter(
+            or_(Connections.addressee_id == current_db_user.id or Connections.requester_id == current_db_user.id), 
+            Connections.connection_type == ConnectionStatusModel.trainership
+        ).all()
+
+        # retrieve info for each trainers
+        connected_trainers_info = []
+        
+        for trainer in connected_trainers:
+            trainer_info = db.query(Trainer_info).filter(or_(Trainer_info.user_id == trainer.addressee_id, Trainer_info.user_id == trainer.requester_id)).first()
+            connected_trainers_info.append(trainer_info)
+
+        return connected_trainers_info
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-connected-trainers endpoint: {e}')
 
 
 @socials_router.get('/get-trainer-info/{user_id}', response_model=TrainerInfoResponse)
