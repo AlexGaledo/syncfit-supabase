@@ -15,11 +15,11 @@ from app.database import get_db
 from app.dependencies import get_current_user, get_current_db_user
 from app.models.user import User, Trainer_info
 from app.models.social import (
-    Connections, ConnectionStatus, ConnectionType as ConnectionStatusModel,
+    Connections, ConnectionStatus as ConnectionStatusModel,
     Conversations, ConversationType as ConversationTypeModel,
     Conversation_Participants, ConversationRole as ConversationRoleModel,
     Messages, MessageType as MessageTypeModel, 
-
+    ConnectionType
 )
 
 from app.schemas.social import (
@@ -604,7 +604,7 @@ async def get_connected_trainers(
         # retrieve connected trainers first 
         connected_trainers = db.query(Connections).filter(
             or_(Connections.addressee_id == current_db_user.id, Connections.requester_id == current_db_user.id), 
-            Connections.connection_type == Connections.connection_type.trainership
+            Connections.connection_type == ConnectionType.trainership
         ).all()
 
         # retrieve info for each trainers
