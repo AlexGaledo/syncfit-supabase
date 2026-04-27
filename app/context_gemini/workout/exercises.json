@@ -1,0 +1,296 @@
+[
+  {
+    "id": 231,
+    "name": "Plank",
+    "is_equipment_needed": false,
+    "is_by_reps": false,
+    "is_by_duration": true
+  },
+  {
+    "id": 232,
+    "name": "Romanian Deadlift",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 236,
+    "name": "Seated Cable Row",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 233,
+    "name": "Overhead Dumbbell Press",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 234,
+    "name": "Lat Pulldown",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 237,
+    "name": "Barbell Bicep Curl",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 235,
+    "name": "Standard Push-Up",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 238,
+    "name": "Leg Press",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 239,
+    "name": "Incline Dumbbell Press",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 240,
+    "name": "Tricep Rope Pushdown",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 241,
+    "name": "Lateral Raise",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 242,
+    "name": "Walking Lunges",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 243,
+    "name": "Face Pull",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 244,
+    "name": "Burpees",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 245,
+    "name": "Mountain Climbers",
+    "is_equipment_needed": false,
+    "is_by_reps": false,
+    "is_by_duration": true
+  },
+  {
+    "id": 246,
+    "name": "Bodyweight Squat",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 247,
+    "name": "Jumping Jacks",
+    "is_equipment_needed": false,
+    "is_by_reps": false,
+    "is_by_duration": true
+  },
+  {
+    "id": 228,
+    "name": "Barbell Squat",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 250,
+    "name": "Bicycle Crunches",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 251,
+    "name": "Standing Calf Raise",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 252,
+    "name": "Barbell Overhead Press",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 253,
+    "name": "Dumbbell Tricep Extension",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 254,
+    "name": "Dumbbell Hammer Curl",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 255,
+    "name": "Farmer's Walk",
+    "is_equipment_needed": true,
+    "is_by_reps": false,
+    "is_by_duration": true
+  },
+  {
+    "id": 256,
+    "name": "Russian Twist",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 257,
+    "name": "Cable Woodchopper",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 258,
+    "name": "Barbell Shrug",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 260,
+    "name": "Glute Bridge",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 261,
+    "name": "Pike Push-Up",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 262,
+    "name": "Diamond Push-Up",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 263,
+    "name": "Paused Bodyweight Squat",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 264,
+    "name": "Plyometric Push-Up",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 265,
+    "name": "Pistol Squat",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 249,
+    "name": "High Knees",
+    "is_equipment_needed": false,
+    "is_by_reps": false,
+    "is_by_duration": true
+  },
+  {
+    "id": 268,
+    "name": "Prone W-Raise",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 269,
+    "name": "Floor Sliding Pulldown",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 229,
+    "name": "Flat Barbell Bench Press",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 230,
+    "name": "Barbell Row",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 248,
+    "name": "Dumbbell Row",
+    "is_equipment_needed": true,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 259,
+    "name": "Superman",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 266,
+    "name": "Jump Squat",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  },
+  {
+    "id": 267,
+    "name": "Jumping Lunges",
+    "is_equipment_needed": false,
+    "is_by_reps": true,
+    "is_by_duration": false
+  }
+]
