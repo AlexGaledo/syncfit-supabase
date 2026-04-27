@@ -1192,6 +1192,7 @@ def ai_generate_full_workout_plan(
     """
     Generate a full workout plan using the Gemini API based on user context and prompt.
     Returns JSON matching the CreateFullWorkoutPlan schema.
+    This only returns the JSON data. To save it to the database, use the /workout-plans/create-full endpoint with the returned JSON as the payload. To assign the generated plan to a user, use the /workout-plans/assign endpoint with the created plan ID and user ID.
     """
     gemini_key = os.getenv("GEMINI_API_KEY")
     if not gemini_key:
