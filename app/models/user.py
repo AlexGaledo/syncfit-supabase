@@ -85,6 +85,7 @@ class User_Profile(Base):
     sleep_quality = Column(String, nullable=True)  # sleep goal poor fair good
     weight = Column(Integer, nullable=True)  # weight in kg
     height = Column(Integer, nullable=True)  # height in cm
+    avatar_url = Column(String, nullable=True)
 
     user = relationship("User", back_populates="profile") 
     supplements = relationship("User_Supplements", back_populates="user", cascade="all, delete-orphan")

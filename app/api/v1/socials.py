@@ -13,13 +13,14 @@ from uuid import UUID
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_db_user
-from app.models.user import User, Trainer_info
+from app.models.user import User, Trainer_info, User_Profile
 from app.models.social import (
     Connections, ConnectionStatus as ConnectionStatusModel,
     Conversations, ConversationType as ConversationTypeModel,
     Conversation_Participants, ConversationRole as ConversationRoleModel,
     Messages, MessageType as MessageTypeModel, 
     ConnectionType
+    
 )
 
 from app.schemas.social import (
@@ -437,6 +438,7 @@ async def remove_participant(
 # MESSAGES ENDPOINTS (x)
 # ============================================================================
 
+
 @socials_router.post(
     "/conversations/{conversation_id}/messages",
     response_model=MessageResponse,
@@ -632,7 +634,15 @@ async def get_trainer_info(
     trainer_info = db.query(Trainer_info).filter(Trainer_info.user_id == user_id).first()
     if not trainer_info:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer info not found")
-    return trainer_info
+        
+    trainer_user_info: User = trainer_info.user
+    traiter_user_profile: User_Profile = trainer_user_info.profile
+
+    if not trainer_user_info:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer user info not found")
+    
+    return {"trainer_info": trainer_info,
+            "trainer_profile": traiter_user_profile}
 
 
 
