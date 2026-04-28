@@ -311,7 +311,8 @@ def test_update_meal_plan_item_not_found(client, mock_db):
 def test_delete_meal_plan_item(client, mock_db):
     """Test successfully removing a meal from a plan."""
     plan = _fake_plan()
-    item = SimpleNamespace(id=uuid4(), meal_plan_id=plan.id)
+    meal = _fake_meal()
+    item = _fake_item(plan.id, meal)
     # Mock the two queries in the endpoint
     mock_db.query.return_value.filter.return_value.first.side_effect = [plan, item]
 
