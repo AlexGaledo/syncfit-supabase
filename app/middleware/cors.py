@@ -16,8 +16,14 @@ def setup_cors(app: FastAPI) -> None:
     """
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.ALLOWED_ORIGINS,
-        allow_credentials=True,
+        # Use the parsed list from settings (`cors_origins`) so a single
+        # string like "*" isn't treated as an iterable of characters.
+        allow_origins=settings.cors_origins,
+        # Note: if `cors_origins` is ["*"] and you set `allow_credentials=True`,
+        # browsers will reject the wildcard for credentialed requests. If you
+        # need credentials with multiple origins, list them explicitly in
+        # `ALLOWED_ORIGINS` instead of using "*".
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
