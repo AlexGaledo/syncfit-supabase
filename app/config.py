@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     SUPABASE_JWT_SECRET: str = os.getenv("SUPABASE_JWT_SECRET") or ''
     
     # CORS Settings
-    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8081"
+    ALLOWED_ORIGINS: str = "*"
     
     # API Settings
     API_V1_PREFIX: str = "/api/v1"
