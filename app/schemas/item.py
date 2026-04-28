@@ -195,7 +195,7 @@ class WorkoutsWorkoutPlansBase(BaseModel):
     plan_id: int
     workout_id: int
     order_index: int
-    day_of_week: int
+    day_of_week: int # Monday = 1, Sunday = 7
 
 
 class WorkoutsWorkoutPlansCreate(WorkoutsWorkoutPlansBase):
@@ -332,7 +332,7 @@ class SeederWorkout(BaseModel):
     estimated_duration_minutes: Optional[int] = None
     exercises: List[SeederExerciseWorkout]
     order_index: int
-    day_of_week: int 
+    day_of_week: int # Monday = 1, Sunday = 7
 
 class SeederWorkoutPlan(BaseModel):
     title: str
@@ -369,8 +369,8 @@ class CreateWorkout(BaseModel):
     description: Optional[str] = None
     estimated_duration_minutes: Optional[int] = None
     exercises: List[CreateExerciseWorkout]
-    order_index: int
-    day_of_week: int 
+    order_index: int 
+    day_of_week: int # Monday = 1, Sunday = 7
 
 class CreateFullWorkoutRequest(CreateWorkout):
     plan_id: int
@@ -387,6 +387,9 @@ class CreateFullWorkoutPlan(BaseModel):
     duration_minutes: Optional[int] = None
     workouts: List[CreateWorkout]
     tags: Optional[List[str]] = None
+
+class AIGenerateRequest(BaseModel):
+    prompt: str
 
 # ============================================================================
 # USER FULL PLAN UPDATE SCHEMAS
@@ -432,7 +435,7 @@ class FullWorkoutDetail(BaseModel):
     title: str
     description: Optional[str] = None
     estimated_duration_minutes: Optional[int] = None
-    day_of_week: Optional[int] = None
+    day_of_week: Optional[int] = None # Monday = 1, Sunday = 7
     order_index: Optional[int] = None
     exercises: List[FullExerciseDetail] = []
 

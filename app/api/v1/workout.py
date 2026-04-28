@@ -30,10 +30,46 @@ from app.schemas.item import (
     ExerTagCreate, ExerTagResponse,
     PlanTagCreate, PlanTagResponse,
     ExercisesExerTagsCreate, ExercisesExerTagsResponse,
-    WorkoutPlansPlanTagsCreate, WorkoutPlansPlanTagsResponse,
+    WorkoutPlansPlanTagsCreate, WorkoutPlansPlanTagsResponse, AIGenerateRequest
 )
+from app.schemas.user import UserInfoContextResponse
+from app.context_gemini.workout.sys_prompt import build_system_prompt
+
+import os
+import json
+import importlib.util
+import google.generativeai as genai # type: ignore
 
 workout_router = APIRouter(prefix="/workout", tags=["Workout"])
+
+@workout_router.get("/user-info-context", response_model=UserInfoContextResponse)
+def get_user_info_context(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Retrieve specific contextual information about the user.
+    Includes gender, age (calculated from birthdate), weight, and height.
+    """
+    age = None
+    if current_user.birthdate: # type: ignore
+        bdate = current_user.birthdate.date() if hasattr(current_user.birthdate, 'date') else current_user.birthdate # type: ignore
+        today = date.today()
+        age = today.year - bdate.year - ((today.month, today.day) < (bdate.month, bdate.day))
+
+    weight = None
+    height = None
+    if current_user.profile: # type: ignore
+        weight = current_user.profile.weight # type: ignore
+        height = current_user.profile.height # type: ignore
+
+    return UserInfoContextResponse(
+        user_id=current_user.id, # type: ignore
+        gender=current_user.gender.value if current_user.gender else None, # type: ignore
+        age=age,
+        weight=weight,
+        height=height
+    )
 
 @workout_router.get("/test-current-user")
 def test_current_user(current_db_user: User = Depends(get_current_db_user)):
@@ -41,6 +77,8 @@ def test_current_user(current_db_user: User = Depends(get_current_db_user)):
     Returns the current user's database object for debugging.
     """
     return current_db_user
+
+
 
 
 # ============================================================================
@@ -1008,6 +1046,9 @@ def create_full_workout_plan(
     """
     try:
         # 1. Create the workout plan
+        if plan_data.image_url is None:
+            plan_data.image_url = "https://assets.gqindia.com/photos/6901d75412ed49c7aea3ce5c/16:9/w_2560%2Cc_limit/work.jpg"
+        
         db_plan = Workout_Plans(
             title=plan_data.title,
             description=plan_data.description,
@@ -1140,6 +1181,86 @@ def delete_workout_plan(
     db.delete(plan)
     db.commit()
     return None
+
+
+@workout_router.post("/workout-plans/ai-generate-full", status_code=status.HTTP_200_OK)
+def ai_generate_full_workout_plan(
+    request: AIGenerateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Generate a full workout plan using the Gemini API based on user context and prompt.
+    Returns JSON matching the CreateFullWorkoutPlan schema.
+    This only returns the JSON data. To save it to the database, use the /workout-plans/create-full endpoint with the returned JSON as the payload. To assign the generated plan to a user, use the /workout-plans/assign endpoint with the created plan ID and user ID.
+    """
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if not gemini_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="GEMINI_API_KEY is not configured"
+        )
+
+    # Get user context
+    user_context = get_user_info_context(db, current_user)
+    
+    # Read JSON context files
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    gemini_dir = os.path.join(base_dir, "context_gemini", "workout")
+    
+    try:
+        sys_prompt = build_system_prompt(user_context, gemini_dir)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to read context files or build system prompt: {str(e)}"
+        )
+
+    import google.api_core.exceptions
+
+    genai.configure(api_key=gemini_key) # type: ignore
+    # Using gemini-3.1-flash-lite based on best available rate limits (15 RPM / 500 RPD)
+    model = genai.GenerativeModel('gemini-3.1-flash-lite-preview', system_instruction=sys_prompt) # type: ignore
+    
+    try:
+        response = model.generate_content(
+            request.prompt,
+            generation_config=genai.types.GenerationConfig( # type: ignore
+                response_mime_type="application/json",
+            ), 
+        )
+    except google.api_core.exceptions.ResourceExhausted:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Gemini API rate limit exceeded. Please wait a moment and try again."
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Gemini API error: {str(e)}"
+        )
+    
+    try:
+        raw_text = response.text.strip()
+        # Find the first '{' or '[' and the last '}' or ']'
+        start_idx = raw_text.find('{')
+        if start_idx == -1:
+            start_idx = raw_text.find('[')
+            
+        end_idx = raw_text.rfind('}')
+        if end_idx == -1 or (raw_text.rfind(']') > end_idx):
+            end_idx = raw_text.rfind(']')
+            
+        if start_idx != -1 and end_idx != -1:
+            raw_text = raw_text[start_idx:end_idx+1]
+            
+        data = json.loads(raw_text)
+        return data
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to parse Gemini response: {response.text}"
+        )
 
 
 @workout_router.post("/workout-plans/seed-full", status_code=status.HTTP_201_CREATED)

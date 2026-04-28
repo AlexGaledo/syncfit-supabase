@@ -1,0 +1,67 @@
+{
+  "title": "Sample Workout Plan by Ford",
+  "description": "A 2-day full body workout plan I created for myself.",
+  "difficulty": "intermediate",
+  "days_per_week": 2,
+  "ai_generated": false,
+  "is_preset": false,
+  "is_equipment_needed": true,
+  "duration_minutes": 120,
+  "image_url": "https://assets.gqindia.com/photos/6901d75412ed49c7aea3ce5c/16:9/w_2560%2Cc_limit/work.jpg",
+  "tags": [
+    "full body split",
+    "strength training focus"
+  ],
+  "workouts": [
+    {
+      "title": "Day 1: Full Body A",
+      "description": "First full body session focusing on pushing movements and quads.",
+      "estimated_duration_minutes": 60,
+      "order_index": 1,
+      "day_of_week": 1,
+      "exercises": [
+        {
+          "exercise_id": 231,
+          "sets": 3,
+          "reps": 10,
+          "duration_seconds": 0,
+          "rest_duration_seconds": 60,
+          "order_index": 1
+        },
+        {
+          "exercise_id": 232,
+          "sets": 3,
+          "reps": 12,
+          "duration_seconds": 0,
+          "rest_duration_seconds": 90,
+          "order_index": 2
+        }
+      ]
+    },
+    {
+      "title": "Day 2: Full Body B",
+      "description": "Second session focusing on pulling movements and hamstrings/core.",
+      "estimated_duration_minutes": 60,
+      "order_index": 2,
+      "day_of_week": 4,
+      "exercises": [
+        {
+          "exercise_id": 231,
+          "sets": 4,
+          "reps": 8,
+          "duration_seconds": 0,
+          "rest_duration_seconds": 60,
+          "order_index": 1
+        },
+        {
+          "exercise_id": 233,
+          "sets": 3,
+          "reps": 10,
+          "duration_seconds": 0,
+          "rest_duration_seconds": 30,
+          "order_index": 2
+        }
+      ]
+    }
+  ]
+}

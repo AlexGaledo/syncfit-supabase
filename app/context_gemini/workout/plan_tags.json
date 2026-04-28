@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "push/pull/leg split"
+  },
+  {
+    "id": 2,
+    "name": "full body split"
+  },
+  {
+    "id": 3,
+    "name": "upper/lower split"
+  },
+  {
+    "id": 4,
+    "name": "body part split"
+  },
+  {
+    "id": 5,
+    "name": "muscle building focus"
+  },
+  {
+    "id": 6,
+    "name": "strength training focus"
+  },
+  {
+    "id": 10,
+    "name": "general fitness focus"
+  },
+  {
+    "id": 11,
+    "name": "endurance/cardio focus"
+  },
+  {
+    "id": 12,
+    "name": "weight loss focus"
+  }
+]

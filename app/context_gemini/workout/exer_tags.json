@@ -1,0 +1,126 @@
+[
+  {
+    "id": 1,
+    "name": "chest"
+  },
+  {
+    "id": 2,
+    "name": "push pattern"
+  },
+  {
+    "id": 3,
+    "name": "anterior deltoids"
+  },
+  {
+    "id": 4,
+    "name": "triceps"
+  },
+  {
+    "id": 5,
+    "name": "shoulders"
+  },
+  {
+    "id": 6,
+    "name": "lateral deltoids"
+  },
+  {
+    "id": 7,
+    "name": "back"
+  },
+  {
+    "id": 8,
+    "name": "lats"
+  },
+  {
+    "id": 9,
+    "name": "pull pattern"
+  },
+  {
+    "id": 10,
+    "name": "biceps"
+  },
+  {
+    "id": 11,
+    "name": "rear deltoids"
+  },
+  {
+    "id": 12,
+    "name": "traps"
+  },
+  {
+    "id": 13,
+    "name": "forearms"
+  },
+  {
+    "id": 14,
+    "name": "lower back"
+  },
+  {
+    "id": 15,
+    "name": "glutes"
+  },
+  {
+    "id": 16,
+    "name": "hinge pattern"
+  },
+  {
+    "id": 17,
+    "name": "quads"
+  },
+  {
+    "id": 18,
+    "name": "squat pattern"
+  },
+  {
+    "id": 19,
+    "name": "hamstrings"
+  },
+  {
+    "id": 20,
+    "name": "lunge pattern"
+  },
+  {
+    "id": 21,
+    "name": "calves"
+  },
+  {
+    "id": 22,
+    "name": "abs"
+  },
+  {
+    "id": 23,
+    "name": "full body"
+  },
+  {
+    "id": 24,
+    "name": "obliques"
+  },
+  {
+    "id": 25,
+    "name": "adductors"
+  },
+  {
+    "id": 26,
+    "name": "abductors"
+  },
+  {
+    "id": 27,
+    "name": "rotator cuff"
+  },
+  {
+    "id": 28,
+    "name": "neck"
+  },
+  {
+    "id": 29,
+    "name": "cardio"
+  },
+  {
+    "id": 30,
+    "name": "carry pattern"
+  },
+  {
+    "id": 31,
+    "name": "rotation pattern"
+  }
+]

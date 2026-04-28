@@ -222,3 +222,12 @@ class SupabaseTokenProfile(BaseModel):
     sub: str  # User ID from Supabase
     email: str
     role: Optional[str] = None
+
+
+class UserInfoContextResponse(BaseModel):
+    """Schema for user information context response"""
+    user_id: UUID
+    gender: Optional[str] = None
+    age: Optional[int] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None

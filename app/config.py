@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     # CORS Settings
     ALLOWED_ORIGINS: str = "*"
     
+    # AI/Gemini settings
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY") or ''
+    
     # API Settings
     API_V1_PREFIX: str = "/api/v1"
     
@@ -39,7 +42,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=True
+        case_sensitive=True,
+        extra="ignore"
     )
 
 
