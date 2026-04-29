@@ -770,7 +770,7 @@ def get_full_workout_plan(
                     order_index=ex_link.order_index # type: ignore
                 )
             )
-            
+
         full_workouts.append(
             FullWorkoutDetail(
                 workout_id=workout_obj.id,
@@ -802,18 +802,42 @@ def get_full_workout_plan(
     )
 
 
-@workout_router.get("/workout-plans/{plan_id}/schedule")
+@workout_router.get("/workout-plans/my-schedule")
 def get_workout_plan_schedule(
-    plan_id: int,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: User = Depends(get_current_db_user)
 ):
     """
-    Retrieve the workout schedule for a plan.
+    Retrieve the workout schedule for the user's active plan.
     """
+    assignment = db.query(Workout_Plans_Users).filter(
+        Workout_Plans_Users.trainee_id == current_user.id,
+        Workout_Plans_Users.is_active == True
+    ).first()
+    
+    if not assignment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active workout plan found for the current user.")
+
+    plan_id = assignment.plan_id
     plan = db.query(Workout_Plans).filter(Workout_Plans.id == plan_id).first()
     if not plan:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout plan not found")
+
+    # Get logs for the current week
+    now_aware = datetime.now().astimezone()
+    start_of_week = now_aware.date() - timedelta(days=now_aware.weekday())
+    start_of_week_dt = datetime.combine(start_of_week, datetime.min.time()).replace(tzinfo=now_aware.tzinfo)
+    end_of_week_dt = start_of_week_dt + timedelta(days=7)
+
+    week_logs = db.query(Workout_Logs).filter(
+        Workout_Logs.trainee_id == current_user.id,
+        Workout_Logs.plan_id == plan_id,
+        Workout_Logs.start_datetime >= start_of_week_dt,
+        Workout_Logs.start_datetime < end_of_week_dt
+    ).all()
+
+    logged_workout_ids = {log.workout_id for log in week_logs if log.workout_id is not None}
+    days_done_this_week = len({log.start_datetime.date() for log in week_logs})
 
     day_name_map = {
         1: "Monday",
@@ -832,28 +856,33 @@ def get_workout_plan_schedule(
         day_name = "Unknown"
         if day_of_week_int is not None:
             day_name = day_name_map.get(day_of_week_int, "Unknown")  # type: ignore[arg-type]
+            
+        is_done = link.workout_id in logged_workout_ids
+        
         schedule.append({
             "workout_id": link.workout_id,
             "workout_title": link.workout.title,
             "day_of_week_int": day_of_week_int, # type: ignore[assignment]
             "day_of_week_string": day_name,
             "order_index": link.order_index,
+            "is_done": is_done,
         })
 
     return {
         "plan_id": plan.id,
         "days_per_week": plan.days_per_week,
+        "days_done_this_week": days_done_this_week,
         "schedule": sorted(schedule, key=lambda x: (x["day_of_week_int"] or 0, x["order_index"] or 0)),
     }
 
 
 @workout_router.get("/workout-plans/today-workout")
-def get_today_workout_plan(
+def get_today_workout(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_db_user)
 ):
     """
-    Retrieve today's workout for the user's active plan, or the most recent pending workout.
+    Retrieve today's workout session for the user's active plan, or the most recent pending workout.
     """
     assignment = db.query(Workout_Plans_Users).filter(
         Workout_Plans_Users.trainee_id == current_user.id,
