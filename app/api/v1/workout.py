@@ -808,7 +808,8 @@ def get_workout_plan_schedule(
     current_user: User = Depends(get_current_db_user)
 ):
     """
-    Retrieve the workout schedule for the user's active plan.
+    Retrieve the workout schedule for the user's active plan. 
+    It includes which workouts are scheduled for which days of the week, and which of those workouts have been completed in the current week based on workout logs.
     """
     assignment = db.query(Workout_Plans_Users).filter(
         Workout_Plans_Users.trainee_id == current_user.id,
@@ -906,9 +907,7 @@ def get_today_workout(
         }
 
     today = datetime.now().date()
-    today = date(2026, 4, 19)
     today_weekday = today.weekday() + 1
-    today_weekday = 7
 
     day_name_map = {
         1: "Monday",
