@@ -13,7 +13,7 @@ from uuid import UUID
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_db_user
-from app.models.user import User, Trainer_info, User_Profile
+from app.models.user import User, Trainer_info, User_Profile, UserType
 from app.models.social import (
     Connections, ConnectionStatus as ConnectionStatusModel,
     Conversations, ConversationType as ConversationTypeModel,
@@ -643,6 +643,18 @@ async def get_trainer_info(
     
     return {"trainer_info": trainer_info,
             "trainer_profile": traiter_user_profile}
+
+
+@socials_router.get('/get-number-of-trainers', response_model=List[TrainerInfoResponse])
+def get_trainers_limited(
+    db:Session=Depends(get_db), 
+    skip: int = 0, 
+    limit:int = 10,
+    current_user: dict = Depends(get_current_user)
+    ):
+    """retrieve number of trainers [10 at a time]"""
+
+    return db.query(User).filter(User.type == UserType.trainer).offset(skip).limit(limit).all()
 
 
 
