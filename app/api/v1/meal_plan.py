@@ -14,7 +14,8 @@ from uuid import UUID
 from datetime import date, timedelta
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_db_user
+from app.models.user import User
 from app.models.meal_plan import Meals, Meal_Plans, Meal_Plan_Items
 from app.schemas.meal_plan import (
     MealCreate, MealUpdate, MealResponse,
@@ -25,24 +26,6 @@ from app.schemas.meal_plan import (
 
 router = APIRouter(prefix="/meal-plans", tags=["Meal Plans"])
 
-
-def _parse_current_user_id(current_user: dict) -> UUID:
-    """Extract and validate the authenticated user id from JWT claims."""
-    raw_user_id = current_user.get("sub")
-    if not raw_user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authenticated user identifier",
-        )
-    try:
-        return UUID(str(raw_user_id))
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authenticated user identifier",
-        ) from exc
-
-
 def _visible_meals_query(db: Session, user_id: UUID):
     """System meals are public; custom meals are only visible to their owner."""
     return db.query(Meals).filter(
@@ -51,6 +34,7 @@ def _visible_meals_query(db: Session, user_id: UUID):
 
 
 def _get_visible_meal_or_404(db: Session, user_id: UUID, meal_id: UUID) -> Meals:
+    """Helper to retrieve a single meal, checking for visibility."""
     meal = _visible_meals_query(db, user_id).filter(Meals.id == meal_id).first()
     if not meal:
         raise HTTPException(
@@ -71,13 +55,13 @@ async def get_meals(
     search: Optional[str] = None,
     category: Optional[MealCategorySchema] = None,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """
     Browse the meal/food library. Supports search by name and filter by category.
     Returns both system meals and the current user's custom meals.
     """
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     query = _visible_meals_query(db, user_id)
 
     if search:
@@ -93,10 +77,10 @@ async def get_meals(
 async def get_meal(
     meal_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """Get a specific meal from the food library"""
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     return _get_visible_meal_or_404(db, user_id, meal_id)
 
 
@@ -104,13 +88,13 @@ async def get_meal(
 async def create_meal(
     meal_data: MealCreate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """
     Create a custom meal/food in the library.
     Automatically marks it as custom and owned by the current user.
     """
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     db_meal = Meals(
         **meal_data.model_dump(exclude={"created_by", "is_custom"}),
         is_custom=True,
@@ -127,10 +111,10 @@ async def update_meal(
     meal_id: UUID,
     meal_data: MealUpdate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """Update a custom meal (only the creator can update)"""
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     meal = db.query(Meals).filter(Meals.id == meal_id).first()
     if not meal:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meal not found")
@@ -150,10 +134,10 @@ async def update_meal(
 async def delete_meal(
     meal_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """Delete a custom meal (only the creator can delete)"""
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     meal = db.query(Meals).filter(Meals.id == meal_id).first()
     if not meal:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meal not found")
@@ -172,13 +156,13 @@ async def delete_meal(
 async def get_meal_plan_for_user(
     plan_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ) -> Meal_Plans:
     """
     Reusable dependency to get a specific meal plan for the current user,
     handling ownership checks and 404 errors.
     """
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     plan = (
         db.query(Meal_Plans)
         .options(joinedload(Meal_Plans.items).joinedload(Meal_Plan_Items.meal))
@@ -200,13 +184,13 @@ async def get_meal_plan_for_user(
 async def get_meal_plan_for_user(
     plan_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ) -> Meal_Plans:
     """
     Reusable dependency to get a specific meal plan for the current user,
     handling ownership checks and 404 errors.
     """
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     plan = (
         db.query(Meal_Plans)
         .options(joinedload(Meal_Plans.items).joinedload(Meal_Plan_Items.meal))
@@ -230,10 +214,10 @@ async def get_my_meal_plans(
     skip: int = 0,
     limit: int = 30,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """Get all meal plans for the current user, ordered by date descending"""
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     plans = (
         db.query(Meal_Plans)
         .filter(Meal_Plans.user_id == user_id)
@@ -249,13 +233,13 @@ async def get_my_meal_plans(
 async def get_meal_plan_by_date(
     plan_date: date,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """
     Get the meal plan for a specific date (with all items and meal details).
     This is the main view a user sees when opening a day in the app.
     """
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     plan = (
         db.query(Meal_Plans)
         .options(joinedload(Meal_Plans.items).joinedload(Meal_Plan_Items.meal))
@@ -271,13 +255,13 @@ async def get_meal_plan_by_date(
 async def copy_previous_day_plan(
     target_date: date,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """
     Create a meal plan for `target_date` by copying the previous day's plan.
     This mirrors a common quick-log workflow from nutrition trackers.
     """
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
     source_date = target_date - timedelta(days=1)
 
     existing_target_plan = (
@@ -357,46 +341,37 @@ async def get_meal_plan(
 async def create_meal_plan(
     plan_data: MealPlanCreate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
-    """
-    Create a new daily meal plan. Only one plan per user per date.
-    """
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
+    print(f"DEBUG: API is trying to use user_id: {user_id}")
 
-    # Check if a plan already exists for this date
-    existing = (
-        db.query(Meal_Plans)
-        .filter(Meal_Plans.user_id == user_id, Meal_Plans.date == plan_data.date)
-        .first()
-    )
+    # 1. First, check if it already exists (Get-or-Create)
+    existing = db.query(Meal_Plans).filter(
+        Meal_Plans.user_id == user_id, 
+        Meal_Plans.date == plan_data.date
+    ).first()
+    
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A meal plan already exists for this date. Use the existing plan or update it.",
-        )
+        return existing
 
+    # 2. Try to create it
     db_plan = Meal_Plans(**plan_data.model_dump(exclude={"template_name"}), user_id=user_id)
-    db.add(db_plan)
-
-    # If a template was provided, apply it
-    if plan_data.template_name:
-        # In a real implementation, you would fetch the template's meals
-        # from the database here and create Meal_Plan_Items for them.
-        # For now, we can just add a note.
-        db_plan.notes = f"Started with template: {plan_data.template_name}"
-
+    
     try:
+        db.add(db_plan)
         db.commit()
-    except IntegrityError:
+        db.refresh(db_plan)
+        return db_plan
+    except IntegrityError as e:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A meal plan already exists for this date.",
-        )
-    db.refresh(db_plan)
-    return db_plan
+        # If the error is about a missing user (Foreign Key)
 
+        if "violates foreign key constraint" in str(e):
+            # Insert this right before the "User ID does not exist" error
+            raise HTTPException(status_code=400, detail="The specified User ID does not exist.")
+        # Fallback for unexpected conflicts
+        raise HTTPException(status_code=409, detail="Database integrity conflict.")
 
 @router.patch("/{plan_id}", response_model=MealPlanResponse)
 async def update_meal_plan(
@@ -434,18 +409,19 @@ async def add_meal_to_plan(
     plan_id: UUID,
     item_data: MealPlanItemCreate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """
     Add a meal from the library to a daily plan.
     Pick a meal, choose the slot (breakfast/lunch/dinner/snack), and set servings.
     """
-    user_id = _parse_current_user_id(current_user)
-
+    user_id = current_user.id
+    print(f"DEBUG: API is trying to use user_id: {user_id} to add meal {item_data.meal_id} to plan {plan_id}")
     # Efficiently check for meal plan ownership and meal visibility in one query
     result = (
         db.query(Meal_Plans, Meals)
         .outerjoin(Meals, (
+            
             (Meals.id == item_data.meal_id) &
             (or_(Meals.is_custom.is_(False), Meals.created_by == user_id))
         ))
@@ -501,10 +477,10 @@ async def update_meal_plan_item(
     item_id: UUID,
     item_data: MealPlanItemUpdate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """Update a meal plan item (change servings, meal slot, or order)"""
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
 
     # Verify plan belongs to user
     plan = db.query(Meal_Plans).filter(Meal_Plans.id == plan_id, Meal_Plans.user_id == user_id).first()
@@ -539,10 +515,10 @@ async def remove_meal_from_plan(
     plan_id: UUID,
     item_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_db_user),
 ):
     """Remove a meal from a daily plan"""
-    user_id = _parse_current_user_id(current_user)
+    user_id = current_user.id
 
     # Verify plan belongs to user
     plan = db.query(Meal_Plans).filter(Meal_Plans.id == plan_id, Meal_Plans.user_id == user_id).first()
