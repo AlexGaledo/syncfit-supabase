@@ -36,7 +36,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=True)
     full_name = Column(String, nullable=True)
     role = Column(Enum(UserRole), default=UserRole.user, nullable=False)  # type: ignore    
     type = Column(Enum(UserType), default=UserType.trainee, nullable=False)  # type: ignore
