@@ -1,7 +1,7 @@
 """
 User database model
 """
-from sqlalchemy import Column, String, DateTime, Boolean, Enum, ForeignKey, Integer, Float, JSON
+from sqlalchemy import Column, String, DateTime, Boolean, Enum, ForeignKey, Integer, Float, JSON, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -36,23 +36,22 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=True)
     full_name = Column(String, nullable=True)
-    role = Column(Enum(UserRole), default=UserRole.user, nullable=False)  # type: ignore    
-    type = Column(Enum(UserType), default=UserType.trainee, nullable=False)  # type: ignore
-    gender = Column(Enum(UserGender), default=UserGender.others, nullable=False)  # type: ignore
+    role = Column(Enum(UserRole), default=UserRole.user, server_default="user", nullable=False)  # type: ignore
+    type = Column(Enum(UserType), default=UserType.trainee, server_default="trainee", nullable=False)  # type: ignore
+    gender = Column(Enum(UserGender), default=UserGender.others, server_default="others", nullable=False)  # type: ignore
     birthdate = Column(DateTime, nullable=True)
-    email_verified = Column(Boolean, default=False, nullable=False)
+    email_verified = Column(Boolean, default=False, server_default=text("false"), nullable=False)
 
     # Supabase user ID (from auth.users)
     supabase_user_id = Column(UUID(as_uuid=True), unique=True, index=True, nullable=False)  # type: ignore
-    is_active = Column(Boolean, default=True, nullable=False)
+    is_active = Column(Boolean, default=False, server_default=text("false"), nullable=False)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    trainer_info = relationship("trainer_info", back_populates="user",cascade="all, delete-orphan")
     profile = relationship("User_Profile", uselist=False, back_populates="user", cascade="all, delete-orphan")
     badges = relationship("User_Badges", back_populates="user")
     weight_progress = relationship("Weight_Loss_Progress", backref="user", cascade="all, delete-orphan")

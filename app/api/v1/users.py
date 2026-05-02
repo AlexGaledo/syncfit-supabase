@@ -1,7 +1,10 @@
 """
 User routes
 """
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Body
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
@@ -183,6 +186,7 @@ async def get_profile(
     """Get a user's profile."""
     user = _get_user_or_404(db, user_id)
     if not user.profile:
+        logger.warning("Profile not found for user_id=%s", user_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
     return user.profile
 

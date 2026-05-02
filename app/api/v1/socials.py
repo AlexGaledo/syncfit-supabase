@@ -4,7 +4,10 @@ Socials API endpoints
 - Conversations: create, list, get, participant management
 - Messages: send, paginated history, edit, delete
 """
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
@@ -13,7 +16,7 @@ from uuid import UUID
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_db_user
-from app.models.user import User, Trainer_info, User_Profile
+from app.models.user import User, Trainer_info, User_Profile, UserType
 from app.models.social import (
     Connections, ConnectionStatus as ConnectionStatusModel,
     Conversations, ConversationType as ConversationTypeModel,
@@ -633,16 +636,26 @@ async def get_trainer_info(
     """Get trainer profile info by trainer user ID."""
     trainer_info = db.query(Trainer_info).filter(Trainer_info.user_id == user_id).first()
     if not trainer_info:
+        logger.warning("Trainer info not found for user_id=%s", user_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer info not found")
         
-    trainer_user_info: User = trainer_info.user
-    traiter_user_profile: User_Profile = trainer_user_info.profile
+    return trainer_info
 
-    if not trainer_user_info:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer user info not found")
-    
-    return {"trainer_info": trainer_info,
-            "trainer_profile": traiter_user_profile}
+
+@socials_router.get('/get-number-of-trainers', response_model=List[TrainerInfoResponse], status_code=status.HTTP_200_OK)
+def get_trainers_limited(
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 10,
+    current_user: dict = Depends(get_current_user),
+):
+    """retrieve number of trainers [10 at a time]"""
+    return (
+        db.query(Trainer_info)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 
