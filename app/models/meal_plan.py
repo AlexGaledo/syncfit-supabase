@@ -33,11 +33,9 @@ class MealCategory(enum.Enum):
 class MealType(enum.Enum):
     """Which slot of the day a meal is planned for"""
     breakfast = "breakfast"
-    morning_snack = "morning_snack"
     lunch = "lunch"
-    afternoon_snack = "afternoon_snack"
     dinner = "dinner"
-    evening_snack = "evening_snack"
+    snack = "snack"
 
 
 # ============================================================================
