@@ -24,11 +24,9 @@ class MealCategory(str, Enum):
 
 class MealType(str, Enum):
     breakfast = "breakfast"
-    morning_snack = "morning_snack"
     lunch = "lunch"
-    afternoon_snack = "afternoon_snack"
     dinner = "dinner"
-    evening_snack = "evening_snack"
+    snack = "snack"
 
 
 # ============================================================================
