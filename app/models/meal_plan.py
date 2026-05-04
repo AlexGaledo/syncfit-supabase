@@ -73,22 +73,22 @@ class Meals(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    deleted_at = Column(DateTime(timezone=True), nullable=True) # For soft deletes
+    deleted_at = Column(DateTime(timezone=True), nullable=True)  # For soft deletes
 
     # Relationships
     creator = relationship("User", backref="created_meals")
     meal_plan_items = relationship("Meal_Plan_Items", back_populates="meal")
-    serving_unit_id = Column(UUID(as_uuid=True), ForeignKey("serving_units.id"), nullable=True) # type: ignore
+    serving_unit_id = Column(UUID(as_uuid=True), ForeignKey("serving_units.id"), nullable=True)  # type: ignore
     serving_unit = relationship("Serving_Units")
-
 
     def __repr__(self):
         return f"<Meal {self.name} ({self.calories} cal)>"
 
+
 class Meal_Plans(Base):
     """
     Meal Plans model - A user's daily plan or a reusable template.
-    Daily plans are one per user per date.
+    Daily plans are one per user per date (enforced in migration).
     """
     __tablename__ = "meal_plans"
     __table_args__ = (
@@ -114,7 +114,8 @@ class Meal_Plans(Base):
 
     def __repr__(self):
         return f"<MealPlan user={self.user_id} date={self.date} is_template={self.is_template}>"
-    
+
+
 class Meal_Plan_Items(Base):
     """
     Meal Plan Items model - Individual meals chosen for a specific slot in a daily plan.
@@ -128,9 +129,9 @@ class Meal_Plan_Items(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
     meal_plan_id = Column(UUID(as_uuid=True), ForeignKey("meal_plans.id", ondelete="CASCADE"), nullable=False)  # type: ignore
     meal_id = Column(UUID(as_uuid=True), ForeignKey("meals.id"), nullable=False)  # type: ignore
-    meal_type = Column(Enum(MealType), nullable=False)  # type: ignore  # which slot: breakfast, lunch, etc.
-    servings = Column(Float, default=1.0, nullable=False)  # number of servings
-    order_index = Column(Integer, nullable=True)  # ordering within the same meal_type slot
+    meal_type = Column(Enum(MealType), nullable=False)  # type: ignore
+    servings = Column(Float, default=1.0, nullable=False)
+    order_index = Column(Integer, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -142,15 +143,16 @@ class Meal_Plan_Items(Base):
     def __repr__(self):
         return f"<MealPlanItem plan={self.meal_plan_id} meal={self.meal_id} type={self.meal_type}>"
 
+
 class Serving_Units(Base):
     """
     Serving Units model - Defines standard units for meal servings (e.g., gram, cup, oz).
     """
     __tablename__ = "serving_units"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4) # type: ignore
-    name = Column(String(50), nullable=False, unique=True) # e.g., "gram", "cup", "ounce"
-    description = Column(String(255), nullable=True) # e.g., "A standard unit of weight"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
+    name = Column(String(50), nullable=False, unique=True)
+    description = Column(String(255), nullable=True)
 
     def __repr__(self):
         return f"<ServingUnit {self.name}>"
