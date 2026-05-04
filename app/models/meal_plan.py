@@ -3,7 +3,7 @@ Meal Plan database models
 """
 from sqlalchemy import (
     Column, String, Integer, Float, DateTime, Date, Boolean,
-    ForeignKey, Text, Enum, UniqueConstraint, Index
+    ForeignKey, Text, Enum, Index
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
@@ -85,24 +85,24 @@ class Meals(Base):
     def __repr__(self):
         return f"<Meal {self.name} ({self.calories} cal)>"
 
-
 class Meal_Plans(Base):
     """
-    Meal Plans model - A user's daily meal plan for a specific date.
-    Each user can have one meal plan per day.
+    Meal Plans model - A user's daily plan or a reusable template.
+    Daily plans are one per user per date.
     """
     __tablename__ = "meal_plans"
     __table_args__ = (
-        UniqueConstraint("user_id", "date", name="uq_meal_plans_user_id_date"),
         Index("ix_meal_plans_template_name", "template_name"),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)  # type: ignore
-    date = Column(Date, nullable=False)
+
+    date = Column(Date, nullable=True)  # Null for templates
     notes = Column(Text, nullable=True)
     target_calories = Column(Integer, nullable=True)
     template_name = Column(String(255), nullable=True)
+    is_template = Column(Boolean, default=False, nullable=False)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -113,9 +113,8 @@ class Meal_Plans(Base):
     items = relationship("Meal_Plan_Items", back_populates="meal_plan", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<MealPlan user={self.user_id} date={self.date}>"
-
-
+        return f"<MealPlan user={self.user_id} date={self.date} is_template={self.is_template}>"
+    
 class Meal_Plan_Items(Base):
     """
     Meal Plan Items model - Individual meals chosen for a specific slot in a daily plan.
