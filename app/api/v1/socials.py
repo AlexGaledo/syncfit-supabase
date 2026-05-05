@@ -633,26 +633,62 @@ async def get_connected_trainees(
     current_db_user: User = Depends(get_current_db_user)
 ):
     try:
-        # retrieve connected trainees - current user is the trainer (requester in trainership)
+        logger.info("get_connected_trainees: current_user_id=%s", current_db_user.id)
+        # retrieve connected trainees where current user is in the connection
         connected_trainees = db.query(Connections).filter(
-            Connections.requester_id == current_db_user.id,
-            Connections.connection_type == ConnectionType.trainership,
-            Connections.status == ConnectionStatusModel.accepted
+            or_(Connections.addressee_id == current_db_user.id, Connections.requester_id == current_db_user.id),
+            Connections.connection_type.in_(
+                [ConnectionType.trainership, "trainership"]
+            )
         ).all()
+        logger.info("get_connected_trainees: connections_found=%s", len(connected_trainees))
 
         # retrieve info for each trainee
         connected_trainees_info = []
 
         for connection in connected_trainees:
-            trainee_id = connection.addressee_id  # type: ignore
+            trainee_id = connection.requester_id if connection.addressee_id == current_db_user.id else connection.addressee_id  # type: ignore
+            logger.info(
+                "get_connected_trainees: connection_id=%s requester_id=%s addressee_id=%s trainee_id=%s",
+                connection.id,
+                connection.requester_id,
+                connection.addressee_id,
+                trainee_id,
+            )
             trainee_profile = db.query(User_Profile).filter(User_Profile.user_id == trainee_id).first()
+            logger.info(
+                "get_connected_trainees: trainee_profile_found=%s for trainee_id=%s",
+                bool(trainee_profile),
+                trainee_id,
+            )
             if trainee_profile:
-                connected_trainees_info.append(trainee_profile)
+                trainee_user = db.query(User).filter(User.id == trainee_id).first()
+                connected_trainees_info.append(
+                    {
+                        "id": trainee_profile.id,
+                        "user_id": trainee_profile.user_id,
+                        "name": trainee_user.full_name if trainee_user else None,
+                        "address": trainee_profile.address,
+                        "phone_number": trainee_profile.phone_number,
+                        "bio": trainee_profile.bio,
+                        "calorie_goal_daily": trainee_profile.calorie_goal_daily,
+                        "sleep_quality": trainee_profile.sleep_quality,
+                        "weight": trainee_profile.weight,
+                        "height": trainee_profile.height,
+                        "avatar_url": trainee_profile.avatar_url,
+                    }
+                )
+
+        logger.info(
+            "get_connected_trainees: returning_profiles=%s",
+            len(connected_trainees_info),
+        )
 
         return connected_trainees_info
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-connected-trainees endpoint: {e}')
     
+
 
 @socials_router.get('/get-trainer-info/{user_id}', response_model=TrainerInfoResponse)
 async def get_trainer_info(
@@ -669,16 +705,108 @@ async def get_trainer_info(
     return trainer_info
 
 
+@socials_router.get('/get-my-conversations')
+async def get_my_conversations_items(
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user)
+):
+    try:
+        logger.info("get_my_conversations: current_user_id=%s", current_db_user.id)
+        conversations = (
+            db.query(Conversations)
+            .join(Conversation_Participants, Conversation_Participants.conversation_id == Conversations.id)
+            .filter(
+                Conversation_Participants.user_id == current_db_user.id,
+                Conversation_Participants.is_active == True,
+                Conversations.type == ConversationTypeModel.direct,
+            )
+            .options(joinedload(Conversations.participants))
+            .order_by(Conversations.last_message_at.desc().nullslast())
+            .all()
+        )
+
+        logger.info("get_my_conversations: conversations_found=%s", len(conversations))
+
+        participants_info = []
+        seen_user_ids = set()
+
+        for conv in conversations:
+            other_participant = next(
+                (
+                    participant
+                    for participant in conv.participants
+                    if participant.is_active and participant.user_id != current_db_user.id
+                ),
+                None,
+            )
+            if not other_participant:
+                logger.warning("get_my_conversations: no_other_participant for conversation_id=%s", conv.id)
+                continue
+
+            other_user_id = other_participant.user_id
+            if other_user_id in seen_user_ids:
+                continue
+            seen_user_ids.add(other_user_id)
+
+            logger.info(
+                "get_my_conversations: conversation_id=%s other_user_id=%s",
+                conv.id,
+                other_user_id,
+            )
+
+            other_user = db.query(User).filter(User.id == other_user_id).first()
+            if not other_user:
+                logger.warning(
+                    "get_my_conversations: other_user_not_found for other_user_id=%s",
+                    other_user_id,
+                )
+                continue
+
+            other_profile = db.query(User_Profile).filter(User_Profile.user_id == other_user_id).first()
+            logger.info(
+                "get_my_conversations: other_profile_found=%s for other_user_id=%s",
+                bool(other_profile),
+                other_user_id,
+            )
+
+            name = other_user.full_name or other_user.email
+            participants_info.append(
+                {
+                    "id": other_profile.id if other_profile else None,
+                    "user_id": other_user.id,
+                    "name": name,
+                    "address": other_profile.address if other_profile else None,
+                    "phone_number": other_profile.phone_number if other_profile else None,
+                    "bio": other_profile.bio if other_profile else None,
+                    "calorie_goal_daily": other_profile.calorie_goal_daily if other_profile else None,
+                    "sleep_quality": other_profile.sleep_quality if other_profile else None,
+                    "weight": other_profile.weight if other_profile else None,
+                    "height": other_profile.height if other_profile else None,
+                    "avatar_url": other_profile.avatar_url if other_profile else None,
+                }
+            )
+
+        logger.info(
+            "get_my_conversations: returning_profiles=%s",
+            len(participants_info),
+        )
+
+        return participants_info
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-my-conversations endpoint: {e}')
+
+
 @socials_router.get('/get-number-of-trainers', response_model=List[TrainerInfoResponse], status_code=status.HTTP_200_OK)
 def get_trainers_limited(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 10,
-    current_user: dict = Depends(get_current_user),
+    current_db_user: User = Depends(get_current_db_user),
 ):
     """retrieve number of trainers [10 at a time]"""
     return (
         db.query(Trainer_info)
+        .filter(Trainer_info.user_id != current_db_user.id)
         .offset(skip)
         .limit(limit)
         .all()
