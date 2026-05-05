@@ -1524,6 +1524,12 @@ def assign_workout_plan_to_user(
         if not trainer:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer not found")
 
+    # Check if an assignment already exists for this trainee and plan
+    existing_assignment = db.query(Workout_Plans_Users).filter(
+        Workout_Plans_Users.trainee_id == assignment.trainee_id,
+        Workout_Plans_Users.plan_id == assignment.plan_id
+    ).first()
+
     # If the new assignment is to be active, deactivate any existing active plans for the trainee
     if assignment.is_active:
         existing_active_assignments = db.query(Workout_Plans_Users).filter(
@@ -1531,16 +1537,24 @@ def assign_workout_plan_to_user(
             Workout_Plans_Users.is_active == True
         ).all()
         for active_assignment in existing_active_assignments:
+            if existing_assignment and active_assignment.id == existing_assignment.id: # type: ignore
+                continue
             active_assignment.is_active = False # type: ignore
             db.add(active_assignment)
 
-    # Create the new assignment
-    new_assignment = Workout_Plans_Users(**assignment.model_dump())
-    db.add(new_assignment)
+    if existing_assignment:
+        existing_assignment.is_active = assignment.is_active # type: ignore
+        existing_assignment.trainer_id = assignment.trainer_id # type: ignore
+        result_assignment = existing_assignment
+    else:
+        # Create the new assignment
+        result_assignment = Workout_Plans_Users(**assignment.model_dump())
+        
+    db.add(result_assignment)
     db.commit()
-    db.refresh(new_assignment)
+    db.refresh(result_assignment)
     
-    return new_assignment
+    return result_assignment
 
 
 @workout_router.patch("/workout-plans/assign/{assignment_id}", response_model=WorkoutPlansUsersResponse)
