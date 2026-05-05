@@ -667,7 +667,7 @@ async def get_connected_trainees(
                     {
                         "id": trainee_profile.id,
                         "user_id": trainee_profile.user_id,
-                        "name": trainee_user.full_name if trainee_user else None,
+                        "email": trainee_user.email if trainee_user else None,
                         "address": trainee_profile.address,
                         "phone_number": trainee_profile.phone_number,
                         "bio": trainee_profile.bio,
