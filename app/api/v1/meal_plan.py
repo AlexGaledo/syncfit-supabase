@@ -2,6 +2,7 @@
 Meal Plan API endpoints
 - Meals: CRUD for the food library (browse, search, create custom meals)
 - Meal Plans: CRUD for daily meal plans
+- Templates: CRUD for reusable meal plan templates
 - Meal Plan Items: Add/remove/update meals in a daily plan
 - Nutrition: Summary of daily intake
 """
@@ -20,11 +21,13 @@ from app.models.meal_plan import Meals, Meal_Plans, Meal_Plan_Items
 from app.schemas.meal_plan import (
     MealCreate, MealUpdate, MealResponse,
     MealPlanCreate, MealPlanUpdate, MealPlanResponse, MealPlanDetailResponse,
+    MealPlanTemplateCreate, MealPlanTemplateUpdate, MealPlanTemplateResponse,
     MealPlanItemCreate, MealPlanItemUpdate, MealPlanItemResponse,
     NutritionSummary, MealCategory as MealCategorySchema,
 )
 
 router = APIRouter(prefix="/meal-plans", tags=["Meal Plans"])
+
 
 def _visible_meals_query(db: Session, user_id: UUID):
     """System meals are public; custom meals are only visible to their owner."""
@@ -150,7 +153,7 @@ async def delete_meal(
 
 
 # ============================================================================
-# DEPENDENCIES FOR THIS ROUTER
+# DEPENDENCIES
 # ============================================================================
 
 async def get_meal_plan_for_user(
@@ -159,14 +162,18 @@ async def get_meal_plan_for_user(
     current_user: User = Depends(get_current_db_user),
 ) -> Meal_Plans:
     """
-    Reusable dependency to get a specific meal plan for the current user,
-    handling ownership checks and 404 errors.
+    Get a specific daily meal plan for the current user.
+    Excludes templates.
     """
     user_id = current_user.id
     plan = (
         db.query(Meal_Plans)
         .options(joinedload(Meal_Plans.items).joinedload(Meal_Plan_Items.meal))
-        .filter(Meal_Plans.id == plan_id, Meal_Plans.user_id == user_id)
+        .filter(
+            Meal_Plans.id == plan_id,
+            Meal_Plans.user_id == user_id,
+            Meal_Plans.is_template.is_(False),
+        )
         .first()
     )
     if not plan:
@@ -177,32 +184,28 @@ async def get_meal_plan_for_user(
     return plan
 
 
-# ============================================================================
-# DEPENDENCIES FOR THIS ROUTER
-# ============================================================================
-
-async def get_meal_plan_for_user(
-    plan_id: UUID,
+async def get_template_for_user(
+    template_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_db_user),
 ) -> Meal_Plans:
     """
-    Reusable dependency to get a specific meal plan for the current user,
-    handling ownership checks and 404 errors.
+    Get a specific template for the current user.
     """
     user_id = current_user.id
-    plan = (
+    template = (
         db.query(Meal_Plans)
         .options(joinedload(Meal_Plans.items).joinedload(Meal_Plan_Items.meal))
-        .filter(Meal_Plans.id == plan_id, Meal_Plans.user_id == user_id)
+        .filter(
+            Meal_Plans.id == template_id,
+            Meal_Plans.user_id == user_id,
+            Meal_Plans.is_template.is_(True),
+        )
         .first()
     )
-    if not plan:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Meal plan not found or you do not have permission to access it.",
-        )
-    return plan
+    if not template:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
+    return template
 
 
 # ============================================================================
@@ -216,11 +219,11 @@ async def get_my_meal_plans(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_db_user),
 ):
-    """Get all meal plans for the current user, ordered by date descending"""
+    """Get all daily meal plans for the current user, ordered by date descending"""
     user_id = current_user.id
     plans = (
         db.query(Meal_Plans)
-        .filter(Meal_Plans.user_id == user_id)
+        .filter(Meal_Plans.user_id == user_id, Meal_Plans.is_template.is_(False))
         .order_by(Meal_Plans.date.desc())
         .offset(skip)
         .limit(limit)
@@ -236,14 +239,17 @@ async def get_meal_plan_by_date(
     current_user: User = Depends(get_current_db_user),
 ):
     """
-    Get the meal plan for a specific date (with all items and meal details).
-    This is the main view a user sees when opening a day in the app.
+    Get the daily meal plan for a specific date (with all items and meal details).
     """
     user_id = current_user.id
     plan = (
         db.query(Meal_Plans)
         .options(joinedload(Meal_Plans.items).joinedload(Meal_Plan_Items.meal))
-        .filter(Meal_Plans.user_id == user_id, Meal_Plans.date == plan_date)
+        .filter(
+            Meal_Plans.user_id == user_id,
+            Meal_Plans.date == plan_date,
+            Meal_Plans.is_template.is_(False),
+        )
         .first()
     )
     if not plan:
@@ -259,14 +265,17 @@ async def copy_previous_day_plan(
 ):
     """
     Create a meal plan for `target_date` by copying the previous day's plan.
-    This mirrors a common quick-log workflow from nutrition trackers.
     """
     user_id = current_user.id
     source_date = target_date - timedelta(days=1)
 
     existing_target_plan = (
         db.query(Meal_Plans)
-        .filter(Meal_Plans.user_id == user_id, Meal_Plans.date == target_date)
+        .filter(
+            Meal_Plans.user_id == user_id,
+            Meal_Plans.date == target_date,
+            Meal_Plans.is_template.is_(False),
+        )
         .first()
     )
     if existing_target_plan:
@@ -278,7 +287,11 @@ async def copy_previous_day_plan(
     source_plan = (
         db.query(Meal_Plans)
         .options(joinedload(Meal_Plans.items))
-        .filter(Meal_Plans.user_id == user_id, Meal_Plans.date == source_date)
+        .filter(
+            Meal_Plans.user_id == user_id,
+            Meal_Plans.date == source_date,
+            Meal_Plans.is_template.is_(False),
+        )
         .first()
     )
     if not source_plan:
@@ -329,11 +342,87 @@ async def copy_previous_day_plan(
     return copied_plan
 
 
+# ============================================================================
+# TEMPLATE ENDPOINTS
+# ============================================================================
+
+@router.get("/templates", response_model=List[MealPlanTemplateResponse])
+async def list_templates(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user),
+):
+    user_id = current_user.id
+    templates = (
+        db.query(Meal_Plans)
+        .options(joinedload(Meal_Plans.items).joinedload(Meal_Plan_Items.meal))
+        .filter(Meal_Plans.user_id == user_id, Meal_Plans.is_template.is_(True))
+        .order_by(Meal_Plans.created_at.desc())
+        .all()
+    )
+    return templates
+
+
+@router.get("/templates/{template_id}", response_model=MealPlanTemplateResponse)
+async def get_template(
+    template: Meal_Plans = Depends(get_template_for_user),
+):
+    return template
+
+
+@router.post("/templates", response_model=MealPlanTemplateResponse, status_code=status.HTTP_201_CREATED)
+async def create_template(
+    template_data: MealPlanTemplateCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user),
+):
+    user_id = current_user.id
+    if not template_data.template_name.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Template name is required")
+
+    db_template = Meal_Plans(
+        user_id=user_id,
+        template_name=template_data.template_name,
+        notes=template_data.notes,
+        target_calories=template_data.target_calories,
+        is_template=True,
+        date=None,
+    )
+    db.add(db_template)
+    db.commit()
+    db.refresh(db_template)
+    return db_template
+
+
+@router.patch("/templates/{template_id}", response_model=MealPlanTemplateResponse)
+async def update_template(
+    template_data: MealPlanTemplateUpdate,
+    template: Meal_Plans = Depends(get_template_for_user),
+    db: Session = Depends(get_db),
+):
+    update_data = template_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(template, field, value)
+
+    db.commit()
+    db.refresh(template)
+    return template
+
+
+@router.delete("/templates/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_template(
+    template: Meal_Plans = Depends(get_template_for_user),
+    db: Session = Depends(get_db),
+):
+    db.delete(template)
+    db.commit()
+    return None
+
+
 @router.get("/{plan_id}", response_model=MealPlanDetailResponse)
 async def get_meal_plan(
     plan: Meal_Plans = Depends(get_meal_plan_for_user),
 ):
-    """Get a specific meal plan by ID with all items"""
+    """Get a specific daily meal plan by ID with all items"""
     return plan
 
 
@@ -343,21 +432,22 @@ async def create_meal_plan(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_db_user),
 ):
+    """
+    Create a daily meal plan (get-or-create per date).
+    """
     user_id = current_user.id
-    print(f"DEBUG: API is trying to use user_id: {user_id}")
 
-    # 1. First, check if it already exists (Get-or-Create)
     existing = db.query(Meal_Plans).filter(
-        Meal_Plans.user_id == user_id, 
-        Meal_Plans.date == plan_data.date
+        Meal_Plans.user_id == user_id,
+        Meal_Plans.date == plan_data.date,
+        Meal_Plans.is_template.is_(False),
     ).first()
-    
+
     if existing:
         return existing
 
-    # 2. Try to create it
     db_plan = Meal_Plans(**plan_data.model_dump(exclude={"template_name"}), user_id=user_id)
-    
+
     try:
         db.add(db_plan)
         db.commit()
@@ -365,13 +455,10 @@ async def create_meal_plan(
         return db_plan
     except IntegrityError as e:
         db.rollback()
-        # If the error is about a missing user (Foreign Key)
-
         if "violates foreign key constraint" in str(e):
-            # Insert this right before the "User ID does not exist" error
             raise HTTPException(status_code=400, detail="The specified User ID does not exist.")
-        # Fallback for unexpected conflicts
         raise HTTPException(status_code=409, detail="Database integrity conflict.")
+
 
 @router.patch("/{plan_id}", response_model=MealPlanResponse)
 async def update_meal_plan(
@@ -400,6 +487,7 @@ async def delete_meal_plan(
     return None
 
 
+
 # ============================================================================
 # MEAL PLAN ITEMS (ADD/REMOVE MEALS FROM A PLAN) ENDPOINTS
 # ============================================================================
@@ -416,12 +504,10 @@ async def add_meal_to_plan(
     Pick a meal, choose the slot (breakfast/lunch/dinner/snack), and set servings.
     """
     user_id = current_user.id
-    print(f"DEBUG: API is trying to use user_id: {user_id} to add meal {item_data.meal_id} to plan {plan_id}")
-    # Efficiently check for meal plan ownership and meal visibility in one query
+
     result = (
         db.query(Meal_Plans, Meals)
         .outerjoin(Meals, (
-            
             (Meals.id == item_data.meal_id) &
             (or_(Meals.is_custom.is_(False), Meals.created_by == user_id))
         ))
@@ -430,7 +516,6 @@ async def add_meal_to_plan(
     )
 
     if not result:
-        # if the plan_id is wrong or doesn't belong to the user
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Meal plan not found or you do not have permission to access it.",
@@ -438,15 +523,13 @@ async def add_meal_to_plan(
 
     meal_plan, meal = result
     if not meal:
-        # if the meal_id is wrong or not visible to the user
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Meal not found or you do not have permission to access it.",
         )
 
-    # Create the new meal plan item
     db_item = Meal_Plan_Items(
-        **item_data.model_dump(exclude={"meal_plan_id"}),
+        **item_data.model_dump(),
         meal_plan_id=plan_id,
     )
 
@@ -460,8 +543,7 @@ async def add_meal_to_plan(
             status_code=status.HTTP_409_CONFLICT,
             detail="Failed to add meal. It might already be in the plan.",
         ) from exc
-    
-    # Eager-load the meal relationship for the response
+
     db_item = (
         db.query(Meal_Plan_Items)
         .options(joinedload(Meal_Plan_Items.meal))
@@ -482,7 +564,6 @@ async def update_meal_plan_item(
     """Update a meal plan item (change servings, meal slot, or order)"""
     user_id = current_user.id
 
-    # Verify plan belongs to user
     plan = db.query(Meal_Plans).filter(Meal_Plans.id == plan_id, Meal_Plans.user_id == user_id).first()
     if not plan:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meal plan not found")
@@ -500,7 +581,6 @@ async def update_meal_plan_item(
     db.commit()
     db.refresh(item)
 
-    # Eager-load meal for response
     item = (
         db.query(Meal_Plan_Items)
         .options(joinedload(Meal_Plan_Items.meal))
@@ -520,7 +600,6 @@ async def remove_meal_from_plan(
     """Remove a meal from a daily plan"""
     user_id = current_user.id
 
-    # Verify plan belongs to user
     plan = db.query(Meal_Plans).filter(Meal_Plans.id == plan_id, Meal_Plans.user_id == user_id).first()
     if not plan:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meal plan not found")

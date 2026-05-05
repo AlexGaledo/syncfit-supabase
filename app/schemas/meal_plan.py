@@ -104,6 +104,8 @@ class MealPlanResponse(MealPlanBase):
     """Schema for meal plan response (without items)"""
     id: UUID
     user_id: UUID
+    template_name: Optional[str] = None
+    is_template: bool = False
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -112,6 +114,40 @@ class MealPlanResponse(MealPlanBase):
 
 class MealPlanDetailResponse(MealPlanResponse):
     """Schema for meal plan response with nested items"""
+    items: List["MealPlanItemResponse"] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# TEMPLATE SCHEMAS
+# ============================================================================
+
+class MealPlanTemplateBase(BaseModel):
+    template_name: str
+    notes: Optional[str] = None
+    target_calories: Optional[int] = Field(default=None, ge=0)
+
+
+class MealPlanTemplateCreate(MealPlanTemplateBase):
+    pass
+
+
+class MealPlanTemplateUpdate(BaseModel):
+    template_name: Optional[str] = None
+    notes: Optional[str] = None
+    target_calories: Optional[int] = Field(default=None, ge=0)
+
+
+class MealPlanTemplateResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    template_name: str
+    notes: Optional[str] = None
+    target_calories: Optional[int] = None
+    is_template: bool = True
+    created_at: datetime
+    updated_at: Optional[datetime] = None
     items: List["MealPlanItemResponse"] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
