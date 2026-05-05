@@ -1283,6 +1283,11 @@ def ai_generate_full_workout_plan(
             raw_text = raw_text[start_idx:end_idx+1]
             
         data = json.loads(raw_text)
+        if isinstance(data, dict):
+            data["ai_generated"] = True
+        elif isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+            data[0]["ai_generated"] = True
+            
         return data
     except Exception as e:
         raise HTTPException(
