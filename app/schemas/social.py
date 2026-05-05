@@ -77,7 +77,6 @@ class ConversationBase(BaseModel):
 
 class ConversationCreate(ConversationBase):
     """Schema for creating a conversation"""
-    creator_id: UUID
     participant_ids: list[UUID] = Field(min_length=1)
 
 
