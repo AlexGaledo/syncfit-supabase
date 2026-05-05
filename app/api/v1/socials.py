@@ -627,6 +627,33 @@ async def get_connected_trainers(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-connected-trainers endpoint: {e}')
 
 
+@socials_router.get('/get-connected-trainees')
+async def get_connected_trainees(
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user)
+):
+    try:
+        # retrieve connected trainees - current user is the trainer (requester in trainership)
+        connected_trainees = db.query(Connections).filter(
+            Connections.requester_id == current_db_user.id,
+            Connections.connection_type == ConnectionType.trainership,
+            Connections.status == ConnectionStatusModel.accepted
+        ).all()
+
+        # retrieve info for each trainee
+        connected_trainees_info = []
+
+        for connection in connected_trainees:
+            trainee_id = connection.addressee_id  # type: ignore
+            trainee_profile = db.query(User_Profile).filter(User_Profile.user_id == trainee_id).first()
+            if trainee_profile:
+                connected_trainees_info.append(trainee_profile)
+
+        return connected_trainees_info
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-connected-trainees endpoint: {e}')
+    
+
 @socials_router.get('/get-trainer-info/{user_id}', response_model=TrainerInfoResponse)
 async def get_trainer_info(
     user_id: UUID,
