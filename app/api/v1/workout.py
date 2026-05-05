@@ -929,8 +929,34 @@ def get_today_workout(
         day_links.sort(key=lambda l: l.order_index or 0)
 
     today_links = links_by_day.get(today_weekday)
+    
+    # Calculate the start of the current week to check logs
+    start_of_week = today - timedelta(days=today.weekday())
+    start_of_week_dt = datetime.combine(start_of_week, datetime.min.time())
+    
     if today_links:
         link = today_links[0]
+        
+        # Check if today's scheduled workout is already done this week
+        todays_done_log = db.query(Workout_Logs).filter(
+            Workout_Logs.trainee_id == current_user.id,
+            Workout_Logs.plan_id == plan_id,
+            Workout_Logs.workout_id == link.workout_id,
+            Workout_Logs.start_datetime >= start_of_week_dt
+        ).first()
+        
+        if todays_done_log:
+            return {
+                "workout_id": None,
+                "title": "Rest Day",
+                "description": None,
+                "estimated_duration_minutes": None,
+                "day_of_week": today_weekday,
+                "order_index": None,
+                "exercises": [],
+                "message": "You have already completed today's workout. Enjoy your rest!",
+            }
+            
         workout_detail = get_full_workout(workout_id=link.workout_id, db=db, current_user=current_user) # type: ignore
         workout_detail = workout_detail.model_copy(update={
             "day_of_week": link.day_of_week,
@@ -962,13 +988,12 @@ def get_today_workout(
             "message": "No scheduled workout found for today.",
         }
 
-    # Check if the most recent scheduled workout is already done
+    # Check if the most recent scheduled workout is already done (since it was scheduled)
     done_log = db.query(Workout_Logs).filter(
         Workout_Logs.trainee_id == current_user.id,
         Workout_Logs.plan_id == plan_id,
         Workout_Logs.workout_id == target_link.workout_id,
-        Workout_Logs.start_datetime >= datetime.combine(target_date, datetime.min.time()),
-        Workout_Logs.start_datetime <= datetime.combine(target_date, datetime.max.time()),
+        Workout_Logs.start_datetime >= min(start_of_week_dt, datetime.combine(target_date, datetime.min.time()))
     ).first()
 
     if done_log:
