@@ -14,7 +14,7 @@ from app.dependencies import get_current_user, get_current_db_user
 from app.models.user import (
     User, UserRole as UserRoleModel,
     User_Profile, User_Supplements, User_Limitations,
-    Weight_Loss_Progress,
+    Weight_Loss_Progress, UserType
 )
 from app.models.item import User_Badges, Badges
 from app.schemas.user import (
@@ -23,6 +23,7 @@ from app.schemas.user import (
     UserSupplementCreate, UserSupplementResponse,
     UserLimitationCreate, UserLimitationResponse,
     WeightLossProgressBase, WeightLossProgressResponse,
+    UserListItem,
 )
 from app.schemas.item import UserBadgeResponse
 
@@ -419,6 +420,21 @@ async def log_weight(
     db.commit()
     db.refresh(entry)
     return entry
+
+
+@router.get("/get-all-trainees", response_model=List[UserListItem])
+def get_all_trainees(    
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)):
+    return (
+        db.query(User)
+        .filter(User.type == UserType.trainee)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 # ============================================================================

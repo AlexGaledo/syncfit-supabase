@@ -81,6 +81,15 @@ class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class UserListItem(BaseModel):
+    """Minimal user listing response"""
+    id: UUID
+    full_name: Optional[str] = None
+    email: EmailStr
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class OAuthUser(BaseModel):
     """Schema for user created via OAuth"""
     email: EmailStr
