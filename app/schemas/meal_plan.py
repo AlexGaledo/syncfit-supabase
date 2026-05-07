@@ -83,61 +83,70 @@ class MealResponse(MealBase):
 # ============================================================================
 
 class MealPlanBase(BaseModel):
-    """Base meal plan schema - a user's daily meal plan"""
     date: date
     notes: Optional[str] = None
     target_calories: Optional[int] = Field(default=None, ge=0)
-
+    target_protein_grams: Optional[float] = Field(default=None, ge=0)
+    target_carbs_grams: Optional[float] = Field(default=None, ge=0)
+    target_fat_grams: Optional[float] = Field(default=None, ge=0)
 
 class MealPlanCreate(MealPlanBase):
-    """Schema for creating a daily meal plan, with an optional template."""
     template_name: Optional[str] = None
 
-
-class MealPlanUpdate(BaseModel):
-    """Schema for updating a meal plan"""
-    notes: Optional[str] = None
-    target_calories: Optional[int] = Field(default=None, ge=0)
-
-
 class MealPlanResponse(MealPlanBase):
-    """Schema for meal plan response (without items)"""
     id: UUID
     user_id: UUID
     template_name: Optional[str] = None
     is_template: bool = False
     created_at: datetime
     updated_at: Optional[datetime] = None
-
     model_config = ConfigDict(from_attributes=True)
-
 
 class MealPlanDetailResponse(MealPlanResponse):
-    """Schema for meal plan response with nested items"""
     items: List["MealPlanItemResponse"] = Field(default_factory=list)
-
     model_config = ConfigDict(from_attributes=True)
+
+class MealPlanUpdate(BaseModel):
+    notes: Optional[str] = None
+    target_calories: Optional[int] = Field(default=None, ge=0)
+    target_protein_grams: Optional[float] = Field(default=None, ge=0)
+    target_carbs_grams: Optional[float] = Field(default=None, ge=0)
+    target_fat_grams: Optional[float] = Field(default=None, ge=0)
+
+class MealPlanGoalApply(BaseModel):
+    target_calories: int = Field(..., ge=0)
+    target_protein_grams: Optional[float] = Field(default=None, ge=0)
+    target_carbs_grams: Optional[float] = Field(default=None, ge=0)
+    target_fat_grams: Optional[float] = Field(default=None, ge=0)
+
+class MealPlanGoalApplyResponse(BaseModel):
+    updated: int
 
 
 # ============================================================================
 # TEMPLATE SCHEMAS
 # ============================================================================
-
+# ============================================================================
+# TEMPLATE SCHEMAS
+# ============================================================================
 class MealPlanTemplateBase(BaseModel):
     template_name: str
     notes: Optional[str] = None
     target_calories: Optional[int] = Field(default=None, ge=0)
-
+    target_protein_grams: Optional[float] = Field(default=None, ge=0)
+    target_carbs_grams: Optional[float] = Field(default=None, ge=0)
+    target_fat_grams: Optional[float] = Field(default=None, ge=0)
 
 class MealPlanTemplateCreate(MealPlanTemplateBase):
     pass
-
 
 class MealPlanTemplateUpdate(BaseModel):
     template_name: Optional[str] = None
     notes: Optional[str] = None
     target_calories: Optional[int] = Field(default=None, ge=0)
-
+    target_protein_grams: Optional[float] = Field(default=None, ge=0)
+    target_carbs_grams: Optional[float] = Field(default=None, ge=0)
+    target_fat_grams: Optional[float] = Field(default=None, ge=0)
 
 class MealPlanTemplateResponse(BaseModel):
     id: UUID
@@ -145,6 +154,9 @@ class MealPlanTemplateResponse(BaseModel):
     template_name: str
     notes: Optional[str] = None
     target_calories: Optional[int] = None
+    target_protein_grams: Optional[float] = None
+    target_carbs_grams: Optional[float] = None
+    target_fat_grams: Optional[float] = None
     is_template: bool = True
     created_at: datetime
     updated_at: Optional[datetime] = None

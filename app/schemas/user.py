@@ -1,7 +1,7 @@
 """
 User schemas for request/response validation
 """
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
@@ -107,10 +107,13 @@ class UserProfileBase(BaseModel):
     address: Optional[str] = None
     phone_number: Optional[str] = None
     bio: Optional[str] = None
-    calorie_goal_daily: Optional[int] = None
-    sleep_quality: Optional[str] = None  # poor/fair/good
-    weight: Optional[float] = None  # kg
-    height: Optional[float] = None  # cm
+    calorie_goal_daily: Optional[int] = Field(default=None, ge=0)
+    macro_protein_pct: Optional[int] = Field(default=None, ge=0, le=100)
+    macro_carb_pct: Optional[int] = Field(default=None, ge=0, le=100)
+    macro_fat_pct: Optional[int] = Field(default=None, ge=0, le=100)
+    sleep_quality: Optional[str] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None
 
 
 class UserProfileCreate(UserProfileBase):

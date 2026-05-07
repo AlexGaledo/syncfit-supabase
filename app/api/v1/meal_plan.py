@@ -24,6 +24,7 @@ from app.schemas.meal_plan import (
     MealPlanTemplateCreate, MealPlanTemplateUpdate, MealPlanTemplateResponse,
     MealPlanItemCreate, MealPlanItemUpdate, MealPlanItemResponse,
     NutritionSummary, MealCategory as MealCategorySchema,
+    MealPlanGoalApply, MealPlanGoalApplyResponse,
 )
 
 router = APIRouter(prefix="/meal-plans", tags=["Meal Plans"])
@@ -46,7 +47,53 @@ def _get_visible_meal_or_404(db: Session, user_id: UUID, meal_id: UUID) -> Meals
         )
     return meal
 
+DEFAULT_MACRO_SPLIT = (30, 35, 35)
 
+def _normalize_macro_split(profile) -> tuple[int, int, int]:
+    if not profile:
+        return DEFAULT_MACRO_SPLIT
+    protein = profile.macro_protein_pct or DEFAULT_MACRO_SPLIT[0]
+    carbs = profile.macro_carb_pct or DEFAULT_MACRO_SPLIT[1]
+    fat = profile.macro_fat_pct or DEFAULT_MACRO_SPLIT[2]
+    if protein + carbs + fat != 100:
+        return DEFAULT_MACRO_SPLIT
+    return protein, carbs, fat
+
+
+def _macro_targets_from_split(target_calories: int, split: tuple[int, int, int]) -> tuple[float, float, float]:
+    protein_g = round((target_calories * split[0] / 100) / 4, 1)
+    carbs_g = round((target_calories * split[1] / 100) / 4, 1)
+    fat_g = round((target_calories * split[2] / 100) / 9, 1)
+    return protein_g, carbs_g, fat_g
+
+
+def _coalesce_macro_targets(target_calories: int, split: tuple[int, int, int], payload) -> tuple[float, float, float]:
+    """Uses custom grams from payload if provided safely, otherwise calculates from split."""
+    p_grams = getattr(payload, "target_protein_grams", None)
+    c_grams = getattr(payload, "target_carbs_grams", None)
+    f_grams = getattr(payload, "target_fat_grams", None)
+
+    if p_grams is not None and c_grams is not None and f_grams is not None:
+        return p_grams, c_grams, f_grams
+    return _macro_targets_from_split(target_calories, split)
+
+
+def _validate_calorie_floor(target_calories: Optional[int], gender) -> None:
+    if target_calories is None:
+        return
+    g = gender.value if hasattr(gender, "value") else gender
+    if g == "male":
+        min_cal = 1500
+    elif g == "female":
+        min_cal = 1200
+    else:
+        min_cal = 1300
+    if target_calories < min_cal:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Daily target must be at least {min_cal} kcal for safety.",
+        )
+    
 # ============================================================================
 # MEALS (FOOD LIBRARY) ENDPOINTS
 # ============================================================================
@@ -305,6 +352,9 @@ async def copy_previous_day_plan(
         date=target_date,
         notes=source_plan.notes,
         target_calories=source_plan.target_calories,
+        target_protein_grams=source_plan.target_protein_grams,
+        target_carbs_grams=source_plan.target_carbs_grams,
+        target_fat_grams=source_plan.target_fat_grams,
     )
     try:
         db.add(copied_plan)
@@ -379,11 +429,19 @@ async def create_template(
     if not template_data.template_name.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Template name is required")
 
+    protein_g = carbs_g = fat_g = None
+    if template_data.target_calories is not None:
+        split = _normalize_macro_split(current_user.profile)
+        protein_g, carbs_g, fat_g = _macro_targets_from_split(template_data.target_calories, split)
+
     db_template = Meal_Plans(
         user_id=user_id,
         template_name=template_data.template_name,
         notes=template_data.notes,
         target_calories=template_data.target_calories,
+        target_protein_grams=protein_g,
+        target_carbs_grams=carbs_g,
+        target_fat_grams=fat_g,
         is_template=True,
         date=None,
     )
@@ -398,8 +456,19 @@ async def update_template(
     template_data: MealPlanTemplateUpdate,
     template: Meal_Plans = Depends(get_template_for_user),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user),
 ):
     update_data = template_data.model_dump(exclude_unset=True)
+
+    if "target_calories" in update_data and not any(k in update_data for k in ["target_protein_grams", "target_carbs_grams", "target_fat_grams"]):
+        split = _normalize_macro_split(current_user.profile)
+        protein_g, carbs_g, fat_g = _macro_targets_from_split(update_data["target_calories"], split)
+        update_data.update({
+            "target_protein_grams": protein_g,
+            "target_carbs_grams": carbs_g,
+            "target_fat_grams": fat_g,
+        })
+
     for field, value in update_data.items():
         setattr(template, field, value)
 
@@ -434,6 +503,7 @@ async def create_meal_plan(
 ):
     """
     Create a daily meal plan (get-or-create per date).
+    Automatically snapshots target calories and macros based on user profile.
     """
     user_id = current_user.id
 
@@ -446,7 +516,27 @@ async def create_meal_plan(
     if existing:
         return existing
 
-    db_plan = Meal_Plans(**plan_data.model_dump(exclude={"template_name"}), user_id=user_id)
+    target_calories = plan_data.target_calories
+    if target_calories is None and current_user.profile:
+        target_calories = current_user.profile.calorie_goal_daily
+
+    _validate_calorie_floor(target_calories, current_user.gender)
+
+    protein_g = carbs_g = fat_g = None
+    if target_calories is not None:
+        split = _normalize_macro_split(current_user.profile)
+        # Use coalesce to respect custom grams if sent in the payload!
+        protein_g, carbs_g, fat_g = _coalesce_macro_targets(target_calories, split, plan_data)
+
+    db_plan = Meal_Plans(
+        user_id=user_id,
+        date=plan_data.date,
+        notes=plan_data.notes,
+        target_calories=target_calories,
+        target_protein_grams=protein_g,
+        target_carbs_grams=carbs_g,
+        target_fat_grams=fat_g,
+    )
 
     try:
         db.add(db_plan)
@@ -465,9 +555,21 @@ async def update_meal_plan(
     plan_data: MealPlanUpdate,
     plan: Meal_Plans = Depends(get_meal_plan_for_user),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user),
 ):
-    """Update a meal plan's notes or target calories"""
     update_data = plan_data.model_dump(exclude_unset=True)
+
+    if "target_calories" in update_data:
+        _validate_calorie_floor(update_data["target_calories"], current_user.gender)
+        if not any(k in update_data for k in ["target_protein_grams", "target_carbs_grams", "target_fat_grams"]):
+            split = _normalize_macro_split(current_user.profile)
+            protein_g, carbs_g, fat_g = _macro_targets_from_split(update_data["target_calories"], split)
+            update_data.update({
+                "target_protein_grams": protein_g,
+                "target_carbs_grams": carbs_g,
+                "target_fat_grams": fat_g,
+            })
+
     for field, value in update_data.items():
         setattr(plan, field, value)
 
@@ -635,6 +737,9 @@ async def get_nutrition_summary(
     total_fiber = 0.0
 
     for item in plan.items:
+        if not item.meal:
+            continue
+            
         meal = item.meal
         servings = item.servings or 1.0
         total_calories += (meal.calories or 0) * servings
@@ -656,3 +761,38 @@ async def get_nutrition_summary(
         target_calories=plan.target_calories,
         remaining_calories=round(remaining, 1) if remaining is not None else None,
     )
+
+
+@router.post("/date/{target_date}/apply-goal", response_model=MealPlanGoalApplyResponse)
+async def apply_goal_to_future(
+    target_date: date,
+    payload: MealPlanGoalApply,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user),
+):
+    _validate_calorie_floor(payload.target_calories, getattr(current_user, 'gender', 'other'))
+    split = _normalize_macro_split(getattr(current_user, 'profile', None))
+    protein_g, carbs_g, fat_g = _coalesce_macro_targets(payload.target_calories, split, payload)
+
+    # Clamp the target date to ensure we NEVER update the past
+    safe_target_date = max(target_date, date.today())
+
+    updated = (
+        db.query(Meal_Plans)
+        .filter(
+            Meal_Plans.user_id == current_user.id,
+            Meal_Plans.is_template.is_(False),
+            Meal_Plans.date >= safe_target_date, # Uses clamped date
+        )
+        .update(
+            {
+                Meal_Plans.target_calories: payload.target_calories,
+                Meal_Plans.target_protein_grams: protein_g,
+                Meal_Plans.target_carbs_grams: carbs_g,
+                Meal_Plans.target_fat_grams: fat_g,
+            },
+            synchronize_session=False,
+        )
+    )
+    db.commit()
+    return MealPlanGoalApplyResponse(updated=updated)

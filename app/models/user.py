@@ -86,6 +86,11 @@ class User_Profile(Base):
     height = Column(Integer, nullable=True)  # height in cm
     avatar_url = Column(String, nullable=True)
 
+    calorie_goal_daily = Column(Integer, nullable=True)
+    macro_protein_pct = Column(Integer, nullable=True)
+    macro_carb_pct = Column(Integer, nullable=True)
+    macro_fat_pct = Column(Integer, nullable=True)
+
     user = relationship("User", back_populates="profile") 
     supplements = relationship("User_Supplements", back_populates="user", cascade="all, delete-orphan")
     limitations = relationship("User_Limitations", back_populates="user", cascade="all, delete-orphan")
