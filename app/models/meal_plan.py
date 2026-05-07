@@ -100,9 +100,13 @@ class Meal_Plans(Base):
 
     date = Column(Date, nullable=True)  # Null for templates
     notes = Column(Text, nullable=True)
-    target_calories = Column(Integer, nullable=True)
     template_name = Column(String(255), nullable=True)
     is_template = Column(Boolean, default=False, nullable=False)
+
+    target_calories = Column(Integer, nullable=True)
+    target_protein_grams = Column(Float, nullable=True)
+    target_carbs_grams = Column(Float, nullable=True)
+    target_fat_grams = Column(Float, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
