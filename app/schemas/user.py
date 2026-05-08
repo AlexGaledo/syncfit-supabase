@@ -346,27 +346,32 @@ class UserInfoContextResponse(BaseModel):
 
 class UserOnboardingBase(BaseModel):
     """Base user onboarding schema"""
+    model_config = ConfigDict(populate_by_name=True)
+
     role: Optional[OnboardingRole] = None
     goal: Optional[OnboardingGoal] = None
     gender: Optional[OnboardingGender] = None
     age: Optional[int] = None
     weight: Optional[float] = None
-    weight_unit: Optional[OnboardingWeightUnit] = None
+    weight_unit: Optional[OnboardingWeightUnit] = Field(default=None, validation_alias="weightUnit", serialization_alias="weightUnit")
     height: Optional[float] = None
-    height_unit: Optional[OnboardingHeightUnit] = None
+    height_unit: Optional[OnboardingHeightUnit] = Field(default=None, validation_alias="heightUnit", serialization_alias="heightUnit")
     athleticism: Optional[OnboardingAthleticism] = None
-    physical_limitations: Optional[List[str]] = None
-    diet_preference: Optional[OnboardingDietPreference] = None
-    days_commitment: Optional[OnboardingDaysCommitment] = None
-    fitness_experience: Optional[str] = None
-    exercise_preference: Optional[OnboardingExercisePreference] = None
-    taking_supplements: Optional[bool] = None
-    supplements_used: Optional[List[str]] = None
-    calorie_intake: Optional[int] = None
-    calorie_unit: Optional[OnboardingCalorieUnit] = None
-    sleep_value: Optional[OnboardingSleepValue] = None
-    equipment_available: Optional[OnboardingEquipment] = None
-    learning_preference: Optional[OnboardingLearningPreference] = None
+    physical_limitations: Optional[List[str]] = Field(default=None, validation_alias="physicalLimitations", serialization_alias="physicalLimitations")
+    diet_preference: Optional[OnboardingDietPreference] = Field(default=None, validation_alias="dietPreference", serialization_alias="dietPreference")
+    days_commitment: Optional[OnboardingDaysCommitment] = Field(default=None, validation_alias="daysCommitment", serialization_alias="daysCommitment")
+    fitness_experience: Optional[str] = Field(default=None, validation_alias="fitnessExperience", serialization_alias="fitnessExperience")
+    exercise_preference: Optional[OnboardingExercisePreference] = Field(default=None, validation_alias="exercisePreference", serialization_alias="exercisePreference")
+    taking_supplements: Optional[bool] = Field(default=None, validation_alias="takingSupplements", serialization_alias="takingSupplements")
+    supplements_used: Optional[List[str]] = Field(default=None, validation_alias="supplementsUsed", serialization_alias="supplementsUsed")
+    calorie_intake: Optional[int] = Field(default=None, validation_alias="calorieIntake", serialization_alias="calorieIntake")
+    macro_protein_pct: Optional[int] = Field(default=None, ge=0, le=100, validation_alias="macroProteinPct", serialization_alias="macroProteinPct")
+    macro_carb_pct: Optional[int] = Field(default=None, ge=0, le=100, validation_alias="macroCarbPct", serialization_alias="macroCarbPct")
+    macro_fat_pct: Optional[int] = Field(default=None, ge=0, le=100, validation_alias="macroFatPct", serialization_alias="macroFatPct")
+    calorie_unit: Optional[OnboardingCalorieUnit] = Field(default=None, validation_alias="calorieUnit", serialization_alias="calorieUnit")
+    sleep_value: Optional[OnboardingSleepValue] = Field(default=None, validation_alias="sleepValue", serialization_alias="sleepValue")
+    equipment_available: Optional[OnboardingEquipment] = Field(default=None, validation_alias="equipmentAvailable", serialization_alias="equipmentAvailable")
+    learning_preference: Optional[OnboardingLearningPreference] = Field(default=None, validation_alias="learningPreference", serialization_alias="learningPreference")
 
 
 class UserOnboardingCreate(UserOnboardingBase):
@@ -384,4 +389,4 @@ class UserOnboardingResponse(UserOnboardingBase):
     id: UUID
     user_id: UUID
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

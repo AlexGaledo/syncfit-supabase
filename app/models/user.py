@@ -234,6 +234,9 @@ class User_Onboarding(Base):
     taking_supplements = Column(Boolean, nullable=True)
     supplements_used = Column(JSON, nullable=True)
     calorie_intake = Column(Integer, nullable=True)
+    macro_protein_pct = Column(Integer, nullable=True)
+    macro_carb_pct = Column(Integer, nullable=True)
+    macro_fat_pct = Column(Integer, nullable=True)
     calorie_unit = Column(Enum(OnboardingCalorieUnit), nullable=True)  # type: ignore
     sleep_value = Column(Enum(OnboardingSleepValue), nullable=True)  # type: ignore
     equipment_available = Column(Enum(OnboardingEquipment), nullable=True)  # type: ignore
