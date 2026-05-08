@@ -4,79 +4,45 @@ Socials API endpoints
 - Conversations: create, list, get, participant management
 - Messages: send, paginated history, edit, delete
 """
+import json
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
-
-logger = logging.getLogger(__name__)
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_
-from sqlalchemy.exc import IntegrityError
-from typing import Any, List, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 from uuid import UUID
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+    status,
+)
+from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_db_user
-from app.models.user import User, Trainer_info, User_Profile, UserType
-from app.models.social import (
-    Connections, ConnectionStatus as ConnectionStatusModel,
-    Conversations, ConversationType as ConversationTypeModel,
-    Conversation_Participants, ConversationRole as ConversationRoleModel,
-    Messages, MessageType as MessageTypeModel, 
-    ConnectionType
-    
-)
-
+from app.models.user import User
 from app.schemas.social import (
-    ConnectionStatus, ConnectionResponse,
-    ConversationType, ConversationResponse, ConversationCreate, ConversationUpdate,
+    ConnectionResponse,
+    ConnectionStatus,
+    ConversationCreate,
     ConversationParticipantResponse,
-    MessageType, MessageCreate, MessageUpdate, MessageResponse,
-    PaginatedMessages, PaginatedConversations, TrainerInfoResponse,
+    ConversationResponse,
+    ConversationUpdate,
+    MessageCreate,
+    MessageResponse,
+    MessageUpdate,
+    PaginatedConversations,
+    PaginatedMessages,
+    TrainerInfoResponse,
 )
+from app.services import social_service
+
+
+logger = logging.getLogger(__name__)
 
 socials_router = APIRouter(prefix="/socials", tags=["Socials"])
-
-
-# ============================================================================
-# HELPERS
-# ============================================================================
-
-def _get_connection_or_404(db: Session, connection_id: UUID) -> Connections:
-    conn = db.query(Connections).filter(Connections.id == connection_id).first()
-    if not conn:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Connection not found")
-    return conn
-
-
-def _get_conversation_or_404(db: Session, conversation_id: UUID) -> Conversations:
-    conv = (
-        db.query(Conversations)
-        .options(joinedload(Conversations.participants))
-        .filter(Conversations.id == conversation_id)
-        .first()
-    )
-    if not conv:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
-    return conv
-
-
-def _assert_participant(conv: Conversations, user_id: UUID) -> Conversation_Participants:
-    """Raises 403 if the user is not an active participant of the conversation."""
-    part = next(
-        (p for p in conv.participants if p.user_id == user_id and p.is_active),
-        None
-    )
-    if not part:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this conversation")
-    return part
-
-
-def _assert_admin_participant(conv: Conversations, user_id: UUID) -> None:
-    """Raises 403 if the user is not an admin participant of the conversation."""
-    part = _assert_participant(conv, user_id)
-    part_role = cast(ConversationRoleModel, part.role)
-    if part_role != ConversationRoleModel.admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Conversation admin access required")
 
 
 # ============================================================================
@@ -92,38 +58,9 @@ async def send_connection_request(
     """
     Send a connection request to another user.
     """
-    current_user_id = cast(UUID, current_db_user.id)
-
-    if current_user_id == addressee_id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot connect with yourself")
-
-    addressee = db.query(User).filter(User.id == addressee_id).first()
-    if not addressee:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-    # Check for an existing connection in either direction
-    existing = db.query(Connections).filter(
-        (
-            (Connections.requester_id == current_user_id) & (Connections.addressee_id == addressee_id)
-        ) | (
-            (Connections.requester_id == addressee_id) & (Connections.addressee_id == current_user_id)
-        )
-    ).first()
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"A connection already exists with status '{existing.status.value}'"
-        )
-
-    conn = Connections(requester_id=current_user_id, addressee_id=addressee_id)
-    db.add(conn)
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Connection request already sent")
-    db.refresh(conn)
-    return conn
+    return social_service.send_connection_request(
+        db, cast(UUID, current_db_user.id), addressee_id
+    )
 
 
 @socials_router.get("/connections", response_model=List[ConnectionResponse])
@@ -138,16 +75,9 @@ async def get_my_connections(
     List current user's connections. Optionally filter by status (pending/accepted/declined/blocked).
     Returns connections where the user is either the requester or addressee.
     """
-    current_user_id = cast(UUID, current_db_user.id)
-
-    query = db.query(Connections).filter(
-        (Connections.requester_id == current_user_id) |
-        (Connections.addressee_id == current_user_id)
+    return social_service.list_my_connections(
+        db, cast(UUID, current_db_user.id), connection_status, skip, limit
     )
-    if connection_status:
-        query = query.filter(Connections.status == connection_status.value)
-
-    return query.order_by(Connections.created_at.desc()).offset(skip).limit(limit).all()
 
 
 @socials_router.patch("/connections/{connection_id}", response_model=ConnectionResponse)
@@ -162,26 +92,9 @@ async def respond_to_connection(
     Only the addressee (recipient) may respond to a pending request.
     Either party may block.
     """
-    conn = _get_connection_or_404(db, connection_id)
-    current_user_id = cast(UUID, current_db_user.id)
-
-    is_addressee = cast(UUID, conn.addressee_id) == current_user_id
-    is_requester = cast(UUID, conn.requester_id) == current_user_id
-
-    if not (is_addressee or is_requester):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your connection")
-
-    # Only addressee can accept or decline; either party can block
-    if new_status in (ConnectionStatus.accepted, ConnectionStatus.declined) and not is_addressee:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only the recipient can accept or decline a connection request"
-        )
-
-    setattr(conn, "status", ConnectionStatusModel[new_status.value])
-    db.commit()
-    db.refresh(conn)
-    return conn
+    return social_service.respond_to_connection(
+        db, cast(UUID, current_db_user.id), connection_id, new_status
+    )
 
 
 @socials_router.delete("/connections/{connection_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -193,14 +106,7 @@ async def remove_connection(
     """
     Remove a connection. Either party may remove it.
     """
-    conn = _get_connection_or_404(db, connection_id)
-    current_user_id = cast(UUID, current_db_user.id)
-
-    if cast(UUID, conn.requester_id) != current_user_id and cast(UUID, conn.addressee_id) != current_user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your connection")
-
-    db.delete(conn)
-    db.commit()
+    social_service.remove_connection(db, cast(UUID, current_db_user.id), connection_id)
     return None
 
 
@@ -219,63 +125,7 @@ async def create_conversation(
     For direct conversations, prevents duplicate DM pairs.
     The creator is automatically added as an admin participant.
     """
-    current_user_id = cast(UUID, current_db_user.id)
-
-    # Collect all participant IDs including creator
-    all_participant_ids = list(set([current_user_id] + list(data.participant_ids)))
-
-    if data.type == ConversationType.direct:
-        if len(all_participant_ids) != 2:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Direct conversations must have exactly 2 participants"
-            )
-        # Guard duplicate DM: check if a direct conversation already exists between these two users
-        other_id = next(pid for pid in all_participant_ids if pid != current_user_id)
-        existing_dm = (
-            db.query(Conversations)
-            .join(Conversation_Participants, Conversation_Participants.conversation_id == Conversations.id)
-            .filter(
-                Conversations.type == ConversationTypeModel.direct,
-                Conversation_Participants.user_id == current_user_id,
-                Conversation_Participants.is_active == True,
-            )
-            .all()
-        )
-        for conv in existing_dm:
-            other_participant_ids = {cast(UUID, p.user_id) for p in conv.participants if cast(UUID, p.user_id) != current_user_id}
-            if other_id in other_participant_ids:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="A direct conversation with this user already exists"
-                )
-
-    if data.type == ConversationType.group and not data.name:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Group conversations require a name"
-        )
-
-    # Verify all participant users exist
-    for pid in all_participant_ids:
-        if not db.query(User).filter(User.id == pid).first():
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {pid} not found")
-
-    conv = Conversations(
-        type=ConversationTypeModel[data.type.value],
-        name=data.name,
-        creator_id=current_user_id,
-    )
-    db.add(conv)
-    db.flush()
-
-    for pid in all_participant_ids:
-        role = ConversationRoleModel.admin if pid == current_user_id else ConversationRoleModel.member
-        db.add(Conversation_Participants(conversation_id=conv.id, user_id=pid, role=role))
-
-    db.commit()
-    db.refresh(conv)
-    return conv
+    return social_service.create_conversation(db, cast(UUID, current_db_user.id), data)
 
 
 @socials_router.get("/conversations", response_model=PaginatedConversations)
@@ -288,32 +138,8 @@ async def get_my_conversations(
     """
     List all conversations the current user participates in, ordered by most recent message.
     """
-    skip = (page - 1) * page_size
-    current_user_id = cast(UUID, current_db_user.id)
-
-    base_query = (
-        db.query(Conversations)
-        .join(Conversation_Participants, Conversation_Participants.conversation_id == Conversations.id)
-        .filter(
-            Conversation_Participants.user_id == current_user_id,
-            Conversation_Participants.is_active == True,
-        )
-        .options(
-            joinedload(Conversations.participants),
-            joinedload(Conversations.last_message),
-        )
-        .order_by(Conversations.last_message_at.desc().nullslast())
-    )
-
-    total = base_query.count()
-    conversations = base_query.offset(skip).limit(page_size).all()
-
-    return PaginatedConversations(
-        conversations=cast(List[ConversationResponse], conversations),
-        total=total,
-        page=page,
-        page_size=page_size,
-        has_more=(skip + len(conversations)) < total,
+    return social_service.list_my_conversations(
+        db, cast(UUID, current_db_user.id), page, page_size
     )
 
 
@@ -326,9 +152,9 @@ async def get_conversation(
     """
     Get a conversation's details and participant list.
     """
-    conv = _get_conversation_or_404(db, conversation_id)
-    _assert_participant(conv, cast(UUID, current_db_user.id))
-    return conv
+    return social_service.get_conversation(
+        db, cast(UUID, current_db_user.id), conversation_id
+    )
 
 
 @socials_router.patch("/conversations/{conversation_id}", response_model=ConversationResponse)
@@ -341,15 +167,9 @@ async def update_conversation(
     """
     Update conversation metadata (e.g. rename a group chat). Admin only.
     """
-    conv = _get_conversation_or_404(db, conversation_id)
-    _assert_admin_participant(conv, cast(UUID, current_db_user.id))
-
-    if data.name is not None:
-        setattr(conv, "name", data.name)
-
-    db.commit()
-    db.refresh(conv)
-    return conv
+    return social_service.update_conversation(
+        db, cast(UUID, current_db_user.id), conversation_id, data
+    )
 
 
 # ============================================================================
@@ -370,38 +190,9 @@ async def add_participant(
     """
     Add a user to a group conversation. Conversation admin only.
     """
-    conv = _get_conversation_or_404(db, conversation_id)
-    _assert_admin_participant(conv, cast(UUID, current_db_user.id))
-
-    if cast(ConversationTypeModel, conv.type) == ConversationTypeModel.direct:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot add participants to a direct conversation"
-        )
-
-    target = db.query(User).filter(User.id == user_id).first()
-    if not target:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-    existing = next((p for p in conv.participants if p.user_id == user_id), None)
-    if existing:
-        if existing.is_active:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User is already a participant")
-        # Re-activate if they previously left
-        existing.is_active = True
-        db.commit()
-        db.refresh(existing)
-        return existing
-
-    part = Conversation_Participants(
-        conversation_id=conversation_id,
-        user_id=user_id,
-        role=ConversationRoleModel.member,
+    return social_service.add_participant(
+        db, cast(UUID, current_db_user.id), conversation_id, user_id
     )
-    db.add(part)
-    db.commit()
-    db.refresh(part)
-    return part
 
 
 @socials_router.delete(
@@ -418,29 +209,15 @@ async def remove_participant(
     Remove a participant from a group conversation, or leave yourself.
     Admins can remove others; any participant can remove themselves.
     """
-    conv = _get_conversation_or_404(db, conversation_id)
-    current_user_id = cast(UUID, current_db_user.id)
-    caller_part = _assert_participant(conv, current_user_id)
-
-    is_self = user_id == current_user_id
-    is_admin = cast(ConversationRoleModel, caller_part.role) == ConversationRoleModel.admin
-
-    if not (is_self or is_admin):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can remove other participants")
-
-    target_part = next((p for p in conv.participants if p.user_id == user_id and p.is_active), None)
-    if not target_part:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Participant not found")
-
-    target_part.is_active = False
-    db.commit()
+    social_service.remove_participant(
+        db, cast(UUID, current_db_user.id), conversation_id, user_id
+    )
     return None
 
 
 # ============================================================================
-# MESSAGES ENDPOINTS (x)
+# MESSAGES ENDPOINTS
 # ============================================================================
-
 
 @socials_router.post(
     "/conversations/{conversation_id}/messages",
@@ -456,37 +233,9 @@ async def send_message(
     """
     Send a message in a conversation. Optionally reply to an existing message.
     """
-    from sqlalchemy.sql import func as sqlfunc
-
-    conv = _get_conversation_or_404(db, conversation_id)
-    current_user_id = cast(UUID, current_db_user.id)
-    _assert_participant(conv, current_user_id)
-
-    if data.reply_to_id:
-        reply_target = db.query(Messages).filter(
-            Messages.id == data.reply_to_id,
-            Messages.conversation_id == conversation_id,
-        ).first()
-        if not reply_target:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reply target message not found")
-
-    msg = Messages(
-        conversation_id=conversation_id,
-        sender_id=current_user_id,
-        content=data.content,
-        type=MessageTypeModel[data.type.value],
-        reply_to_id=data.reply_to_id,
+    return social_service.send_message(
+        db, cast(UUID, current_db_user.id), conversation_id, data
     )
-    db.add(msg)
-    db.flush()
-
-    # Update conversation's last message pointer
-    conv.last_message_at = msg.created_at
-    conv.last_message_id = msg.id
-
-    db.commit()
-    db.refresh(msg)
-    return msg
 
 
 @socials_router.get(
@@ -506,26 +255,8 @@ async def get_messages(
     Use `before_id` for cursor-based pagination (pass the oldest message ID you have
     to load earlier messages). Falls back to offset pagination via `page` if omitted.
     """
-    conv = _get_conversation_or_404(db, conversation_id)
-    _assert_participant(conv, cast(UUID, current_db_user.id))
-
-    query = db.query(Messages).filter(Messages.conversation_id == conversation_id)
-
-    if before_id:
-        cursor_msg = db.query(Messages).filter(Messages.id == before_id).first()
-        if cursor_msg:
-            query = query.filter(Messages.created_at < cursor_msg.created_at)
-
-    total = query.count()
-    skip = (page - 1) * page_size if not before_id else 0
-    messages = query.order_by(Messages.created_at.desc()).offset(skip).limit(page_size).all()
-
-    return PaginatedMessages(
-        messages=list(reversed(messages)),  # return chronological order
-        total=total,
-        page=page,
-        page_size=page_size,
-        has_more=(skip + len(messages)) < total,
+    return social_service.list_messages(
+        db, cast(UUID, current_db_user.id), conversation_id, page, page_size, before_id
     )
 
 
@@ -543,26 +274,9 @@ async def edit_message(
     """
     Edit a message. Only the original sender may edit.
     """
-    conv = _get_conversation_or_404(db, conversation_id)
-    current_user_id = cast(UUID, current_db_user.id)
-    _assert_participant(conv, current_user_id)
-
-    msg = db.query(Messages).filter(
-        Messages.id == message_id,
-        Messages.conversation_id == conversation_id,
-    ).first()
-    if not msg:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
-
-    if cast(UUID, msg.sender_id) != current_user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own messages")
-
-    setattr(msg, "content", data.content)
-    setattr(msg, "is_edited", True)
-
-    db.commit()
-    db.refresh(msg)
-    return msg
+    return social_service.edit_message(
+        db, cast(UUID, current_db_user.id), conversation_id, message_id, data
+    )
 
 
 @socials_router.delete(
@@ -578,116 +292,26 @@ async def delete_message(
     """
     Delete a message. The sender or a conversation admin may delete.
     """
-    conv = _get_conversation_or_404(db, conversation_id)
-    current_user_id = cast(UUID, current_db_user.id)
-    caller_part = _assert_participant(conv, current_user_id)
-
-    msg = db.query(Messages).filter(
-        Messages.id == message_id,
-        Messages.conversation_id == conversation_id,
-    ).first()
-    if not msg:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
-
-    is_sender = cast(UUID, msg.sender_id) == current_user_id
-    is_admin = cast(ConversationRoleModel, caller_part.role) == ConversationRoleModel.admin
-
-    if not (is_sender or is_admin):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot delete this message")
-
-    db.delete(msg)
-    db.commit()
+    social_service.delete_message(
+        db, cast(UUID, current_db_user.id), conversation_id, message_id
+    )
     return None
 
 
 @socials_router.get('/get-connected-trainers')
 async def get_connected_trainers(
     db: Session = Depends(get_db),
-    current_db_user: User = Depends(get_current_db_user)
+    current_db_user: User = Depends(get_current_db_user),
 ):
-    try:
-        # retrieve connected trainers first 
-        connected_trainers = db.query(Connections).filter(
-            or_(Connections.addressee_id == current_db_user.id, Connections.requester_id == current_db_user.id),
-            Connections.connection_type == ConnectionType.trainership,
-            Connections.status == ConnectionStatusModel.accepted
-        ).all()
-
-        # retrieve info for each trainers
-        connected_trainers_info = []
-
-        for trainer in connected_trainers:
-            trainer_id = trainer.requester_id if trainer.addressee_id == current_db_user.id else trainer.addressee_id #type:ignore
-            trainer_info = db.query(Trainer_info).filter(Trainer_info.user_id == trainer_id).first()
-            if trainer_info:
-                connected_trainers_info.append(trainer_info)
-
-        return connected_trainers_info
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-connected-trainers endpoint: {e}')
+    return social_service.get_connected_trainers(db, current_db_user)
 
 
 @socials_router.get('/get-connected-trainees')
 async def get_connected_trainees(
     db: Session = Depends(get_db),
-    current_db_user: User = Depends(get_current_db_user)
+    current_db_user: User = Depends(get_current_db_user),
 ):
-    try:
-        logger.info("get_connected_trainees: current_user_id=%s", current_db_user.id)
-        # retrieve connected trainees where current user is in the connection
-        connected_trainees = db.query(Connections).filter(
-            or_(Connections.addressee_id == current_db_user.id, Connections.requester_id == current_db_user.id),
-            Connections.connection_type.in_(
-                [ConnectionType.trainership, "trainership"]
-            )
-        ).all()
-        logger.info("get_connected_trainees: connections_found=%s", len(connected_trainees))
-
-        # retrieve info for each trainee
-        connected_trainees_info = []
-
-        for connection in connected_trainees:
-            trainee_id = connection.requester_id if connection.addressee_id == current_db_user.id else connection.addressee_id  # type: ignore
-            logger.info(
-                "get_connected_trainees: connection_id=%s requester_id=%s addressee_id=%s trainee_id=%s",
-                connection.id,
-                connection.requester_id,
-                connection.addressee_id,
-                trainee_id,
-            )
-            trainee_profile = db.query(User_Profile).filter(User_Profile.user_id == trainee_id).first()
-            logger.info(
-                "get_connected_trainees: trainee_profile_found=%s for trainee_id=%s",
-                bool(trainee_profile),
-                trainee_id,
-            )
-            if trainee_profile:
-                trainee_user = db.query(User).filter(User.id == trainee_id).first()
-                connected_trainees_info.append(
-                    {
-                        "id": trainee_profile.id,
-                        "user_id": trainee_profile.user_id,
-                        "email": trainee_user.email if trainee_user else None,
-                        "address": trainee_profile.address,
-                        "phone_number": trainee_profile.phone_number,
-                        "bio": trainee_profile.bio,
-                        "calorie_goal_daily": trainee_profile.calorie_goal_daily,
-                        "sleep_quality": trainee_profile.sleep_quality,
-                        "weight": trainee_profile.weight,
-                        "height": trainee_profile.height,
-                        "avatar_url": trainee_profile.avatar_url,
-                    }
-                )
-
-        logger.info(
-            "get_connected_trainees: returning_profiles=%s",
-            len(connected_trainees_info),
-        )
-
-        return connected_trainees_info
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-connected-trainees endpoint: {e}')
-    
+    return social_service.get_connected_trainees(db, current_db_user)
 
 
 @socials_router.get('/get-trainer-info/{user_id}', response_model=TrainerInfoResponse)
@@ -697,103 +321,15 @@ async def get_trainer_info(
     current_db_user: User = Depends(get_current_db_user),
 ):
     """Get trainer profile info by trainer user ID."""
-    trainer_info = db.query(Trainer_info).filter(Trainer_info.user_id == user_id).first()
-    if not trainer_info:
-        logger.warning("Trainer info not found for user_id=%s", user_id)
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer info not found")
-        
-    return trainer_info
+    return social_service.get_trainer_info(db, user_id)
 
 
 @socials_router.get('/get-my-conversations')
 async def get_my_conversations_items(
     db: Session = Depends(get_db),
-    current_db_user: User = Depends(get_current_db_user)
+    current_db_user: User = Depends(get_current_db_user),
 ):
-    try:
-        logger.info("get_my_conversations: current_user_id=%s", current_db_user.id)
-        conversations = (
-            db.query(Conversations)
-            .join(Conversation_Participants, Conversation_Participants.conversation_id == Conversations.id)
-            .filter(
-                Conversation_Participants.user_id == current_db_user.id,
-                Conversation_Participants.is_active == True,
-                Conversations.type == ConversationTypeModel.direct,
-            )
-            .options(joinedload(Conversations.participants))
-            .order_by(Conversations.last_message_at.desc().nullslast())
-            .all()
-        )
-
-        logger.info("get_my_conversations: conversations_found=%s", len(conversations))
-
-        participants_info = []
-        seen_user_ids = set()
-
-        for conv in conversations:
-            other_participant = next(
-                (
-                    participant
-                    for participant in conv.participants
-                    if participant.is_active and participant.user_id != current_db_user.id
-                ),
-                None,
-            )
-            if not other_participant:
-                logger.warning("get_my_conversations: no_other_participant for conversation_id=%s", conv.id)
-                continue
-
-            other_user_id = other_participant.user_id
-            if other_user_id in seen_user_ids:
-                continue
-            seen_user_ids.add(other_user_id)
-
-            logger.info(
-                "get_my_conversations: conversation_id=%s other_user_id=%s",
-                conv.id,
-                other_user_id,
-            )
-
-            other_user = db.query(User).filter(User.id == other_user_id).first()
-            if not other_user:
-                logger.warning(
-                    "get_my_conversations: other_user_not_found for other_user_id=%s",
-                    other_user_id,
-                )
-                continue
-
-            other_profile = db.query(User_Profile).filter(User_Profile.user_id == other_user_id).first()
-            logger.info(
-                "get_my_conversations: other_profile_found=%s for other_user_id=%s",
-                bool(other_profile),
-                other_user_id,
-            )
-
-            name = other_user.full_name or other_user.email
-            participants_info.append(
-                {
-                    "id": other_profile.id if other_profile else None,
-                    "user_id": other_user.id,
-                    "name": name,
-                    "address": other_profile.address if other_profile else None,
-                    "phone_number": other_profile.phone_number if other_profile else None,
-                    "bio": other_profile.bio if other_profile else None,
-                    "calorie_goal_daily": other_profile.calorie_goal_daily if other_profile else None,
-                    "sleep_quality": other_profile.sleep_quality if other_profile else None,
-                    "weight": other_profile.weight if other_profile else None,
-                    "height": other_profile.height if other_profile else None,
-                    "avatar_url": other_profile.avatar_url if other_profile else None,
-                }
-            )
-
-        logger.info(
-            "get_my_conversations: returning_profiles=%s",
-            len(participants_info),
-        )
-
-        return participants_info
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-my-conversations endpoint: {e}')
+    return social_service.get_my_conversations_items(db, current_db_user)
 
 
 @socials_router.get('/get-number-of-trainers', response_model=List[TrainerInfoResponse], status_code=status.HTTP_200_OK)
@@ -804,58 +340,45 @@ def get_trainers_limited(
     current_db_user: User = Depends(get_current_db_user),
 ):
     """retrieve number of trainers [10 at a time]"""
-    return (
-        db.query(Trainer_info)
-        .filter(Trainer_info.user_id != current_db_user.id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-
-
+    return social_service.list_trainers_limited(db, current_db_user, skip, limit)
 
 
 # ============================================================================
 # WebSocket Manager
 # ============================================================================
 
-from fastapi import WebSocket, WebSocketDisconnect, WebSocketException
-from typing import Dict, List
-import json
-
 class ConnectionManager:
     def __init__(self) -> None:
         self.rooms: Dict[str, List[WebSocket]] = {}
 
-
-    async def connect(self, websocket: WebSocket, room_id:str):
+    async def connect(self, websocket: WebSocket, room_id: str):
         await websocket.accept()
         self.rooms.setdefault(room_id, []).append(websocket)
 
-
-    def disconnect(self, websocket: WebSocket, room_id:str):
+    def disconnect(self, websocket: WebSocket, room_id: str):
         self.rooms.get(room_id, []).remove(websocket)
 
-
-    async def broadcast(self, room_id:str, message: Dict):
+    async def broadcast(self, room_id: str, message: Dict):
         for ws in self.rooms.get(room_id, []):
             await ws.send_text(json.dumps(message))
 
+
 connection = ConnectionManager()
+
 
 @socials_router.websocket('/ws/{room_id}/{user_id}')
 async def websocket_endpoint(
     websocket: WebSocket,
     room_id: str,
-    user_id:str
+    user_id: str,
 ):
     await connection.connect(websocket=websocket, room_id=room_id)
     try:
         while True:
             data = await websocket.receive_text()
-            await connection.broadcast(room_id,{
+            await connection.broadcast(room_id, {
                 "user": user_id,
-                "text": data
+                "text": data,
             })
     except WebSocketDisconnect:
-        connection.disconnect(websocket=websocket,room_id=room_id)
+        connection.disconnect(websocket=websocket, room_id=room_id)

@@ -86,7 +86,6 @@ class User_Profile(Base):
     height = Column(Integer, nullable=True)  # height in cm
     avatar_url = Column(String, nullable=True)
 
-    calorie_goal_daily = Column(Integer, nullable=True)
     macro_protein_pct = Column(Integer, nullable=True)
     macro_carb_pct = Column(Integer, nullable=True)
     macro_fat_pct = Column(Integer, nullable=True)
