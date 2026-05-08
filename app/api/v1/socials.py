@@ -689,7 +689,6 @@ async def get_connected_trainees(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-connected-trainees endpoint: {e}')
     
 
-
 @socials_router.get('/get-trainer-info/{user_id}', response_model=TrainerInfoResponse)
 async def get_trainer_info(
     user_id: UUID,
@@ -703,6 +702,7 @@ async def get_trainer_info(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer info not found")
         
     return trainer_info
+
 
 
 @socials_router.get('/get-my-conversations')

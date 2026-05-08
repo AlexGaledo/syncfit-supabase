@@ -2,7 +2,7 @@
 User schemas for request/response validation
 """
 from pydantic import BaseModel, EmailStr, ConfigDict, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 from enum import Enum
@@ -24,6 +24,101 @@ class UserGender(str, Enum):
     male = "male"
     female = "female"
     others = "others"
+
+
+class OnboardingRole(str, Enum):
+    trainee = "trainee"
+    trainer = "trainer"
+
+
+class OnboardingGoal(str, Enum):
+    lose_weight = "lose_weight"
+    ai_coach = "ai_coach"
+    bulk = "bulk"
+    endurance = "endurance"
+    trying = "trying"
+    others = "others"
+
+
+class OnboardingGender(str, Enum):
+    male = "male"
+    female = "female"
+
+
+class OnboardingAthleticism(str, Enum):
+    no_experience = "no_experience"
+    some_experience = "some_experience"
+    somewhat_athletic = "somewhat_athletic"
+    very_athletic = "very_athletic"
+    professional = "professional"
+
+
+class OnboardingDietPreference(str, Enum):
+    vegetarian = "vegetarian"
+    vegan = "vegan"
+    omnivore = "omnivore"
+    pescatarian = "pescatarian"
+    flexitarian = "flexitarian"
+    none = "none"
+
+
+class OnboardingDaysCommitment(str, Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+    daily = "daily"
+
+
+class OnboardingExercisePreference(str, Enum):
+    weightlifting = "weightlifting"
+    calisthenics = "calisthenics"
+    powerlifting = "powerlifting"
+    hiit = "hiit"
+    yoga = "yoga"
+    crossfit = "crossfit"
+    general = "general"
+    sports = "sports"
+    none = "none"
+
+
+class OnboardingSleepValue(str, Enum):
+    insomniac = "insomniac"
+    bad = "bad"
+    normal = "normal"
+    great = "great"
+    excellent = "excellent"
+
+
+class OnboardingEquipment(str, Enum):
+    commercial = "commercial"
+    home_gym = "home_gym"
+    dumbbells = "dumbbells"
+    bands = "bands"
+    bodyweight = "bodyweight"
+    outdoor = "outdoor"
+
+
+class OnboardingLearningPreference(str, Enum):
+    visual = "visual"
+    auditory = "auditory"
+    read_write = "read/write"
+    kinesthetic = "kinesthetic"
+    interactive = "interactive"
+
+
+class OnboardingWeightUnit(str, Enum):
+    kg = "kg"
+    lbs = "lbs"
+
+
+class OnboardingHeightUnit(str, Enum):
+    cm = "cm"
+    inch = "inch"
+
+
+class OnboardingCalorieUnit(str, Enum):
+    kcal = "kcal"
+    joules = "joules"
 
 
 # ============================================================================
@@ -243,3 +338,50 @@ class UserInfoContextResponse(BaseModel):
     age: Optional[int] = None
     weight: Optional[float] = None
     height: Optional[float] = None
+
+
+# ============================================================================
+# USER ONBOARDING SCHEMAS
+# ============================================================================
+
+class UserOnboardingBase(BaseModel):
+    """Base user onboarding schema"""
+    role: Optional[OnboardingRole] = None
+    goal: Optional[OnboardingGoal] = None
+    gender: Optional[OnboardingGender] = None
+    age: Optional[int] = None
+    weight: Optional[float] = None
+    weight_unit: Optional[OnboardingWeightUnit] = None
+    height: Optional[float] = None
+    height_unit: Optional[OnboardingHeightUnit] = None
+    athleticism: Optional[OnboardingAthleticism] = None
+    physical_limitations: Optional[List[str]] = None
+    diet_preference: Optional[OnboardingDietPreference] = None
+    days_commitment: Optional[OnboardingDaysCommitment] = None
+    fitness_experience: Optional[str] = None
+    exercise_preference: Optional[OnboardingExercisePreference] = None
+    taking_supplements: Optional[bool] = None
+    supplements_used: Optional[List[str]] = None
+    calorie_intake: Optional[int] = None
+    calorie_unit: Optional[OnboardingCalorieUnit] = None
+    sleep_value: Optional[OnboardingSleepValue] = None
+    equipment_available: Optional[OnboardingEquipment] = None
+    learning_preference: Optional[OnboardingLearningPreference] = None
+
+
+class UserOnboardingCreate(UserOnboardingBase):
+    """Schema for creating user onboarding"""
+    user_id: UUID
+
+
+class UserOnboardingUpdate(UserOnboardingBase):
+    """Schema for updating user onboarding"""
+    pass
+
+
+class UserOnboardingResponse(UserOnboardingBase):
+    """Schema for user onboarding response"""
+    id: UUID
+    user_id: UUID
+
+    model_config = ConfigDict(from_attributes=True)

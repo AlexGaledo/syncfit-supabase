@@ -29,6 +29,114 @@ class UserGender(enum.Enum):
     others = 'others'
 
 
+class OnboardingRole(enum.Enum):
+    """Enum for onboarding role"""
+    trainee = 'trainee'
+    trainer = 'trainer'
+
+
+class OnboardingGoal(enum.Enum):
+    """Enum for onboarding goal"""
+    lose_weight = 'lose_weight'
+    ai_coach = 'ai_coach'
+    bulk = 'bulk'
+    endurance = 'endurance'
+    trying = 'trying'
+    others = 'others'
+
+
+class OnboardingGender(enum.Enum):
+    """Enum for onboarding gender"""
+    male = 'male'
+    female = 'female'
+
+
+class OnboardingAthleticism(enum.Enum):
+    """Enum for onboarding athleticism"""
+    no_experience = 'no_experience'
+    some_experience = 'some_experience'
+    somewhat_athletic = 'somewhat_athletic'
+    very_athletic = 'very_athletic'
+    professional = 'professional'
+
+
+class OnboardingDietPreference(enum.Enum):
+    """Enum for onboarding diet preference"""
+    vegetarian = 'vegetarian'
+    vegan = 'vegan'
+    omnivore = 'omnivore'
+    pescatarian = 'pescatarian'
+    flexitarian = 'flexitarian'
+    none = 'none'
+
+
+class OnboardingDaysCommitment(enum.Enum):
+    """Enum for onboarding days commitment"""
+    low = 'low'
+    medium = 'medium'
+    high = 'high'
+    daily = 'daily'
+
+
+class OnboardingExercisePreference(enum.Enum):
+    """Enum for onboarding exercise preference"""
+    weightlifting = 'weightlifting'
+    calisthenics = 'calisthenics'
+    powerlifting = 'powerlifting'
+    hiit = 'hiit'
+    yoga = 'yoga'
+    crossfit = 'crossfit'
+    general = 'general'
+    sports = 'sports'
+    none = 'none'
+
+
+class OnboardingSleepValue(enum.Enum):
+    """Enum for onboarding sleep value"""
+    insomniac = 'insomniac'
+    bad = 'bad'
+    normal = 'normal'
+    great = 'great'
+    excellent = 'excellent'
+
+
+class OnboardingEquipment(enum.Enum):
+    """Enum for onboarding equipment"""
+    commercial = 'commercial'
+    home_gym = 'home_gym'
+    dumbbells = 'dumbbells'
+    bands = 'bands'
+    bodyweight = 'bodyweight'
+    outdoor = 'outdoor'
+
+
+class OnboardingLearningPreference(enum.Enum):
+    """Enum for onboarding learning preference"""
+    visual = 'visual'
+    auditory = 'auditory'
+    read_write = 'read/write'
+    kinesthetic = 'kinesthetic'
+    interactive = 'interactive'
+
+
+class OnboardingWeightUnit(enum.Enum):
+    """Enum for onboarding weight unit"""
+    kg = 'kg'
+    lbs = 'lbs'
+
+
+class OnboardingHeightUnit(enum.Enum):
+    """Enum for onboarding height unit"""
+    cm = 'cm'
+    inch = 'inch'
+
+
+class OnboardingCalorieUnit(enum.Enum):
+    """Enum for onboarding calorie unit"""
+    kcal = 'kcal'
+    joules = 'joules'
+
+
 class User(Base):
     """
     User model - synced with Supabase Auth
@@ -53,6 +161,7 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     profile = relationship("User_Profile", uselist=False, back_populates="user", cascade="all, delete-orphan")
+    onboarding = relationship("User_Onboarding", uselist=False, back_populates="user", cascade="all, delete-orphan")
     badges = relationship("User_Badges", back_populates="user")
     weight_progress = relationship("Weight_Loss_Progress", backref="user", cascade="all, delete-orphan")
     event_logs = relationship("Event_Logs", backref="user", cascade="all, delete-orphan")
@@ -97,6 +206,43 @@ class User_Profile(Base):
 
     def __repr__(self):
         return f"<User_Profile {self.user_id}>"
+
+
+class User_Onboarding(Base):
+    """
+    User onboarding model
+    """
+    __tablename__ = "user_onboarding"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # type: ignore
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False, unique=True)  # type: ignore
+
+    role = Column(Enum(OnboardingRole), nullable=True)  # type: ignore
+    goal = Column(Enum(OnboardingGoal), nullable=True)  # type: ignore
+    gender = Column(Enum(OnboardingGender), nullable=True)  # type: ignore
+    age = Column(Integer, nullable=True)
+    weight = Column(Float, nullable=True)
+    weight_unit = Column(Enum(OnboardingWeightUnit), nullable=True)  # type: ignore
+    height = Column(Float, nullable=True)
+    height_unit = Column(Enum(OnboardingHeightUnit), nullable=True)  # type: ignore
+    athleticism = Column(Enum(OnboardingAthleticism), nullable=True)  # type: ignore
+    physical_limitations = Column(JSON, nullable=True)
+    diet_preference = Column(Enum(OnboardingDietPreference), nullable=True)  # type: ignore
+    days_commitment = Column(Enum(OnboardingDaysCommitment), nullable=True)  # type: ignore
+    fitness_experience = Column(String, nullable=True)
+    exercise_preference = Column(Enum(OnboardingExercisePreference), nullable=True)  # type: ignore
+    taking_supplements = Column(Boolean, nullable=True)
+    supplements_used = Column(JSON, nullable=True)
+    calorie_intake = Column(Integer, nullable=True)
+    calorie_unit = Column(Enum(OnboardingCalorieUnit), nullable=True)  # type: ignore
+    sleep_value = Column(Enum(OnboardingSleepValue), nullable=True)  # type: ignore
+    equipment_available = Column(Enum(OnboardingEquipment), nullable=True)  # type: ignore
+    learning_preference = Column(Enum(OnboardingLearningPreference), nullable=True)  # type: ignore
+
+    user = relationship("User", back_populates="onboarding")
+
+    def __repr__(self):
+        return f"<User_Onboarding {self.user_id}>"
     
 
 class User_Supplements(Base):
