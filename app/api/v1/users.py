@@ -90,6 +90,20 @@ async def get_users(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return db.query(User).offset(skip).limit(limit).all()
 
+@router.get("/get-all-trainees", response_model=List[UserListItem])
+def get_all_trainees(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    return (
+        db.query(User)
+        .filter(User.type == UserType.trainee)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(
@@ -420,21 +434,6 @@ async def log_weight(
     db.commit()
     db.refresh(entry)
     return entry
-
-
-@router.get("/get-all-trainees", response_model=List[UserListItem])
-def get_all_trainees(    
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)):
-    return (
-        db.query(User)
-        .filter(User.type == UserType.trainee)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
 
 
 # ============================================================================
