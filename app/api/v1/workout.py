@@ -12,7 +12,8 @@ from app.dependencies import get_current_db_user
 from app.models.item import (
     Exercises, Workouts, Workout_Plans, Exercises_Workouts, Workouts_Workout_Plans,
     Plan_Tags, Workout_Plans_Plan_Tags, Exer_Tags, Exercises_Exer_Tags,
-    Workout_Plans_Users, Workout_Logs, Workout_User_Stats, DifficultyLevel
+    Workout_Plans_Users, Workout_Logs, Workout_User_Stats, DifficultyLevel,
+    Workout_Chatbot_Messages
 )
 from app.schemas.item import (
     ExerciseCreate, ExerciseUpdate, ExerciseResponse,
@@ -30,10 +31,11 @@ from app.schemas.item import (
     ExerTagCreate, ExerTagResponse,
     PlanTagCreate, PlanTagResponse,
     ExercisesExerTagsCreate, ExercisesExerTagsResponse,
-    WorkoutPlansPlanTagsCreate, WorkoutPlansPlanTagsResponse, AIGenerateRequest
+    WorkoutPlansPlanTagsCreate, WorkoutPlansPlanTagsResponse, AIGenerateRequest,
+    ChatbotMessageCreate, ChatbotMessageResponse
 )
 from app.schemas.user import UserInfoContextResponse
-from app.context_gemini.workout.sys_prompt import build_system_prompt
+from app.context_gemini.workout.sys_prompt import build_system_prompt, build_chatbot_system_prompt
 
 import os
 import json
@@ -566,165 +568,6 @@ def get_workout_plans(
         result.append(plan_dict)
 
     return result
-
-
-# ============================================================================
-# WORKOUT STATS AND LOGS
-# ============================================================================
-
-@workout_router.get("/stats/my-stats", response_model=WorkoutUserStatsMessageResponse)
-def get_my_workout_stats(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_db_user)
-):
-    """
-    Retrieve the current user's workout stats.
-    If none exist, return default values and a message.
-    """
-    stats = db.query(Workout_User_Stats).filter(Workout_User_Stats.trainee_id == current_user.id).first()
-    if not stats:
-        return WorkoutUserStatsMessageResponse(
-            message="Workout stats do not exist yet or no workouts done yet.",
-            trainee_id=current_user.id, # type: ignore[arg-type]
-            total_workouts_done=0,
-            current_streak=0,
-            longest_streak=0,
-            total_minutes_trained=0,
-            last_workout_log_id=None,
-        )
-
-    return WorkoutUserStatsMessageResponse(
-        trainee_id=stats.trainee_id, # type: ignore[arg-type]
-        total_workouts_done=stats.total_workouts_done, # type: ignore[arg-type]
-        current_streak=stats.current_streak, # type: ignore[arg-type]
-        longest_streak=stats.longest_streak, # type: ignore[arg-type]
-        total_minutes_trained=stats.total_minutes_trained, # type: ignore[arg-type]
-        last_workout_log_id=stats.last_workout_log_id, # type: ignore[arg-type]
-    )
-
-
-@workout_router.post("/logs/finish-workout", response_model=FinishWorkoutLogResponse, status_code=status.HTTP_201_CREATED)
-def finish_workout(
-    payload: FinishWorkoutLogCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_db_user)
-):
-    """
-    Log a completed workout session and update the user's workout stats.
-    """
-    if payload.plan_id is None:
-        assignment = db.query(Workout_Plans_Users).filter(
-            Workout_Plans_Users.trainee_id == current_user.id,
-            Workout_Plans_Users.is_active == True
-        ).first()
-        if not assignment:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active workout plan found")
-        plan_id = assignment.plan_id
-    else:
-        plan_id = payload.plan_id
-
-    # Ensure workout is part of the plan
-    workout_link = db.query(Workouts_Workout_Plans).filter(
-        Workouts_Workout_Plans.plan_id == plan_id,
-        Workouts_Workout_Plans.workout_id == payload.workout_id,
-    ).first()
-    if not workout_link:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Workout is not part of the plan")
-
-    # Compute duration and total exercises
-    duration_minutes = int((payload.end_datetime - payload.start_datetime).total_seconds() // 60)
-    total_exercises_completed = db.query(Exercises_Workouts).filter(
-        Exercises_Workouts.workout_id == payload.workout_id
-    ).count()
-
-    # Insert workout log
-    log = Workout_Logs(
-        trainee_id=current_user.id,
-        plan_id=plan_id,
-        workout_id=payload.workout_id,
-        start_datetime=payload.start_datetime,
-        end_datetime=payload.end_datetime,
-        duration_minutes=duration_minutes,
-        total_exercises_completed=total_exercises_completed,
-    )
-    db.add(log)
-    db.flush()
-
-    # Ensure stats row exists
-    stats = db.query(Workout_User_Stats).filter(Workout_User_Stats.trainee_id == current_user.id).first()
-    if not stats:
-        stats = Workout_User_Stats(trainee_id=current_user.id)
-        db.add(stats)
-        db.flush()
-
-    # Build schedule (day_of_week: 1=Mon ... 7=Sun)
-    schedule_days = db.query(Workouts_Workout_Plans.day_of_week).filter(
-        Workouts_Workout_Plans.plan_id == plan_id
-    ).distinct().all()
-    schedule_set = {row[0] for row in schedule_days if row[0] is not None}
-
-    last_log = None
-    if stats.last_workout_log_id is not None:
-        last_log = db.query(Workout_Logs).filter(Workout_Logs.id == stats.last_workout_log_id).first()
-
-    current_date = payload.start_datetime.date()
-
-    if not last_log or not schedule_set:
-        # First logged workout or no schedule defined
-        new_streak = 1
-    else:
-        last_date = last_log.start_datetime.date()
-        if last_date >= current_date:
-            new_streak = stats.current_streak or 1
-        else:
-            missed_scheduled = False
-            check_date = last_date + timedelta(days=1)
-            while check_date < current_date:
-                weekday = check_date.weekday() + 1
-                if weekday in schedule_set:
-                    missed_scheduled = True
-                    break
-                check_date += timedelta(days=1)
-            current_streak = int(stats.current_streak or 0)  # type: ignore[arg-type]
-            new_streak = 1 if missed_scheduled else (current_streak + 1)
-
-    total_workouts_done = int(stats.total_workouts_done or 0) + 1  # type: ignore[arg-type]
-    total_minutes_trained = int(stats.total_minutes_trained or 0) + duration_minutes  # type: ignore[arg-type]
-    longest_streak = int(stats.longest_streak or 0)  # type: ignore[arg-type]
-
-    new_streak_value = int(new_streak)  # type: ignore[arg-type]
-
-    stats.total_workouts_done = total_workouts_done  # type: ignore[assignment]
-    stats.total_minutes_trained = total_minutes_trained  # type: ignore[assignment]
-    stats.current_streak = new_streak_value  # type: ignore[assignment]
-    if new_streak_value > longest_streak:
-        stats.longest_streak = new_streak_value  # type: ignore[assignment]
-    stats.last_workout_log_id = log.id
-
-    db.commit()
-    db.refresh(stats)
-
-    return FinishWorkoutLogResponse(
-        message="Workout log created and stats updated.",
-        workout_log=WorkoutLogResponse(
-            id=log.id, # type: ignore[arg-type]
-            trainee_id=log.trainee_id, # type: ignore[arg-type]
-            plan_id=log.plan_id, # type: ignore[arg-type]
-            workout_id=log.workout_id, # type: ignore[arg-type]
-            start_datetime=log.start_datetime, # type: ignore[arg-type]
-            end_datetime=log.end_datetime, # type: ignore[arg-type]
-            duration_minutes=log.duration_minutes, # type: ignore[arg-type]
-            total_exercises_completed=log.total_exercises_completed, # type: ignore[arg-type]
-        ),
-        stats=WorkoutUserStatsResponse(
-            trainee_id=stats.trainee_id, # type: ignore[arg-type]
-            total_workouts_done=stats.total_workouts_done, # type: ignore[arg-type]
-            current_streak=stats.current_streak, # type: ignore[arg-type]
-            longest_streak=stats.longest_streak, # type: ignore[arg-type]
-            total_minutes_trained=stats.total_minutes_trained, # type: ignore[arg-type]
-            last_workout_log_id=stats.last_workout_log_id, # type: ignore[arg-type]
-        ),
-    )
 
 
 @workout_router.get("/workout-plans/{plan_id}/full", response_model=FullWorkoutPlanDetailResponse)
@@ -1617,6 +1460,163 @@ def delete_workout_plan_assignment(
     return None
 
 
+# ============================================================================
+# WORKOUT STATS AND LOGS
+# ============================================================================
+
+@workout_router.get("/stats/my-stats", response_model=WorkoutUserStatsMessageResponse)
+def get_my_workout_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Retrieve the current user's workout stats.
+    If none exist, return default values and a message.
+    """
+    stats = db.query(Workout_User_Stats).filter(Workout_User_Stats.trainee_id == current_user.id).first()
+    if not stats:
+        return WorkoutUserStatsMessageResponse(
+            message="Workout stats do not exist yet or no workouts done yet.",
+            trainee_id=current_user.id, # type: ignore[arg-type]
+            total_workouts_done=0,
+            current_streak=0,
+            longest_streak=0,
+            total_minutes_trained=0,
+            last_workout_log_id=None,
+        )
+
+    return WorkoutUserStatsMessageResponse(
+        trainee_id=stats.trainee_id, # type: ignore[arg-type]
+        total_workouts_done=stats.total_workouts_done, # type: ignore[arg-type]
+        current_streak=stats.current_streak, # type: ignore[arg-type]
+        longest_streak=stats.longest_streak, # type: ignore[arg-type]
+        total_minutes_trained=stats.total_minutes_trained, # type: ignore[arg-type]
+        last_workout_log_id=stats.last_workout_log_id, # type: ignore[arg-type]
+    )
+
+
+@workout_router.post("/logs/finish-workout", response_model=FinishWorkoutLogResponse, status_code=status.HTTP_201_CREATED)
+def finish_workout(
+    payload: FinishWorkoutLogCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Log a completed workout session and update the user's workout stats.
+    """
+    if payload.plan_id is None:
+        assignment = db.query(Workout_Plans_Users).filter(
+            Workout_Plans_Users.trainee_id == current_user.id,
+            Workout_Plans_Users.is_active == True
+        ).first()
+        if not assignment:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active workout plan found")
+        plan_id = assignment.plan_id
+    else:
+        plan_id = payload.plan_id
+
+    # Ensure workout is part of the plan
+    workout_link = db.query(Workouts_Workout_Plans).filter(
+        Workouts_Workout_Plans.plan_id == plan_id,
+        Workouts_Workout_Plans.workout_id == payload.workout_id,
+    ).first()
+    if not workout_link:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Workout is not part of the plan")
+
+    # Compute duration and total exercises
+    duration_minutes = int((payload.end_datetime - payload.start_datetime).total_seconds() // 60)
+    total_exercises_completed = db.query(Exercises_Workouts).filter(
+        Exercises_Workouts.workout_id == payload.workout_id
+    ).count()
+
+    # Insert workout log
+    log = Workout_Logs(
+        trainee_id=current_user.id,
+        plan_id=plan_id,
+        workout_id=payload.workout_id,
+        start_datetime=payload.start_datetime,
+        end_datetime=payload.end_datetime,
+        duration_minutes=duration_minutes,
+        total_exercises_completed=total_exercises_completed,
+    )
+    db.add(log)
+    db.flush()
+
+    # Ensure stats row exists
+    stats = db.query(Workout_User_Stats).filter(Workout_User_Stats.trainee_id == current_user.id).first()
+    if not stats:
+        stats = Workout_User_Stats(trainee_id=current_user.id)
+        db.add(stats)
+        db.flush()
+
+    # Build schedule (day_of_week: 1=Mon ... 7=Sun)
+    schedule_days = db.query(Workouts_Workout_Plans.day_of_week).filter(
+        Workouts_Workout_Plans.plan_id == plan_id
+    ).distinct().all()
+    schedule_set = {row[0] for row in schedule_days if row[0] is not None}
+
+    last_log = None
+    if stats.last_workout_log_id is not None:
+        last_log = db.query(Workout_Logs).filter(Workout_Logs.id == stats.last_workout_log_id).first()
+
+    current_date = payload.start_datetime.date()
+
+    if not last_log or not schedule_set:
+        # First logged workout or no schedule defined
+        new_streak = 1
+    else:
+        last_date = last_log.start_datetime.date()
+        if last_date >= current_date:
+            new_streak = stats.current_streak or 1
+        else:
+            missed_scheduled = False
+            check_date = last_date + timedelta(days=1)
+            while check_date < current_date:
+                weekday = check_date.weekday() + 1
+                if weekday in schedule_set:
+                    missed_scheduled = True
+                    break
+                check_date += timedelta(days=1)
+            current_streak = int(stats.current_streak or 0)  # type: ignore[arg-type]
+            new_streak = 1 if missed_scheduled else (current_streak + 1)
+
+    total_workouts_done = int(stats.total_workouts_done or 0) + 1  # type: ignore[arg-type]
+    total_minutes_trained = int(stats.total_minutes_trained or 0) + duration_minutes  # type: ignore[arg-type]
+    longest_streak = int(stats.longest_streak or 0)  # type: ignore[arg-type]
+
+    new_streak_value = int(new_streak)  # type: ignore[arg-type]
+
+    stats.total_workouts_done = total_workouts_done  # type: ignore[assignment]
+    stats.total_minutes_trained = total_minutes_trained  # type: ignore[assignment]
+    stats.current_streak = new_streak_value  # type: ignore[assignment]
+    if new_streak_value > longest_streak:
+        stats.longest_streak = new_streak_value  # type: ignore[assignment]
+    stats.last_workout_log_id = log.id
+
+    db.commit()
+    db.refresh(stats)
+
+    return FinishWorkoutLogResponse(
+        message="Workout log created and stats updated.",
+        workout_log=WorkoutLogResponse(
+            id=log.id, # type: ignore[arg-type]
+            trainee_id=log.trainee_id, # type: ignore[arg-type]
+            plan_id=log.plan_id, # type: ignore[arg-type]
+            workout_id=log.workout_id, # type: ignore[arg-type]
+            start_datetime=log.start_datetime, # type: ignore[arg-type]
+            end_datetime=log.end_datetime, # type: ignore[arg-type]
+            duration_minutes=log.duration_minutes, # type: ignore[arg-type]
+            total_exercises_completed=log.total_exercises_completed, # type: ignore[arg-type]
+        ),
+        stats=WorkoutUserStatsResponse(
+            trainee_id=stats.trainee_id, # type: ignore[arg-type]
+            total_workouts_done=stats.total_workouts_done, # type: ignore[arg-type]
+            current_streak=stats.current_streak, # type: ignore[arg-type]
+            longest_streak=stats.longest_streak, # type: ignore[arg-type]
+            total_minutes_trained=stats.total_minutes_trained, # type: ignore[arg-type]
+            last_workout_log_id=stats.last_workout_log_id, # type: ignore[arg-type]
+        ),
+    )
 
 
 # ============================================================================
@@ -1821,3 +1821,105 @@ def create_workout_plan_tag_link(
     db.commit()
     return link
 
+
+# ============================================================================
+# CHATBOT
+# ============================================================================
+
+@workout_router.get("/chatbot/conversation", response_model=List[ChatbotMessageResponse])
+def get_chatbot_conversation(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Retrieve all the message rows in the workout_chatbot_messages for the current user.
+    """
+    messages = db.query(Workout_Chatbot_Messages).filter(
+        Workout_Chatbot_Messages.user_id == current_user.id
+    ).order_by(Workout_Chatbot_Messages.created_at.asc()).offset(skip).limit(limit).all()
+    
+    return messages
+
+
+@workout_router.post("/chatbot/message", response_model=ChatbotMessageResponse, status_code=status.HTTP_201_CREATED)
+def post_chatbot_message(
+    payload: ChatbotMessageCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Chat with the virtual fitness coach.
+    """
+    gemini_key = os.getenv("GEMINI_API_KEY_2") or os.getenv("GEMINI_CHATBOT_API_KEY")
+    if not gemini_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Second Gemini API key is not configured"
+        )
+
+    # 1. Fetch user context
+    user_context = get_user_info_context(db, current_user)
+    
+    # 2. Extract current workout plan if available
+    plan_details = None
+    try:
+        plan_response = get_my_workout_plan(all=False, db=db, current_user=current_user)
+        if plan_response:
+            # Depending on if the function returns the Pydantic model directly
+            plan_details = plan_response.model_dump() if hasattr(plan_response, 'model_dump') else plan_response # type: ignore
+    except HTTPException:
+        # User has no active plan
+        pass
+
+    # 3. Read context and build system prompt
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    gemini_dir = os.path.join(base_dir, "context_gemini", "workout")
+    
+    try:
+        sys_prompt = build_chatbot_system_prompt(user_context, plan_details, gemini_dir)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to read context files or build chatbot system prompt: {str(e)}"
+        )
+
+    genai.configure(api_key=gemini_key) # type: ignore
+    model = genai.GenerativeModel('gemini-3.1-flash-lite-preview', system_instruction=sys_prompt) # type: ignore
+    
+    try:
+        response = model.generate_content(payload.message)
+        reply_text = response.text.strip()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Gemini API error: {str(e)}"
+        )
+    
+    # 4. Save to database
+    new_message = Workout_Chatbot_Messages(
+        user_id=current_user.id,
+        user_message=payload.message,
+        chatbot_reply=reply_text
+    )
+    db.add(new_message)
+    db.commit()
+    db.refresh(new_message)
+    
+    return new_message
+
+
+@workout_router.delete("/chatbot/clear-conversation", status_code=status.HTTP_204_NO_CONTENT)
+def clear_chatbot_conversation(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Clear all messages of the user in the chatbot table.
+    """
+    db.query(Workout_Chatbot_Messages).filter(
+        Workout_Chatbot_Messages.user_id == current_user.id
+    ).delete()
+    db.commit()
+    return None

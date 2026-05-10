@@ -579,3 +579,21 @@ class WorkoutUserStatsResponse(WorkoutUserStatsBase):
 class WorkoutUserStatsMessageResponse(WorkoutUserStatsResponse):
     """Schema for workout user stats response with optional message"""
     message: Optional[str] = None
+
+# ============================================================================
+# CHATBOT SCHEMAS
+# ============================================================================
+
+class ChatbotMessageCreate(BaseModel):
+    """Schema for sending a message to the chatbot"""
+    message: str
+
+class ChatbotMessageResponse(BaseModel):
+    """Schema for chatbot message response"""
+    id: UUID
+    user_id: UUID
+    user_message: str
+    chatbot_reply: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
