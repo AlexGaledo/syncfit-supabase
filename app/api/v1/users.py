@@ -105,6 +105,24 @@ def get_all_trainees(
         .all()
     )
 
+@router.get("/get-all-trainers", response_model=List[UserListItem])
+def get_all_trainers(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Get all trainers (for trainee discover).
+    """
+    return (
+        db.query(User)
+        .filter(User.type == UserType.trainer)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(
     user_id: UUID,
