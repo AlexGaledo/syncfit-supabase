@@ -14,7 +14,7 @@ from app.dependencies import get_current_user, get_current_db_user
 from app.models.user import (
     User, UserRole as UserRoleModel,
     User_Profile, User_Supplements, User_Limitations,
-    Weight_Loss_Progress, UserType
+    Weight_Loss_Progress, UserType, User_Onboarding
 )
 from app.models.item import User_Badges, Badges
 from app.schemas.user import (
@@ -23,7 +23,7 @@ from app.schemas.user import (
     UserSupplementCreate, UserSupplementResponse,
     UserLimitationCreate, UserLimitationResponse,
     WeightLossProgressBase, WeightLossProgressResponse,
-    UserListItem,
+    UserListItem, UserOnboardingUpdate, UserOnboardingResponse,
 )
 from app.schemas.item import UserBadgeResponse
 
@@ -452,6 +452,99 @@ async def log_weight(
     db.commit()
     db.refresh(entry)
     return entry
+
+
+# ============================================================================
+# ONBOARDING ENDPOINTS
+# ============================================================================
+
+@router.get("/{user_id}/onboarding", response_model=UserOnboardingResponse)
+async def get_onboarding(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get a user's onboarding data."""
+    user = _get_user_or_404(db, user_id)
+    _assert_self_or_admin(user, current_user, db)
+
+    onboarding = (
+        db.query(User_Onboarding)
+        .filter(User_Onboarding.user_id == user.id)
+        .first()
+    )
+    if not onboarding:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Onboarding not found")
+    return onboarding
+
+
+@router.post("/{user_id}/onboarding", response_model=UserOnboardingResponse, status_code=status.HTTP_201_CREATED)
+async def create_onboarding(
+    user_id: UUID,
+    onboarding_data: UserOnboardingUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Create onboarding data for a user. Idempotent — returns existing data if already created."""
+    user = _get_user_or_404(db, user_id)
+    _assert_self_or_admin(user, current_user, db)
+
+    existing_onboarding = (
+        db.query(User_Onboarding)
+        .filter(User_Onboarding.user_id == user.id)
+        .first()
+    )
+    if existing_onboarding:
+        return existing_onboarding
+
+    onboarding = User_Onboarding(user_id=user.id, **onboarding_data.model_dump(exclude_unset=True))
+    db.add(onboarding)
+    db.commit()
+    db.refresh(onboarding)
+    return onboarding
+
+
+@router.patch("/{user_id}/onboarding", response_model=UserOnboardingResponse)
+async def update_onboarding(
+    user_id: UUID,
+    onboarding_data: UserOnboardingUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a user's onboarding data."""
+    user = _get_user_or_404(db, user_id)
+    _assert_self_or_admin(user, current_user, db)
+
+    onboarding = (
+        db.query(User_Onboarding)
+        .filter(User_Onboarding.user_id == user.id)
+        .first()
+    )
+    if not onboarding:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Onboarding not found. Create it first.")
+
+    update_data = onboarding_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(onboarding, field, value)
+
+    db.commit()
+    db.refresh(onboarding)
+    return onboarding
+
+
+@router.get("/get-all-trainees", response_model=List[UserListItem])
+def get_all_trainees(    
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)):
+    return (
+        db.query(User)
+        .filter(User.type == UserType.trainee)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 # ============================================================================

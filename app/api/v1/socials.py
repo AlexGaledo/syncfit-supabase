@@ -79,6 +79,38 @@ def _assert_admin_participant(conv: Conversations, user_id: UUID) -> None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Conversation admin access required")
 
 
+def _create_or_update_trainership_connection(
+    db: Session,
+    requester_id: UUID,
+    addressee_id: UUID,
+) -> Connections:
+    existing = db.query(Connections).filter(
+        (
+            (Connections.requester_id == requester_id) & (Connections.addressee_id == addressee_id)
+        ) | (
+            (Connections.requester_id == addressee_id) & (Connections.addressee_id == requester_id)
+        )
+    ).first()
+
+    if existing:
+        setattr(existing, "status", ConnectionStatusModel.accepted)
+        setattr(existing, "connection_type", ConnectionType.trainership)
+        db.commit()
+        db.refresh(existing)
+        return existing
+
+    conn = Connections(
+        requester_id=requester_id,
+        addressee_id=addressee_id,
+        status=ConnectionStatusModel.accepted,
+        connection_type=ConnectionType.trainership,
+    )
+    db.add(conn)
+    db.commit()
+    db.refresh(conn)
+    return conn
+
+
 # ============================================================================
 # CONNECTIONS ENDPOINTS
 # ============================================================================
@@ -689,7 +721,6 @@ async def get_connected_trainees(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'something went wrong in the get-connected-trainees endpoint: {e}')
     
 
-
 @socials_router.get('/get-trainer-info/{user_id}', response_model=TrainerInfoResponse)
 async def get_trainer_info(
     user_id: UUID,
@@ -703,6 +734,7 @@ async def get_trainer_info(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trainer info not found")
         
     return trainer_info
+
 
 
 @socials_router.get('/get-my-conversations')
@@ -811,6 +843,56 @@ def get_trainers_limited(
         .limit(limit)
         .all()
     )
+
+
+@socials_router.get('/send-connection-from-trainer/{trainer_id}', status_code=status.HTTP_201_CREATED)
+def send_connection_fromtrainer(
+    trainer_id: UUID,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user),
+):
+    """Send a connection request from a trainer to a trainee. This is a separate endpoint to enforce that the connection_type is set to 'trainership' and to handle any trainer-specific logic in the future."""
+    current_user_id = cast(UUID, current_db_user.id)
+
+    if current_db_user.type != UserType.trainer: #type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only trainers can use this endpoint")
+
+    if current_user_id == trainer_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot connect with yourself")
+
+    trainee = db.query(User).filter(User.id == trainer_id).first()
+    if not trainee:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if trainee.type != UserType.trainee: #type: ignore
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This user is not a trainee")
+
+    return _create_or_update_trainership_connection(db, current_user_id, trainer_id)
+
+
+@socials_router.get('/send-connection-from-trainee/{trainee_id}', status_code=status.HTTP_201_CREATED)
+def send_connection_fromtrainee(
+    trainee_id: UUID,
+    db: Session = Depends(get_db),
+    current_db_user: User = Depends(get_current_db_user),
+):
+    """Send a connection request from a trainee to a trainer. This is a separate endpoint to enforce that the connection_type is set to 'trainership' and to handle any trainee-specific logic in the future."""
+    current_user_id = cast(UUID, current_db_user.id)
+
+    if current_db_user.type != UserType.trainee: #type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only trainees can use this endpoint")
+
+    if current_user_id == trainee_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot connect with yourself")
+
+    trainer = db.query(User).filter(User.id == trainee_id).first()
+    if not trainer:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if trainer.type != UserType.trainer: #type: ignore
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This user is not a trainer")
+
+    return _create_or_update_trainership_connection(db, current_user_id, trainee_id)
 
 
 

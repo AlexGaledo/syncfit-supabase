@@ -890,3 +890,81 @@ A call-to-action button that triggers the AI generation process using the prompt
 Once the button is clicked and the front-end receives the generated JSON response, it redirects the user directly to the **Create Workout Plan Page** (Page 7).
 
 The generated JSON completely populates the local state of the Create Workout Plan Page. From there, the user enters the standard Create Workout Plan flow, where they can review, tweak, or add new exercises to the AI blueprint. When finalized, the user saves the plan to the database using the Create Workout Plan flow's standard `[POST] /workout/workout-plans/create-full` and assigning it via `[POST] /workout/workout-plans/assign`.
+
+## 11. AI-Fitness Coach Chatbot Page
+
+**Description:**
+An interactive chatbot interface where users can ask for workout advice, alternative exercises, and app navigation help from a virtual fitness coach. The coach is context-aware of the user's physical profile, active workout plan, and the global exercise library.
+
+### Component A: Conversation History
+
+#### Description
+Displays the chronological list of messages between the user and the virtual coach.
+
+#### Endpoint: `[GET] /workout/chatbot/conversation`
+
+**Payload Schema:**
+
+```json
+// No payload required (skip and limit query parameters are optional)
+```
+
+**Response Schema:**
+
+```json
+[
+	{
+		"id": "c1234567-89ab-cdef-0123-456789abcdef",
+		"user_id": "123e4567-e89b-12d3-a456-426614174000",
+		"user_message": "Do you have any alternatives to pull-ups that don't need equipment?",
+		"chatbot_reply": "Absolutely! Since you don't have equipment, you can try Sliding Floor Pulldowns or Bodyweight Prone Pulldowns.",
+		"created_at": "2026-05-10T14:30:00Z"
+	}
+]
+```
+
+### Component B: Prompt Input Field and Send Button
+
+#### Description
+Collects the user's text input and sends it to the AI coach. The returned message object should be appended to the conversation history in the UI.
+
+#### Endpoint: `[POST] /workout/chatbot/message`
+
+**Payload Schema:**
+
+```json
+{
+	"message": "Do you have any alternatives to pull-ups that don't need equipment?"
+}
+```
+
+**Response Schema:**
+
+```json
+{
+	"id": "c1234567-89ab-cdef-0123-456789abcdef",
+	"user_id": "123e4567-e89b-12d3-a456-426614174000",
+	"user_message": "Do you have any alternatives to pull-ups that don't need equipment?",
+	"chatbot_reply": "Absolutely! Since you don't have equipment, you can try Sliding Floor Pulldowns or Bodyweight Prone Pulldowns.",
+	"created_at": "2026-05-10T14:30:00Z"
+}
+```
+
+### Component C: Clear Conversation Button
+
+#### Description
+Deletes the user's entire chatbot conversation history and resets the view.
+
+#### Endpoint: `[DELETE] /workout/chatbot/clear-conversation`
+
+**Payload Schema:**
+
+```json
+// No payload required
+```
+
+**Response Schema:**
+
+```json
+// Returns HTTP 204 No Content
+```
