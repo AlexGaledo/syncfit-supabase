@@ -7,10 +7,13 @@ from datetime import datetime
 from uuid import UUID
 from enum import Enum
 
+from app.models.social import ConnectionType
+
 
 # ============================================================================
 # ENUMS
 # ============================================================================
+
 
 class ConnectionStatus(str, Enum):
     pending = "pending"
@@ -39,6 +42,7 @@ class MessageType(str, Enum):
 # CONNECTIONS SCHEMAS
 # ============================================================================
 
+
 class ConnectionBase(BaseModel):
     """Base connection schema"""
     requester_id: UUID
@@ -59,6 +63,7 @@ class ConnectionResponse(ConnectionBase):
     """Schema for connection response"""
     id: UUID
     status: ConnectionStatus
+    connection_type: Optional[ConnectionType] = None  # <-- added field
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -68,6 +73,7 @@ class ConnectionResponse(ConnectionBase):
 # ============================================================================
 # CONVERSATIONS SCHEMAS
 # ============================================================================
+
 
 class ConversationBase(BaseModel):
     """Base conversation schema"""
@@ -101,6 +107,7 @@ class ConversationResponse(ConversationBase):
 # CONVERSATION PARTICIPANTS SCHEMAS
 # ============================================================================
 
+
 class ConversationParticipantBase(BaseModel):
     """Base conversation participant schema"""
     conversation_id: UUID
@@ -129,6 +136,7 @@ class ConversationParticipantResponse(ConversationParticipantBase):
 # ============================================================================
 # MESSAGES SCHEMAS
 # ============================================================================
+
 
 class MessageBase(BaseModel):
     """Base message schema"""
@@ -165,6 +173,7 @@ class MessageResponse(MessageBase):
 # PAGINATED RESPONSES
 # ============================================================================
 
+
 class PaginatedMessages(BaseModel):
     """Paginated message list for chat history"""
     messages: list[MessageResponse]
@@ -193,6 +202,11 @@ class TrainerInfoResponse(BaseModel):
     rating: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class TrainerInfoUpdate(BaseModel):
+    name: Optional[str] = None
+    expertise: Optional[str] = None
+    rate_per_week: Optional[int] = None
 
 
 # Resolve forward references
