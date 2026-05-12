@@ -976,33 +976,41 @@ async def get_connected_trainees(
     current_db_user: User = Depends(get_current_db_user),
 ):
     try:
-        logger.info("get_connected_trainees: current_user_id=%s", current_db_user.id)
-        # retrieve connected trainees where current user is in the connection
-        connected_trainees = (
+        conns = (
             db.query(Connections)
             .filter(
                 or_(
                     Connections.addressee_id == current_db_user.id,
                     Connections.requester_id == current_db_user.id,
-                ),
-                Connections.connection_type.in_([ConnectionType.trainership, "trainership"]),
-                Connections.status == ConnectionStatusModel.accepted,
+                )
             )
             .all()
         )
-        logger.info(
-            "get_connected_trainees: connections_found=%s",
-            len(connected_trainees),
-        )
 
-        # retrieve info for each trainee
-        connected_trainees_info: List[dict[str, Any]] = []
+        connected_trainees_info: list[dict[str, Any]] = []
 
-        for connection in connected_trainees:
-            # Get both users
-            user_a = db.query(User).filter(User.id == connection.requester_id).first()
-            user_b = db.query(User).filter(User.id == connection.addressee_id).first()
+        for c in conns:
+            # DEBUG: see what we actually have in ngrok DB
+            print(
+                "DEBUG get_connected_trainees row:",
+                c.id,
+                repr(c.status),
+                repr(c.connection_type),
+            )
 
+            # If your model uses plain strings like "accepted"/"trainer_trainee":
+            if c.status != "accepted":
+                continue
+            if c.connection_type != "trainer_trainee":
+                continue
+
+            # If you later confirm they are proper enums, you can switch to:
+            # if c.status is not ConnectionStatus.accepted: ...
+            # if c.connection_type is not ConnectionType.trainership: ...
+
+            # Load both users
+            user_a = db.query(User).filter(User.id == c.requester_id).first()
+            user_b = db.query(User).filter(User.id == c.addressee_id).first()
             if not user_a or not user_b:
                 continue
 
@@ -1012,38 +1020,22 @@ async def get_connected_trainees(
             elif user_b.type == "trainee":
                 trainee_user = user_b
             else:
-                # no trainee in this pair; skip
                 continue
-            
-            trainee_id = (
-                connection.requester_id
-                if connection.addressee_id == current_db_user.id
-                else connection.addressee_id  # type: ignore
-            )
-            logger.info(
-                "get_connected_trainees: connection_id=%s requester_id=%s addressee_id=%s trainee_id=%s",
-                connection.id,
-                connection.requester_id,
-                connection.addressee_id,
-                trainee_id,
-            )
+
+            trainee_id = trainee_user.id
+
             trainee_profile = (
                 db.query(User_Profile)
                 .filter(User_Profile.user_id == trainee_id)
                 .first()
             )
-            logger.info(
-                "get_connected_trainees: trainee_profile_found=%s for trainee_id=%s",
-                bool(trainee_profile),
-                trainee_id,
-            )
+
             if trainee_profile:
-                trainee_user = db.query(User).filter(User.id == trainee_id).first()
                 connected_trainees_info.append(
                     {
                         "id": trainee_profile.id,
                         "user_id": trainee_profile.user_id,
-                        "email": trainee_user.email if trainee_user else None,
+                        "email": trainee_user.email,
                         "address": trainee_profile.address,
                         "phone_number": trainee_profile.phone_number,
                         "bio": trainee_profile.bio,
@@ -1054,13 +1046,25 @@ async def get_connected_trainees(
                         "avatar_url": trainee_profile.avatar_url,
                     }
                 )
-
-        logger.info(
-            "get_connected_trainees: returning_profiles=%s",
-            len(connected_trainees_info),
-        )
+            else:
+                connected_trainees_info.append(
+                    {
+                        "id": trainee_user.id,
+                        "user_id": trainee_user.id,
+                        "email": trainee_user.email,
+                        "address": None,
+                        "phone_number": None,
+                        "bio": None,
+                        "calorie_goal_daily": None,
+                        "sleep_quality": None,
+                        "weight": None,
+                        "height": None,
+                        "avatar_url": None,
+                    }
+                )
 
         return connected_trainees_info
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
