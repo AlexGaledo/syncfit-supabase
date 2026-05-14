@@ -424,7 +424,7 @@ def accept_trainership_connection(
     conn = _get_connection_or_404(db, connection_id)
     current_user_id = cast(UUID, current_db_user.id)
 
-    if conn.connection_type != ConnectionType.trainership:
+    if conn.connection_type != ConnectionType.trainership: # type: ignore
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Connection is not a trainership",
@@ -436,7 +436,7 @@ def accept_trainership_connection(
             detail="Only the recipient can accept this trainership",
         )
 
-    if conn.status != ConnectionStatusModel.pending:
+    if conn.status != ConnectionStatusModel.pending: # type: ignore
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Connection is not pending (current status: {conn.status.value})",
@@ -951,7 +951,7 @@ async def get_connected_trainers(
         for trainer in connected_trainers:
             trainer_id = (
                 trainer.requester_id
-                if trainer.addressee_id == current_db_user.id
+                if trainer.addressee_id == current_db_user.id # type: ignore
                 else trainer.addressee_id  # type: ignore
             )
             trainer_info = (
@@ -999,9 +999,9 @@ async def get_connected_trainees(
             )
 
             # If your model uses plain strings like "accepted"/"trainer_trainee":
-            if c.status != "accepted":
+            if c.status != "accepted": # type: ignore
                 continue
-            if c.connection_type != "trainer_trainee":
+            if c.connection_type != "trainer_trainee": # type: ignore
                 continue
 
             # If you later confirm they are proper enums, you can switch to:
@@ -1015,9 +1015,9 @@ async def get_connected_trainees(
                 continue
 
             # Decide which one is the trainee
-            if user_a.type == "trainee":
+            if user_a.type == "trainee": # type: ignore
                 trainee_user = user_a
-            elif user_b.type == "trainee":
+            elif user_b.type == "trainee": # type: ignore
                 trainee_user = user_b
             else:
                 continue
@@ -1100,7 +1100,7 @@ def update_trainer_info(
     current_db_user: User = Depends(get_current_db_user),
 ):
     # Only allow the owner to update their own trainer profile
-    if current_db_user.id != user_id:
+    if current_db_user.id != user_id: # type: ignore
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not allowed to update this trainer profile",
@@ -1130,11 +1130,11 @@ def update_trainer_info(
     else:
         # Partial update
         if data.name is not None:
-            trainerinfo.name = data.name
+            trainerinfo.name = data.name # type: ignore
         if data.expertise is not None:
-            trainerinfo.expertise = data.expertise
+            trainerinfo.expertise = data.expertise # type: ignore
         if data.rate_per_week is not None:
-            trainerinfo.rate_per_week = data.rate_per_week
+            trainerinfo.rate_per_week = data.rate_per_week # type: ignore
 
     db.commit()
     db.refresh(trainerinfo)
