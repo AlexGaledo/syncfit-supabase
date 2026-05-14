@@ -127,7 +127,7 @@ class OnboardingCalorieUnit(str, Enum):
 
 class UserBase(BaseModel):
     """Base user schema"""
-    email: EmailStr
+    email: str
     full_name: Optional[str] = None
     role: UserRole = UserRole.user
     type: UserType = UserType.trainee
@@ -180,14 +180,14 @@ class UserListItem(BaseModel):
     """Minimal user listing response"""
     id: UUID
     full_name: Optional[str] = None
-    email: EmailStr
+    email: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class OAuthUser(BaseModel):
     """Schema for user created via OAuth"""
-    email: EmailStr
+    email: str
     user_id: str  # Supabase user ID
     oauth_provider: str  # e.g., 'google', 'github'
     oauth_token: str

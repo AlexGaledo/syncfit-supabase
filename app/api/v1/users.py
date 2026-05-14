@@ -532,21 +532,6 @@ async def update_onboarding(
     return onboarding
 
 
-@router.get("/get-all-trainees", response_model=List[UserListItem])
-def get_all_trainees(    
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)):
-    return (
-        db.query(User)
-        .filter(User.type == UserType.trainee)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-
-
 # ============================================================================
 # BADGES ENDPOINTS
 # ============================================================================
