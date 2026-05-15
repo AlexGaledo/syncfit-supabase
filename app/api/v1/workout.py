@@ -36,6 +36,7 @@ from app.schemas.item import (
 )
 from app.schemas.user import UserInfoContextResponse
 from app.context_gemini.workout.sys_prompt import build_system_prompt, build_chatbot_system_prompt
+from app.api.v1.socials import get_connected_trainees
 
 import os
 import json
@@ -912,6 +913,29 @@ def get_my_workout_plan(
     return plans
 
 
+@workout_router.get("/workout-plans/active-plan/{user_id}", response_model=FullWorkoutPlanDetailResponse)
+def get_active_workout_plan_by_user_id(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_db_user)
+):
+    """
+    Retrieve the current active workout plan of a specific user.
+    """
+    assignment = db.query(Workout_Plans_Users).filter(
+        Workout_Plans_Users.trainee_id == user_id,
+        Workout_Plans_Users.is_active == True
+    ).first()
+
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="No active workout plan found for the specified user."
+        )
+
+    return get_full_workout_plan(plan_id=assignment.plan_id, db=db, current_user=current_user) # type: ignore
+
+
 @workout_router.get("/workout-plans/created-by/{user_id}", response_model=List[WorkoutPlanResponse])
 def get_workout_plans_created_by_user(
     user_id: UUID,
@@ -1023,6 +1047,7 @@ def create_full_workout_plan(
 
     # Delegate the response building to the existing endpoint function
     return get_full_workout_plan(plan_id=db_plan.id, db=db, current_user=current_db_user) # type: ignore
+
 
 
 @workout_router.patch("/workout-plans/{plan_id}", response_model=WorkoutPlanResponse)
