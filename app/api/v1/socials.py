@@ -141,6 +141,24 @@ def _create_or_update_trainership_connection(
     db.refresh(conn)
     return conn
 
+## For the trainee → trainer flow, we want to enforce that a trainee can only have one accepted trainer at a time.
+
+def trainee_has_accepted_trainer(db: Session, trainee_id: UUID) -> bool:
+    """
+    Returns True if this trainee already has an accepted trainer_trainee connection
+    with any trainer.
+    """
+    existing = (
+        db.query(Connections)
+        .filter(
+            Connections.connection_type == ConnectionType.trainership,
+            Connections.status == ConnectionStatusModel.accepted,
+            # trainee can be requester or addressee
+            ((Connections.requester_id == trainee_id) | (Connections.addressee_id == trainee_id)),
+        )
+        .first()
+    )
+    return existing is not None
 
 # ============================================================================
 # CONNECTIONS ENDPOINTS
@@ -308,53 +326,43 @@ async def remove_connection(
 # ============================================================================
 
 
-@socials_router.get(
-    "/send-connection-from-trainer/{trainee_id}",
-    status_code=status.HTTP_201_CREATED,
-    response_model=ConnectionResponse,
-)
-def send_connection_from_trainer(
-    trainee_id: UUID,
-    db: Session = Depends(get_db),
-    current_db_user: User = Depends(get_current_db_user),
-):
-    """
-    Trainer → Trainee: send a trainership request.
-
-    Creates a Connections row with:
-    - requester_id = current trainer
-    - addressee_id = trainee_id
-    - status = pending
-    - connection_type = trainership
-    if one does not already exist.
-    """
+@socials_router.get("send-connection-from-trainee/{trainer_id}", status_code=status.HTTP_201_CREATED, response_model=ConnectionResponse)
+def send_connection_from_trainee(trainer_id: UUID, db: Session = Depends(get_db), current_db_user: User = Depends(get_current_db_user)):
     current_user_id = cast(UUID, current_db_user.id)
 
-    if current_db_user.type != UserType.trainer:  # type: ignore
+    if current_db_user.type != UserType.trainee:  # type: ignore
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only trainers can use this endpoint",
+            detail="Only trainees can use this endpoint",
         )
 
-    if current_user_id == trainee_id:
+    if current_user_id == trainer_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You cannot connect with yourself",
         )
 
-    trainee = db.query(User).filter(User.id == trainee_id).first()
-    if not trainee:
+    trainer = db.query(User).filter(User.id == trainer_id).first()
+    if not trainer:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
         )
 
-    if trainee.type != UserType.trainee:  # type: ignore
+    if trainer.type != UserType.trainer:  # type: ignore
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This user is not a trainee",
+            detail="This user is not a trainer",
         )
 
-    return _create_or_update_trainership_connection(db, current_user_id, trainee_id)
+    # NEW: block if trainee already has an accepted trainer
+    if trainee_has_accepted_trainer(db, current_user_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are already connected to a trainer",
+        )
+
+    return _create_or_update_trainership_connection(db, current_user_id, trainer_id)
 
 
 @socials_router.get(
@@ -406,25 +414,12 @@ def send_connection_from_trainee(
     return _create_or_update_trainership_connection(db, current_user_id, trainer_id)
 
 
-@socials_router.post(
-    "/accept-trainership/{connection_id}",
-    response_model=ConnectionResponse,
-    status_code=status.HTTP_200_OK,
-)
-def accept_trainership_connection(
-    connection_id: UUID,
-    db: Session = Depends(get_db),
-    current_db_user: User = Depends(get_current_db_user),
-):
-    """
-    Accept a pending trainership connection.
-
-    Only the addressee can accept.
-    """
+@socials_router.post("accept-trainership/{connection_id}", response_model=ConnectionResponse, status_code=status.HTTP_200_OK)
+def accept_trainership_connection(connection_id: UUID, db: Session = Depends(get_db), current_db_user: User = Depends(get_current_db_user)):
     conn = _get_connection_or_404(db, connection_id)
     current_user_id = cast(UUID, current_db_user.id)
 
-    if conn.connection_type != ConnectionType.trainership: # type: ignore
+    if conn.connection_type != ConnectionType.trainership:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Connection is not a trainership",
@@ -436,10 +431,28 @@ def accept_trainership_connection(
             detail="Only the recipient can accept this trainership",
         )
 
-    if conn.status != ConnectionStatusModel.pending: # type: ignore
+    if conn.status != ConnectionStatusModel.pending:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Connection is not pending (current status: {conn.status.value})",
+            detail=f"Connection is not pending; current status: {conn.status.value}",
+        )
+
+    # Figure out which side is the trainee
+    trainee_id: UUID | None = None
+
+    requester = db.query(User).filter(User.id == conn.requester_id).first()
+    addressee = db.query(User).filter(User.id == conn.addressee_id).first()
+
+    if requester and requester.type == UserType.trainee:  # type: ignore
+        trainee_id = requester.id  # type: ignore
+    elif addressee and addressee.type == UserType.trainee:  # type: ignore
+        trainee_id = addressee.id  # type: ignore
+
+    # If this is a trainee, enforce they do not already have an accepted trainer
+    if trainee_id and trainee_has_accepted_trainer(db, trainee_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This trainee is already connected to a trainer",
         )
 
     setattr(conn, "status", ConnectionStatusModel.accepted)
